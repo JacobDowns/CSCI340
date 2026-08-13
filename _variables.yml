@@ -12,14 +12,14 @@ course:
   prerequisite: "CSCI 232"
 
 meeting:
-  days: "To be scheduled"
-  time: "To be scheduled"
-  location: "To be scheduled"
-  format: "Published with the final course offering"
+  days: "M,W,F"
+  time: "1:00PM"
+  location: "SS254"
+  format: "In Person"
 
 instructor:
-  name: "To be announced with the final course offering"
-  email: "Published with the final course offering"
-  office: "Published with the final course offering"
-  office_hours: "Published with the final course offering"
-  teaching_assistants: "To be determined"
+  name: "Jacob Downs"
+  email: "jacob.downs@umt.edu"
+  office: "SS408"
+  office_hours: "T, Th 11AM-12PM, W 2PM-3PM"
+  teaching_assistants: "TBD"
