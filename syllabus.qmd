@@ -12,13 +12,17 @@ description: "A modern database course grounded in relational theory, evidence-b
 
 | Field | Draft value |
 |---|---|
-| Course | CSCI 340 - Database Systems and Data Management |
-| Term | Autumn 2026 development draft |
-| Instructor | To be announced with the final course offering |
-| Contact | Published with the final course offering |
-| Meetings | To be scheduled |
-| Student hours | Published with the final course offering |
-| Prerequisites | One prior programming course or equivalent experience; comfort reading and writing small programs |
+| Course | {{< var course.number >}} - {{< var course.title >}} |
+| Term | {{< var course.term >}} ({{< var course.document_status >}}) |
+| Instructor | {{< var instructor.name >}} |
+| Email | {{< var instructor.email >}} |
+| Meeting days | {{< var meeting.days >}} |
+| Meeting time | {{< var meeting.time >}} |
+| Location | {{< var meeting.location >}} |
+| Format | {{< var meeting.format >}} |
+| Office | {{< var instructor.office >}} |
+| Student hours | {{< var instructor.office_hours >}} |
+| Prerequisite | {{< var course.prerequisite >}} |
 
 ## Course description
 

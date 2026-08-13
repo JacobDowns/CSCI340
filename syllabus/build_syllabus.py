@@ -9,6 +9,7 @@ source-derived.
 from __future__ import annotations
 
 import hashlib
+import json
 import shutil
 import time
 from copy import deepcopy
@@ -25,7 +26,57 @@ from docx.text.paragraph import Paragraph
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = ROOT / "resources" / "UM Syllabus Template.docx"
 OUTPUT = Path(__file__).resolve().parent / "CSCI340-syllabus-UM-template-Autumn-2026-draft.docx"
+VARIABLES = ROOT / "_variables.yml"
 EXPECTED_REFERENCE_SHA256 = "0F644C7DD84FC04C464ADFE4D7031E68A20B4FCCA9B0BF1A53ED6373205A5A64"
+
+
+def load_course_information(path: Path) -> dict[str, object]:
+    """Read the two-level, quoted-scalar subset used by _variables.yml."""
+    data: dict[str, object] = {}
+    section: dict[str, str] | None = None
+    for line_number, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+            continue
+        indent = len(raw_line) - len(raw_line.lstrip(" "))
+        stripped = raw_line.strip()
+        if indent == 0 and stripped.endswith(":"):
+            key = stripped[:-1]
+            section = {}
+            data[key] = section
+            continue
+        if indent == 2 and section is not None and ":" in stripped:
+            key, encoded_value = stripped.split(":", 1)
+            encoded_value = encoded_value.strip()
+            try:
+                value = json.loads(encoded_value)
+            except json.JSONDecodeError as error:
+                raise ValueError(
+                    f"{path}:{line_number}: values must be JSON-compatible quoted strings"
+                ) from error
+            if not isinstance(value, str):
+                raise ValueError(f"{path}:{line_number}: expected a quoted string value")
+            section[key] = value
+            continue
+        raise ValueError(f"{path}:{line_number}: unsupported course-information syntax")
+    return data
+
+
+COURSE_INFORMATION = load_course_information(VARIABLES)
+
+
+def course_value(*keys: str) -> str:
+    value: object = COURSE_INFORMATION
+    for key in keys:
+        if not isinstance(value, dict) or key not in value:
+            raise KeyError(f"Missing course-information value: {'.'.join(keys)}")
+        value = value[key]
+    if value is None or isinstance(value, (dict, list)):
+        raise ValueError(f"Course-information value must be text: {'.'.join(keys)}")
+    return str(value)
+
+
+def join_distinct(*values: str) -> str:
+    return "; ".join(dict.fromkeys(value for value in values if value))
 
 
 CATALOG_DESCRIPTION = (
@@ -256,20 +307,26 @@ def capture_slots(doc: Document) -> dict[str, object]:
 
 def fill_course_information(doc: Document, slots: dict[str, object]) -> None:
     remove_paragraph(slots["logo_note"])
-    set_paragraph(slots["title"], "Database Design Syllabus")
-    set_paragraph(slots["subtitle"], "Autumn 2026 - Development Draft")
+    set_paragraph(slots["title"], f"{course_value('course', 'title')} Syllabus")
+    set_paragraph(
+        slots["subtitle"],
+        f"{course_value('course', 'term')} - {course_value('course', 'document_status')}",
+    )
     remove_paragraph(slots["catalog_note"])
     set_paragraph(slots["course_details_label"], "Course Details", bold=True)
 
     details = [
-        ("Course Title", "Database Design"),
-        ("Course Number", "CSCI 340"),
-        ("Course Credits", "3"),
-        ("Course Offering", "Fall"),
-        ("Prerequisite", "CSCI 232"),
-        ("Course Meeting Days/Times", "To be scheduled"),
-        ("Course Location", "To be scheduled"),
-        ("Course Format", "Published with the final course offering"),
+        ("Course Title", course_value("course", "title")),
+        ("Course Number", course_value("course", "number")),
+        ("Course Credits", course_value("course", "credits")),
+        ("Course Offering", course_value("course", "offering")),
+        ("Prerequisite", course_value("course", "prerequisite")),
+        (
+            "Course Meeting Days/Times",
+            join_distinct(course_value("meeting", "days"), course_value("meeting", "time")),
+        ),
+        ("Course Location", course_value("meeting", "location")),
+        ("Course Format", course_value("meeting", "format")),
         ("Course Textbook and/or Resources", "No single required textbook in this development draft; assigned readings combine course notes, selected references, and official PostgreSQL, PostGIS, DuckDB, Polars, Parquet, and Quarto documentation."),
     ]
     source_detail = slots["course_details"][0]
@@ -282,11 +339,11 @@ def fill_course_information(doc: Document, slots: dict[str, object]) -> None:
 
     set_paragraph(slots["instructor_label"], "Instructor Information", bold=True)
     instructor = [
-        ("Instructor Name", "To be announced with the final course offering"),
-        ("Email", "Published with the final course offering"),
-        ("Office Location", "Published with the final course offering"),
-        ("Office Hours", "At least one scheduled hour per week; final time, location, and virtual option to be announced"),
-        ("Teaching Assistant(s)", "To be determined"),
+        ("Instructor Name", course_value("instructor", "name")),
+        ("Email", course_value("instructor", "email")),
+        ("Office Location", course_value("instructor", "office")),
+        ("Office Hours", course_value("instructor", "office_hours")),
+        ("Teaching Assistant(s)", course_value("instructor", "teaching_assistants")),
     ]
     for paragraph, (label, value) in zip(slots["instructor_details"], instructor):
         set_labeled_paragraph(paragraph, label, value)
@@ -448,10 +505,11 @@ def audit_content(doc: Document) -> None:
     assert "[Instructor Note:" not in all_text
     assert "[Course Name]" not in all_text
     assert "[Term Offered]" not in all_text
-    assert "Database Design Syllabus" in all_text
+    assert f"{course_value('course', 'title')} Syllabus" in all_text
     assert CATALOG_DESCRIPTION in all_text
-    assert "Course Offering: Fall" in all_text
-    assert "Prerequisite: CSCI 232" in all_text
+    assert f"Course Offering: {course_value('course', 'offering')}" in all_text
+    assert f"Prerequisite: {course_value('course', 'prerequisite')}" in all_text
+    assert f"Instructor Name: {course_value('instructor', 'name')}" in all_text
     assert "individual assignments and labs are 30%" in all_text
     assert "Group Database Project (20%)" in all_text
     assert "Phase 4 - Queries, evaluation, and presentation" in all_text
@@ -515,9 +573,9 @@ def main() -> None:
     fill_policies(doc, slots)
 
     core = doc.core_properties
-    core.title = "CSCI 340 - Database Design Syllabus"
+    core.title = f"{course_value('course', 'number')} - {course_value('course', 'title')} Syllabus"
     core.subject = "University of Montana course syllabus development draft"
-    core.author = "CSCI 340 course development project"
+    core.author = f"{course_value('course', 'number')} course development project"
     core.keywords = "database design, SQL, PostgreSQL, PostGIS, DuckDB, Polars"
     core.comments = "Generated from the retained UM syllabus template and syllabus.qmd course design."
     audit_content(doc)

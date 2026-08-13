@@ -1,7 +1,6 @@
 # Quarto build products and caches
 /.quarto/
 /_site/
-/_freeze/
 **/*.quarto_ipynb
 
 # Python and Jupyter environments/caches

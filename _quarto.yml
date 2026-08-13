@@ -1,10 +1,18 @@
 project:
   type: website
   output-dir: _site
+  render:
+    - "*.qmd"
+    - "lectures/*.qmd"
+    - "notebooks/*.qmd"
+    - "assignments/*.qmd"
+    - "projects/*.qmd"
 
 website:
   title: "CSCI 340 | Database Systems and Data Management"
   description: "Course materials for learning how to model, query, validate, optimize, and analyze data."
+  site-url: "https://JacobDowns.github.io/CSCI340/"
+  repo-url: "https://github.com/JacobDowns/CSCI340"
   page-navigation: true
   reader-mode: true
   search: true

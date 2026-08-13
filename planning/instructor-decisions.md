@@ -2,6 +2,7 @@
 
 ## Required administrative details
 
+- Enter the finalized course logistics in `_variables.yml`; it is the shared source for the website syllabus and Word-syllabus builder.
 - Department or college naming beyond the University of Montana identity supplied by the template
 - Department-approved course-level outcomes, if they differ from the measurable draft outcomes
 - Regular meeting days/time, room, and delivery format
@@ -39,8 +40,8 @@
 
 ## Website publication details
 
-- Add the final `site-url` to `_quarto.yml` after the hosting destination is known.
-- Add repository links only after a remote exists.
+- GitHub Pages is configured for `https://JacobDowns.github.io/CSCI340/` through `.github/workflows/publish.yml`.
+- In the GitHub repository, set **Settings → Pages → Source** to **GitHub Actions** before the first deployment.
 - Decide whether planning notes remain in the public repository.
 - Install Quarto and render the full site.
 - Execute notebooks in the intended student environment and commit frozen results if desired.

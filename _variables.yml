@@ -1,0 +1,25 @@
+# Edit this file when course logistics change. Quarto pages use these values
+# through {{< var ... >}} shortcodes, and syllabus/build_syllabus.py reads the
+# same file when generating the Word syllabus.
+
+course:
+  number: "CSCI 340"
+  title: "Database Design"
+  term: "Autumn 2026"
+  document_status: "Development Draft"
+  credits: "3"
+  offering: "Fall"
+  prerequisite: "CSCI 232"
+
+meeting:
+  days: "To be scheduled"
+  time: "To be scheduled"
+  location: "To be scheduled"
+  format: "Published with the final course offering"
+
+instructor:
+  name: "To be announced with the final course offering"
+  email: "Published with the final course offering"
+  office: "Published with the final course offering"
+  office_hours: "Published with the final course offering"
+  teaching_assistants: "To be determined"

@@ -5,6 +5,7 @@ This repository is the source for a Quarto course website and a reproducible Wor
 ## Project layout
 
 - `_quarto.yml` - course website configuration
+- `_variables.yml` - course number, term, meeting information, instructor contact information, office, and student hours
 - `syllabus.qmd` and `schedule.qmd` - student-facing course documents
 - `lectures/` - narrative lecture notes, diagrams, and in-class activities
 - `notebooks/` - executable labs and computational investigations
@@ -38,3 +39,24 @@ python syllabus/build_syllabus.py
 ```
 
 Administrative placeholders are intentional. See `planning/instructor-decisions.md` before publication.
+
+## Update course information
+
+Edit `_variables.yml` to set the term, meeting days and time, room, delivery format, instructor name and email, office, and student hours. Quarto inserts these values into `syllabus.qmd`, and `syllabus/build_syllabus.py` reads the same file when creating the Word syllabus.
+
+After editing the file, rebuild both outputs:
+
+```powershell
+quarto render
+python syllabus/build_syllabus.py
+```
+
+## Publish with GitHub Pages
+
+The workflow in `.github/workflows/publish.yml` renders the Quarto project and deploys `_site` whenever a commit is pushed to `main`. In the GitHub repository, open **Settings → Pages** and set **Source** to **GitHub Actions**. The default project URL is:
+
+```text
+https://JacobDowns.github.io/CSCI340/
+```
+
+The workflow can also be run manually from the repository's **Actions** tab.

@@ -3,3 +3,4 @@ jupyter
 polars
 pyarrow
 psycopg[binary]
+python-docx
