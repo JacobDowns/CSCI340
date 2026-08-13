@@ -1,0 +1,64 @@
+---
+title: "Database Systems and Data Management"
+subtitle: "Model data. Ask better questions. Test design decisions."
+page-layout: full
+toc: false
+---
+
+::: {.course-hero}
+## Thinking with data systems
+
+This course asks how we should represent, organize, query, validate, and analyze data - and what makes those choices correct, efficient, and explainable.
+:::
+
+::: {.draft-banner}
+**Course site status:** This is a working course-development draft. Instructor, term, meeting, and institution-specific policy details still need to be supplied.
+:::
+
+## The recurring question
+
+::: {.design-question}
+Where should this computation happen - in PostgreSQL, in an analytical engine such as DuckDB, in a DataFrame library such as Polars, or in application code - and what evidence supports that choice?
+:::
+
+::: {.course-grid}
+::: {.course-card}
+### Model and query
+
+Relations, SQL, relational algebra, conceptual modeling, keys, constraints, functional dependencies, and normalization.
+:::
+
+::: {.course-card}
+### Explain performance
+
+Storage, indexes, join algorithms, query plans, cost, transactions, and concurrency.
+:::
+
+::: {.course-card}
+### Analyze modern data
+
+PostgreSQL/PostGIS, DuckDB, Parquet, Polars, columnar execution, data pipelines, and spatial joins.
+:::
+
+::: {.course-card}
+### Defend decisions
+
+Make predictions, collect evidence, interpret results, and communicate a defensible data architecture.
+:::
+:::
+
+## Three application lenses
+
+Examples rotate among three settings so that no single application style becomes the course by accident:
+
+- **Scientific and analytical:** observations, sensors, environmental data, transportation, and spatial analysis.
+- **Transactional and application:** reservations, registration, inventory, and customer-facing systems.
+- **Organizational and data engineering:** operational records, ingestion, transformation, Parquet, and analytical reporting.
+
+## Start here
+
+- Read the [draft syllabus](syllabus.qmd).
+- See the [dated Autumn 2026 course map](schedule.qmd).
+- Follow the [lecture notes](lectures/index.qmd).
+- Explore the [capstone project](projects/capstone.qmd).
+- Open the [computational labs and notebooks](notebooks/index.qmd).

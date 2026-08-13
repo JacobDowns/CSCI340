@@ -1,0 +1,75 @@
+{
+  "input": "C:\\Users\\iostr\\Documents\\ChatGPT\\CSCI340\\resources\\UM Syllabus Template.docx",
+  "fonts_by_char_count": {
+    "Calibri": 748
+  },
+  "direct_run_formatting_runs": 105,
+  "direct_paragraph_formatting_paragraphs": 17,
+  "heading_like_paragraphs_not_heading_style": [
+    {
+      "para_index": 44,
+      "text": "[Instructor Note: Add a description of your attendance policy.]",
+      "style": "Normal"
+    }
+  ],
+  "examples": {
+    "direct_run_formatting": [
+      {
+        "para_index": 2,
+        "run_text": "[Instructor Note: ",
+        "style": "Normal"
+      },
+      {
+        "para_index": 2,
+        "run_text": "If you wish to replace the UM logo with a college specific logo make sure you pr",
+        "style": "Normal"
+      },
+      {
+        "para_index": 2,
+        "run_text": "]",
+        "style": "Normal"
+      },
+      {
+        "para_index": 8,
+        "run_text": "Course Title  ",
+        "style": "List Paragraph"
+      },
+      {
+        "para_index": 9,
+        "run_text": "Course Number",
+        "style": "List Paragraph"
+      }
+    ],
+    "direct_paragraph_formatting": [
+      {
+        "para_index": 33,
+        "text": "",
+        "style": "List Paragraph"
+      },
+      {
+        "para_index": 34,
+        "text": "Course Calendar\n",
+        "style": "Heading 2"
+      },
+      {
+        "para_index": 35,
+        "text": "[Instructor Note: Provide a chronological calendar that includes dates, topics, objectives and assessment or activities.",
+        "style": "Normal"
+      },
+      {
+        "para_index": 36,
+        "text": "",
+        "style": "Normal"
+      },
+      {
+        "para_index": 41,
+        "text": "A \t100% - 93%\nA-\t<93% - 90%\nB+\t<90% - 87%\nB\t<87% - 83%\nB-\t<83% - 80%\nC+\t<80% - 77%\nC\t<77% - 73%\nC-\t<73% - 70%\nD+\t<70% - ",
+        "style": "Normal"
+      }
+    ]
+  },
+  "notes": [
+    "Direct formatting is not always wrong, but it often causes inconsistent output when templates change.",
+    "Heading-like paragraphs not using Heading styles can break TOC and accessibility."
+  ]
+}

@@ -1,0 +1,133 @@
+---
+title: "02 - One question, three engines"
+subtitle: "PostgreSQL, DuckDB, and Polars as interfaces to a logical plan"
+jupyter: python3
+execute:
+  enabled: false
+---
+
+## Question
+
+For completed trips in June 2026, which transit district has the greatest total passenger distance?
+
+The purpose is not a speed contest on tiny data. It is to identify the same relational operators in three interfaces and reason about when data movement, file layout, or engine choice would matter.
+
+## Data contract
+
+```{python}
+trips = [
+    {"trip_id": 1, "district_id": 10, "status": "complete", "started_at": "2026-06-02", "distance_km": 3.2, "passengers": 2},
+    {"trip_id": 2, "district_id": 20, "status": "complete", "started_at": "2026-06-03", "distance_km": 8.5, "passengers": 1},
+    {"trip_id": 3, "district_id": 10, "status": "cancelled", "started_at": "2026-06-04", "distance_km": 1.0, "passengers": 3},
+    {"trip_id": 4, "district_id": 20, "status": "complete", "started_at": "2026-07-01", "distance_km": 9.0, "passengers": 2},
+]
+
+districts = [
+    {"district_id": 10, "district_name": "North"},
+    {"district_id": 20, "district_name": "South"},
+]
+```
+
+Before implementing the query, calculate the expected output by hand. Include at least one row that tests each boundary: status, lower date, upper date, and the join.
+
+## PostgreSQL-style SQL
+
+```{sql}
+SELECT
+    d.district_name,
+    SUM(t.distance_km * t.passengers) AS passenger_km
+FROM trip AS t
+JOIN district AS d USING (district_id)
+WHERE t.status = 'complete'
+  AND t.started_at >= DATE '2026-06-01'
+  AND t.started_at <  DATE '2026-07-01'
+GROUP BY d.district_name
+ORDER BY passenger_km DESC;
+```
+
+Annotate the query with the relational operations: selection, join, extended projection, aggregation, and ordering. Which operations may be moved or combined without changing the result?
+
+## DuckDB SQL
+
+DuckDB can apply the same query directly to Parquet. Projection and filter pushdown matter because they can reduce the columns and row groups read from the file.
+
+```{python}
+import duckdb
+import polars as pl
+
+trip_frame = pl.DataFrame(trips).with_columns(
+    pl.col("started_at").str.to_date()
+)
+district_frame = pl.DataFrame(districts)
+
+duckdb.register("trip", trip_frame)
+duckdb.register("district", district_frame)
+
+duck_result = duckdb.sql("""
+    SELECT
+        d.district_name,
+        SUM(t.distance_km * t.passengers) AS passenger_km
+    FROM trip AS t
+    JOIN district AS d USING (district_id)
+    WHERE t.status = 'complete'
+      AND t.started_at >= DATE '2026-06-01'
+      AND t.started_at <  DATE '2026-07-01'
+    GROUP BY d.district_name
+    ORDER BY passenger_km DESC
+""").pl()
+
+duck_result
+```
+
+For the capstone version, replace the registered in-memory frame with a Parquet source and inspect `EXPLAIN`.
+
+## Polars lazy expressions
+
+```{python}
+polars_result = (
+    trip_frame.lazy()
+    .filter(
+        (pl.col("status") == "complete")
+        & (pl.col("started_at") >= pl.date(2026, 6, 1))
+        & (pl.col("started_at") < pl.date(2026, 7, 1))
+    )
+    .join(district_frame.lazy(), on="district_id", how="inner")
+    .with_columns(
+        (pl.col("distance_km") * pl.col("passengers")).alias("passenger_km")
+    )
+    .group_by("district_name")
+    .agg(pl.col("passenger_km").sum())
+    .sort("passenger_km", descending=True)
+    .collect()
+)
+
+polars_result
+```
+
+## Check equivalence
+
+```{python}
+assert duck_result.to_dicts() == polars_result.to_dicts()
+```
+
+Passing this assertion is necessary but not sufficient. Both implementations could agree on the wrong interpretation. Explain how the hand-calculated boundary cases reduce that risk.
+
+## Compare plans, not syntax
+
+Complete the matrix in prose:
+
+| Question | PostgreSQL | DuckDB + Parquet | Polars lazy |
+|---|---|---|---|
+| Where are rows stored? | | | |
+| Which component performs selection? | | | |
+| Can unneeded columns be skipped early? | | | |
+| What data crosses a process or network boundary? | | | |
+| What evidence would you collect for performance? | | | |
+
+## Design defense
+
+Choose an engine for each case and state what additional fact could change your choice:
+
+1. A transactional service updates trips while users query recent history.
+2. An analyst has partitioned Parquet files on a laptop and needs an ad hoc summary.
+3. A Python analysis already contains several Polars lazy transformations before this aggregation.

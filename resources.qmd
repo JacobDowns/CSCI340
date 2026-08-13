@@ -1,0 +1,25 @@
+---
+title: "Resources"
+subtitle: "Primary references for the course toolchain and curriculum"
+---
+
+## Curriculum and foundations
+
+- [ACM/IEEE-CS CS2023 Data Management knowledge area](https://csed.acm.org/data-management/) - a curriculum reference spanning information management concepts, database systems, modeling, querying, design, transactions, and newer data-management contexts.
+- *Database System Concepts*, 7th edition, Avi Silberschatz, Henry F. Korth, and S. Sudarshan - broad reference for the relational and systems core.
+- [CMU 15-445/645 Database Systems](https://15445.courses.cs.cmu.edu/) and [Berkeley CS 186](https://cs186berkeley.net/) - established sources for systems explanations and exercises. Assigned excerpts must follow their stated licenses and access terms.
+
+## Primary technical documentation
+
+- [PostgreSQL documentation](https://www.postgresql.org/docs/)
+- [Introduction to PostGIS workshop](https://postgis.net/workshops/postgis-intro/)
+- [DuckDB documentation](https://duckdb.org/docs/stable/)
+- [DuckDB: reading and writing Parquet](https://duckdb.org/docs/stable/data/parquet/overview)
+- [Polars user guide](https://docs.pola.rs/)
+- [Apache Parquet documentation](https://parquet.apache.org/docs/)
+- [Apache Arrow columnar format](https://arrow.apache.org/docs/format/Columnar.html)
+- [Quarto documentation](https://quarto.org/docs/)
+
+## Resource-use principle
+
+Official documentation is part of the subject matter, not only a troubleshooting tool. Labs should ask students to locate, evaluate, cite, and test a claim from documentation. Version-sensitive behavior should be checked against the installed version rather than memorized from a screenshot or answer site.

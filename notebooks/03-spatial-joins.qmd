@@ -1,0 +1,144 @@
+---
+title: "03 - Spatial joins and index-aware reasoning"
+subtitle: "From a geographic question to a defensible PostGIS query"
+execute:
+  enabled: false
+---
+
+## Question
+
+Which neighborhoods have the greatest number of completed scooter trips beginning within 500 meters of a transit stop?
+
+This question contains several hidden decisions. "Within 500 meters" requires a distance model; "beginning" requires a point geometry; and "neighborhood" requires a rule for points on boundaries or in overlapping polygons.
+
+## Proposed schema
+
+```{sql}
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+CREATE TABLE transit_stop (
+    stop_id bigint PRIMARY KEY,
+    stop_name text NOT NULL,
+    geom geometry(Point, 26913) NOT NULL
+);
+
+CREATE TABLE neighborhood (
+    neighborhood_id bigint PRIMARY KEY,
+    neighborhood_name text NOT NULL UNIQUE,
+    geom geometry(MultiPolygon, 26913) NOT NULL
+);
+
+CREATE TABLE trip (
+    trip_id bigint PRIMARY KEY,
+    status text NOT NULL CHECK (status IN ('complete', 'cancelled')),
+    started_at timestamptz NOT NULL,
+    start_geom geometry(Point, 26913) NOT NULL
+);
+```
+
+EPSG:26913 is only an example appropriate to part of Colorado. Replace it with a projected CRS that is suitable for the study area, document the choice, and do not assume that longitude/latitude degrees are meters.
+
+## Validate before analyzing
+
+```{sql}
+SELECT 'stop' AS layer, COUNT(*) AS invalid_count
+FROM transit_stop
+WHERE NOT ST_IsValid(geom)
+UNION ALL
+SELECT 'neighborhood', COUNT(*)
+FROM neighborhood
+WHERE NOT ST_IsValid(geom);
+```
+
+Points are normally valid, but checking SRIDs, empty geometries, unexpected extents, and polygon validity should occur before interpreting a spatial result.
+
+```{sql}
+SELECT
+    ST_SRID(geom) AS srid,
+    COUNT(*)
+FROM neighborhood
+GROUP BY ST_SRID(geom);
+```
+
+## A direct query
+
+```{sql}
+SELECT
+    n.neighborhood_name,
+    COUNT(DISTINCT t.trip_id) AS qualifying_trips
+FROM trip AS t
+JOIN neighborhood AS n
+  ON ST_Covers(n.geom, t.start_geom)
+WHERE t.status = 'complete'
+  AND EXISTS (
+      SELECT 1
+      FROM transit_stop AS s
+      WHERE ST_DWithin(t.start_geom, s.geom, 500)
+  )
+GROUP BY n.neighborhood_name
+ORDER BY qualifying_trips DESC, n.neighborhood_name;
+```
+
+## Semantics before speed
+
+Explain:
+
+- Why use `ST_Covers` rather than `ST_Contains` for a trip exactly on a neighborhood boundary?
+- Why use `EXISTS` rather than joining stops directly and counting rows?
+- What happens if neighborhood polygons overlap?
+- Does a 500-meter straight-line distance answer the actual transportation question?
+- Which time range, if any, belongs in the workload?
+
+## Index hypothesis
+
+Predict which parts of the query may use a GiST index and why.
+
+```{sql}
+CREATE INDEX transit_stop_geom_gix
+    ON transit_stop USING gist (geom);
+
+CREATE INDEX neighborhood_geom_gix
+    ON neighborhood USING gist (geom);
+
+CREATE INDEX trip_start_geom_gix
+    ON trip USING gist (start_geom);
+
+ANALYZE transit_stop;
+ANALYZE neighborhood;
+ANALYZE trip;
+```
+
+Collect evidence:
+
+```{sql}
+EXPLAIN (ANALYZE, BUFFERS, VERBOSE)
+SELECT
+    n.neighborhood_name,
+    COUNT(DISTINCT t.trip_id) AS qualifying_trips
+FROM trip AS t
+JOIN neighborhood AS n
+  ON ST_Covers(n.geom, t.start_geom)
+WHERE t.status = 'complete'
+  AND EXISTS (
+      SELECT 1
+      FROM transit_stop AS s
+      WHERE ST_DWithin(t.start_geom, s.geom, 500)
+  )
+GROUP BY n.neighborhood_name;
+```
+
+Do not treat "index exists" as evidence that the index is useful. Record table sizes, selected plan nodes, estimated and actual row counts, execution conditions, and whether the workload is selective enough to benefit.
+
+## Revision options
+
+Investigate one change at a time:
+
+- add a time predicate and a B-tree index suited to the actual workload;
+- materialize the set of trip origins near transit if it is reused and sufficiently stable;
+- compare geometry in a local projected CRS with geography for a wider region;
+- partition a very large trip table by time only after defining the workload;
+- compare database-side aggregation with exporting all candidate points to a client.
+
+## Design memo prompt
+
+Write 300-500 words defending where this spatial computation should happen. Address correctness, data movement, index evidence, reproducibility, privacy implications of point-level trip data, and one condition that would change your recommendation.

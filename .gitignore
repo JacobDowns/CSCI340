@@ -1,0 +1,44 @@
+# Quarto build products and caches
+/.quarto/
+/_site/
+/_freeze/
+**/*.quarto_ipynb
+
+# Python and Jupyter environments/caches
+/.venv/
+/venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.jupyter_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Local databases and generated data stores
+*.duckdb
+*.duckdb.wal
+*.db
+*.sqlite
+*.sqlite3
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+~$*.docx
+
+# Installers and local binaries are not course resources
+*.exe
+*.msi
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak

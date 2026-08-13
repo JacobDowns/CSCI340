@@ -1,0 +1,65 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "CSCI 340 | Database Systems and Data Management"
+  description: "Course materials for learning how to model, query, validate, optimize, and analyze data."
+  page-navigation: true
+  reader-mode: true
+  search: true
+  navbar:
+    background: primary
+    left:
+      - text: Home
+        href: index.qmd
+      - text: Syllabus
+        href: syllabus.qmd
+      - text: Schedule
+        href: schedule.qmd
+      - text: Lectures
+        href: lectures/index.qmd
+      - text: Capstone
+        href: projects/capstone.qmd
+      - text: Notebooks
+        href: notebooks/index.qmd
+  sidebar:
+    style: docked
+    search: true
+    contents:
+      - section: Course
+        contents:
+          - syllabus.qmd
+          - schedule.qmd
+          - resources.qmd
+      - section: Lectures
+        contents:
+          - lectures/index.qmd
+          - lectures/week-01-database-or-spreadsheet.qmd
+      - section: Assignments
+        contents:
+          - assignments/index.qmd
+          - projects/capstone.qmd
+      - section: Computational labs and notebooks
+        contents:
+          - notebooks/index.qmd
+          - notebooks/02-one-question-three-engines.qmd
+          - notebooks/03-spatial-joins.qmd
+  page-footer:
+    left: "CSCI 340 | Database Systems and Data Management"
+    right: "Built with Quarto"
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    css: styles.css
+    toc: true
+    code-copy: true
+    code-overflow: wrap
+    anchor-sections: true
+    link-external-newwindow: true
+
+execute:
+  freeze: auto

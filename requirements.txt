@@ -1,0 +1,5 @@
+duckdb
+jupyter
+polars
+pyarrow
+psycopg[binary]

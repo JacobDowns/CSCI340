@@ -1,0 +1,49 @@
+---
+title: "Semester capstone"
+subtitle: "From messy data to a defensible data architecture"
+---
+
+## Purpose
+
+The capstone revisits one authentic data problem throughout the semester. The goal is not to accumulate unrelated features; it is to show how database theory changes the quality of an evolving design.
+
+::: {.design-question}
+Your final claim should answer: Why is this representation and division of work appropriate for the stated users, rules, and workload?
+:::
+
+## Acceptable project domains
+
+Strong candidates include transportation, environmental monitoring, biodiversity, housing, public health, energy, sports, astronomy, or an approved organizational dataset. A project must contain enough structure to motivate relationships and constraints, enough volume or query complexity to investigate performance, and an analytical question that benefits from Parquet/DuckDB/Polars. A spatial phase is preferred; an alternative specialization requires approval.
+
+## Phases and evidence
+
+| Phase | Main deliverable | Evidence expected |
+|---|---|---|
+| 1. Requirements | Stakeholders, questions, rules, conceptual model | Assumptions, examples, counterexamples |
+| 2. Relational implementation | PostgreSQL DDL, ingestion, representative queries | Constraint tests and data-quality checks |
+| 3. Correctness | Dependency, normalization, and transaction analysis | Anomalies prevented or deliberately accepted |
+| 4. Performance | Workload, index hypothesis, benchmark | Plans and measurements before/after |
+| 5. Analytics | Parquet representation plus DuckDB/Polars analysis | Cross-engine comparison and data-movement discussion |
+| 6. Specialization and defense | Spatial or approved extension; architecture memo | Reproducibility, tradeoffs, limitations, ethical considerations |
+
+## Final package
+
+1. A concise architecture/design memo written for a technically literate stakeholder.
+2. Reproducible schema, ingestion, queries, and analysis.
+3. A data dictionary and provenance statement.
+4. Tests or checks for core integrity requirements.
+5. Query-plan and benchmark evidence for at least one meaningful design decision.
+6. A short presentation and question period.
+
+## Draft rubric
+
+| Dimension | Weight |
+|---|---:|
+| Requirements and model fitness | 20% |
+| Correctness and integrity | 20% |
+| Query and analytical quality | 15% |
+| Performance reasoning and evidence | 15% |
+| Reproducibility and technical communication | 15% |
+| Design defense, tradeoffs, ethics, and limitations | 15% |
+
+Milestone feedback is formative: students are expected to revise earlier decisions when later evidence exposes a weakness.

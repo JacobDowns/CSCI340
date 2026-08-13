@@ -1,0 +1,28 @@
+---
+title: "Assignments"
+subtitle: "Practice that connects theory, evidence, and explanation"
+---
+
+## Assignment families
+
+### Problem sets
+
+Short, frequent work on relational algebra, dependencies, normalization, query meaning, transaction schedules, and plan interpretation. Some problems are completed on paper or in prose because the goal is reasoning rather than syntax.
+
+### Computational labs
+
+Reproducible Quarto notebooks that include a question, prediction, implementation, evidence, and interpretation. Labs emphasize tests and explanations alongside code.
+
+### Semester capstone
+
+An iterative database and analytical workflow built around a real dataset and an authentic workload. See the [capstone brief](../projects/capstone.qmd).
+
+## Default submission checklist
+
+- State the question and relevant assumptions.
+- Make a prediction before showing the result when the task asks for one.
+- Include minimal tests or counterexamples.
+- Preserve the query, code, plan, or measurement needed to reproduce the claim.
+- Interpret the evidence rather than pasting output without explanation.
+- Cite collaborators, sources, reused code, and material AI assistance.
+- Remove passwords, tokens, and restricted data.
