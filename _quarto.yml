@@ -3,6 +3,7 @@ project:
   output-dir: _site
   render:
     - "*.qmd"
+    - "activities/*.qmd"
     - "lectures/*.qmd"
     - "notebooks/*.qmd"
     - "assignments/*.qmd"
@@ -27,6 +28,8 @@ website:
         href: schedule.qmd
       - text: Lectures
         href: lectures/index.qmd
+      - text: Labs
+        href: activities/index.qmd
       - text: Capstone
         href: projects/capstone.qmd
       - text: Notebooks
@@ -44,11 +47,15 @@ website:
         contents:
           - lectures/index.qmd
           - lectures/week-01-database-or-spreadsheet.qmd
+      - section: Labs and activities
+        contents:
+          - activities/index.qmd
+          - activities/week-01-file-representation-lab.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd
           - projects/capstone.qmd
-      - section: Computational labs and notebooks
+      - section: Computational notebooks
         contents:
           - notebooks/index.qmd
           - notebooks/02-one-question-three-engines.qmd

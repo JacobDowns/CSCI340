@@ -1,9 +1,9 @@
 ---
-title: "Computational labs and notebooks"
+title: "Computational notebooks"
 subtitle: "Run experiments, collect evidence, and explain results"
 ---
 
-These notebooks complement the narrative [lecture notes](../lectures/index.qmd). They are reserved for lessons and labs in which executing code, manipulating data, or comparing systems is central to the learning goal.
+These notebooks complement the narrative [lecture notes](../lectures/index.qmd) and [labs and activities](../activities/index.qmd). They are reserved for work in which executing code, manipulating data, or comparing systems is central to the learning goal.
 
 They model the course's default evidence cycle:
 

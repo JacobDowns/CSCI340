@@ -460,47 +460,13 @@ The point is not to replace every spreadsheet. The point is to recognize when a 
 There is no universal row count at which a spreadsheet “becomes” a database problem. The important questions concern relationships, rules, coordination, risk, and workload—not just size.
 :::
 
-## 10. Studio: make the file fail on purpose
+::: {.callout-important appearance="simple"}
+## Continue to Lab 1
 
-Work in groups of two or three. Your goal is not to clean the data immediately. Your goal is to discover what the current representation permits.
-
-### Part A — Observe
-
-Using the four-row stream table:
-
-1. Circle every fact that repeats.
-2. Mark the row that creates a contradiction.
-3. List three rules a human reader appears to assume.
-4. Identify one question the table cannot answer without additional data.
-
-### Part B — Stress the representation
-
-Describe the smallest change that would cause each problem:
-
-- two records appear to identify the same observation;
-- one site appears under two names;
-- an observation refers to an unknown sensor;
-- deleting a reading also deletes the only known fact about a site;
-- two people make individually reasonable but mutually incompatible changes.
-
-### Part C — Propose a model
-
-Sketch boxes for the distinct kinds of things you believe exist. Add identifiers and draw relationships. Do not worry about formal ER notation yet.
-
-::: {.studio-checkpoint}
-**Checkpoint:** Every box should complete the sentence “This is one _____.” Every line should complete the sentence “One _____ can be related to _____.”
+Apply these ideas in [Lab 1 — Make the file fail on purpose](../activities/week-01-file-representation-lab.qmd). Working in a small group, you will expose failure cases, sketch a first relational model, and submit one short group artifact.
 :::
 
-### Part D — Defend one rule
-
-Choose one rule that belongs in the data system rather than only in written instructions. State:
-
-1. the rule in plain language;
-2. a minimal example that violates it;
-3. why the violation matters; and
-4. what database mechanism might enforce it.
-
-## 11. What changed when we moved toward a database?
+## 10. What changed when we moved toward a database?
 
 We did not merely split one file into several smaller files. We added semantics.
 

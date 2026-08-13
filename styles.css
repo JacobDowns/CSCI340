@@ -176,13 +176,38 @@ body.quarto-dark {
   line-height: 1.8;
 }
 
-.studio-checkpoint {
+.activity-checkpoint {
   margin: 1.25rem 0;
   padding: 1rem 1.15rem;
   border: 1px dashed var(--course-teal);
   border-radius: 0.55rem;
   color: var(--course-ink);
   background: #f6fbfc;
+}
+
+.activity-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 1.25rem 0 1.75rem;
+}
+
+.activity-meta-card {
+  padding: 0.85rem 1rem;
+  border: 1px solid #c8dde3;
+  border-radius: 0.55rem;
+  color: var(--course-ink);
+  background: var(--course-sky);
+}
+
+.activity-meta-card h3 {
+  margin-top: 0;
+  color: var(--course-navy);
+  font-size: 1rem;
+}
+
+.activity-meta-card > :last-child {
+  margin-bottom: 0;
 }
 
 .takeaway-panel {
@@ -284,7 +309,8 @@ thead th {
   }
 
   .tool-comparison,
-  .fact-grid {
+  .fact-grid,
+  .activity-meta-grid {
     grid-template-columns: 1fr;
   }
 }

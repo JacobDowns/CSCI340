@@ -108,7 +108,7 @@ UNIT_OBJECTIVES = [
 SCHEDULE = [
     (
         "Week 1 (August 24-28) - Why databases?",
-        "Relations, schemas, data independence, and the limits of file-based workflows. Studio: diagnose a messy scientific dataset. Group project: dataset and stakeholder sketch.",
+        "Relations, schemas, data independence, and the limits of file-based workflows. Lab: diagnose a messy scientific dataset and submit a short group artifact. Group project: dataset and stakeholder sketch.",
     ),
     (
         "Week 2 (August 31-September 4) - SQL foundations",
@@ -120,15 +120,15 @@ SCHEDULE = [
     ),
     (
         "Week 4 (September 14-18) - Relational algebra and equivalence",
-        "Relational operators, compositional reasoning, equivalence, and logical plans. Studio: translate SQL to algebra and justify meaning-preserving transformations.",
+        "Relational operators, compositional reasoning, equivalence, and logical plans. Activity: translate SQL to algebra and justify meaning-preserving transformations.",
     ),
     (
         "Week 5 (September 21-25) - ER modeling foundations",
-        "Entities, attributes, relationships, identifiers, cardinality, participation, and diagram conventions. Studio: convert a narrative specification into competing ER models.",
+        "Entities, attributes, relationships, identifiers, cardinality, participation, and diagram conventions. Activity: convert a narrative specification into competing ER models.",
     ),
     (
         "Week 6 (September 28-October 2) - ER modeling in depth",
-        "Weak entities, associative entities, recursive relationships, specialization/generalization, temporal requirements, and ambiguous business rules. Studio: critique and revise ER diagrams.",
+        "Weak entities, associative entities, recursive relationships, specialization/generalization, temporal requirements, and ambiguous business rules. Activity: critique and revise ER diagrams.",
     ),
     (
         "Week 7 (October 5-9) - From ER models to relational schemas",
@@ -414,7 +414,7 @@ def fill_grading(doc: Document, slots: dict[str, object]) -> None:
     )
     anchor = slots["grading_blank"]
     grading_items = [
-        "Participation - 10%: quizzes, brief in-class exercises, design critiques, predictions, and constructive contribution to studio work.",
+        "Participation - 10%: quizzes, brief in-class activities, design critiques, predictions, and constructive participation in labs and group work.",
         "Assignments - 50%: individual assignments and labs are 30%; the milestone-based group database project is 20%.",
         "Midterm and final examinations - 40%: the midterm is 20% and the cumulative final examination is 20%.",
     ]
@@ -455,7 +455,7 @@ def fill_grading(doc: Document, slots: dict[str, object]) -> None:
 def fill_policies(doc: Document, slots: dict[str, object]) -> None:
     set_paragraph(
         slots["attendance"],
-        "Class meetings combine short explanations, worked examples, prediction tasks, debugging, studio work, and discussion. Students should attend and participate consistently. The final course offering will state procedures for excused absences and making up work that depends on in-class collaboration.",
+        "Class meetings combine short explanations, worked examples, prediction tasks, debugging, labs or activities, and discussion. Students should attend and participate consistently. The final course offering will state procedures for excused absences and making up work that depends on in-class collaboration.",
     )
     set_paragraph(
         slots["ai"],
@@ -492,7 +492,7 @@ def fill_policies(doc: Document, slots: dict[str, object]) -> None:
         ),
         (
             "Getting Help",
-            "Use office hours, the course discussion space, and peer studio time early. Asking a precise question, documenting an unsuccessful approach, and revising after evidence are expected parts of database problem solving.",
+            "Use office hours, the course discussion space, and collaborative lab time early. Asking a precise question, documenting an unsuccessful approach, and revising after evidence are expected parts of database problem solving.",
         ),
     ]
     for heading, body in additions:

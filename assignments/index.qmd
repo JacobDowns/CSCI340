@@ -9,9 +9,9 @@ subtitle: "Practice that connects theory, evidence, and explanation"
 
 Short, frequent work on relational algebra, dependencies, normalization, query meaning, transaction schedules, and plan interpretation. Some problems are completed on paper or in prose because the goal is reasoning rather than syntax.
 
-### Computational labs
+### Labs and activities
 
-Reproducible Quarto notebooks that include a question, prediction, implementation, evidence, and interpretation. Labs emphasize tests and explanations alongside code.
+Applied class sessions with a clearly identified small submission. Some are conceptual design activities; others use reproducible Quarto notebooks containing a question, prediction, implementation, evidence, and interpretation. See the [labs and activities index](../activities/index.qmd).
 
 ### Semester capstone
 

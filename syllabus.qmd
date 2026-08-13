@@ -4,10 +4,6 @@ subtitle: "CSCI 340 - Database Systems and Data Management"
 description: "A modern database course grounded in relational theory, evidence-based problem solving, analytical systems, and geospatial data."
 ---
 
-::: {.draft-banner}
-**Draft for instructor review.** Administrative fields and institution-specific policy language will be completed before this syllabus is published to students.
-:::
-
 ## Course information
 
 | Field | Draft value |
@@ -78,7 +74,7 @@ No single textbook is required in this draft. Assigned readings will combine ins
 
 | Component | Weight | Purpose |
 |---|---:|---|
-| Participation | 10% | Quizzes, brief in-class exercises, design critiques, predictions, and constructive studio participation |
+| Participation | 10% | Quizzes, brief in-class activities, design critiques, predictions, and constructive participation in labs and group work |
 | Assignments | 50% | Individual assignments and labs: 30%; milestone-based group database project: 20% |
 | Midterm and final examinations | 40% | Midterm examination: 20%; cumulative final examination: 20% |
 
@@ -107,7 +103,7 @@ Milestone instructions will identify both shared and individual responsibilities
 
 ## Weekly course map
 
-| Week and dates | Focus | Studio or lab emphasis | Group project milestone |
+| Week and dates | Focus | Lab or activity emphasis | Group project milestone |
 |---:|---|---|---|
 | 1: Aug 24-28 | Why databases? Relations, schemas, and data independence | Diagnose a messy scientific dataset | Dataset and stakeholder sketch |
 | 2: Aug 31-Sep 4 | SQL foundations | Questions, filters, tests, and nulls | - |
@@ -132,7 +128,7 @@ See the [expanded schedule](schedule.qmd) for draft readings, activities, and de
 
 ### Preparation and participation
 
-Class meetings will combine short explanations, worked examples, prediction tasks, debugging, studio work, and discussion. Productive participation includes asking a clarifying question, testing a claim, documenting an unsuccessful approach, reviewing a peer's design, or helping the group make an assumption explicit. The approved course offering will state the attendance and excused-absence procedures.
+Class meetings will combine short explanations, worked examples, prediction tasks, debugging, labs or activities, and discussion. Productive participation includes asking a clarifying question, testing a claim, documenting an unsuccessful approach, reviewing a peer's design, or helping the group make an assumption explicit. The approved course offering will state the attendance and excused-absence procedures.
 
 ### Collaboration
 
@@ -167,4 +163,4 @@ Before publication, this syllabus will include or link to the institution's curr
 
 ## Getting help
 
-Use student hours, the course discussion space, and peer studio time early. When asking for technical help, include the question you are trying to answer, a minimal reproducible example, the observed result, the expected result, and what you have already tested. Never post passwords, connection strings, or restricted data.
+Use student hours, the course discussion space, and collaborative lab time early. When asking for technical help, include the question you are trying to answer, a minimal reproducible example, the observed result, the expected result, and what you have already tested. Never post passwords, connection strings, or restricted data.

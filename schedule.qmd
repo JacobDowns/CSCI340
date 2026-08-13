@@ -30,7 +30,7 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 **Concepts:** relations, attributes, tuples, schemas, instances, data independence, and databases versus files.
 
-**Problem studio:** Inspect a deliberately messy field-observation dataset. Identify repeated facts, implicit entities, identifiers, missing-value conventions, and questions the current representation makes difficult.
+**Lab:** [Make the file fail on purpose](activities/week-01-file-representation-lab.qmd). Identify repeated facts, implicit entities, identifiers, unenforced rules, and questions the current representation makes difficult. Submit one short group artifact.
 
 **Capstone:** Dataset and stakeholder sketch.
 
@@ -54,7 +54,7 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 **Concepts:** relational operators, compositional reasoning, equivalence, and logical query plans.
 
-**Studio:** Translate SQL into algebra, transform expressions, and state which transformations preserve meaning under set or bag semantics.
+**Activity:** Translate SQL into algebra, transform expressions, and state which transformations preserve meaning under set or bag semantics.
 
 ## Unit 2 - Model and normalize
 
@@ -62,7 +62,7 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 **Concepts:** entities, attributes, identifiers, relationships, cardinality, participation, and diagram conventions.
 
-**Problem studio:** Convert an ambiguous registration, field-research, or reservation specification into competing ER diagrams. Document assumptions rather than hiding them in the diagram.
+**Activity:** Convert an ambiguous registration, field-research, or reservation specification into competing ER diagrams. Document assumptions rather than hiding them in the diagram.
 
 **Capstone:** Initial ER diagram.
 
@@ -70,7 +70,7 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 **Concepts:** weak and associative entities, recursive relationships, specialization/generalization, temporal requirements, and multivalued information.
 
-**Studio:** Critique diagrams using counterexamples. Revise a model when a new requirement invalidates an earlier assumption.
+**Activity:** Critique diagrams using counterexamples. Revise a model when a new requirement invalidates an earlier assumption.
 
 **Capstone:** ER critique and revision.
 
@@ -148,7 +148,7 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 **Concepts:** PostGIS spatial joins and indexes, selected broader database architectures, and choosing where computation should occur.
 
-**Studio:** Present the system as a sequence of justified decisions. Review correctness, query behavior, performance evidence, representation, data movement, ethics, and limitations.
+**Activity:** Present the system as a sequence of justified decisions. Review correctness, query behavior, performance evidence, representation, data movement, ethics, and limitations.
 
 **Capstone:** Final system, architecture memo, and design defense.
 
