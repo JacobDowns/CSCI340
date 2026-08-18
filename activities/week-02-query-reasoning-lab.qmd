@@ -1,0 +1,327 @@
+---
+title: "Lab 2 — Ask it, write it, break it"
+subtitle: "Translate questions into SQL and test what the query actually means"
+description: "A small-group Week 2 SQL lab centered on result contracts, boundary cases, nulls, and concise query explanations."
+toc: true
+toc-depth: 2
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 2 LAB · SQL, PREDICTION, AND COUNTEREXAMPLES
+:::
+
+# Can you make the wrong query look right?
+
+A plausible query often works on ordinary rows. The most revealing tests use boundaries, duplicates, missing values, and near misses to separate the intended query from a subtly incorrect one.
+
+::: {.lesson-question}
+**Lab question:** What is the smallest piece of evidence that would convince another person your query answers the stated question?
+:::
+:::
+
+::: {.activity-meta-grid}
+::: {.activity-meta-card}
+### Time
+
+Approximately 45–50 minutes
+:::
+
+::: {.activity-meta-card}
+### Collaboration
+
+Groups of two or three
+:::
+
+::: {.activity-meta-card}
+### Submission
+
+One query-and-test record per group
+:::
+:::
+
+Before beginning, read [Week 2A — From tables to relations](../lectures/week-02-from-tables-to-relations.qmd) and [Week 2B — Asking precise questions with SQL](../lectures/week-02-asking-questions-with-sql.qmd).
+
+## Learning goals
+
+By completing this lab, you should be able to:
+
+1. define the shape and meaning of a requested result;
+2. translate single-relation questions into `SELECT`–`FROM`–`WHERE` queries;
+3. predict query results before execution;
+4. use duplicates, boundaries, and `NULL` to distinguish correct and incorrect queries; and
+5. connect one SQL query to selection and projection in relational algebra.
+
+## Scenario and data
+
+A field team maintains information about monitoring sites and stream-temperature observations.
+
+### `site`
+
+| site_id | site_code | site_name | watershed |
+|---:|---|---|---|
+| 101 | CC-01 | Clear Creek | Clark Fork |
+| 102 | PR-02 | Pine River | Bitterroot |
+| 103 | UR-03 | University Run | Clark Fork |
+
+### `observation`
+
+| observation_id | site_id | sensor_id | observed_at | temperature_c | quality_note |
+|---:|---:|---:|---|---:|---|
+| 1 | 101 | 501 | 2026-05-01 09:00 | 8.4 | `NULL` |
+| 2 | 101 | 501 | 2026-05-01 10:00 | 9.1 | `NULL` |
+| 3 | 102 | 501 | 2026-05-01 09:00 | 7.8 | suspected ice |
+| 4 | 101 | 501 | 2026-05-01 11:00 | 9.7 | `NULL` |
+| 5 | 103 | 502 | 2026-05-01 09:00 | 20.0 | `NULL` |
+| 6 | 103 | 502 | 2026-05-01 10:00 | 20.1 | reviewed |
+| 7 | 102 | 503 | 2026-05-01 10:00 | `NULL` | sensor offline |
+
+::: {.callout-note appearance="simple"}
+## Scope for today
+
+Every required query uses only `observation`. The `site` relation supplies context and will become an input when we introduce joins next week.
+:::
+
+## Part A — Define the answer before writing SQL
+
+For each question, complete the result contract. Do **not** write SQL yet.
+
+1. Return the identifier and temperature of every observation at least 20°C.
+2. List each site that has a recorded observation, once per site.
+3. Return observations for which no temperature was recorded.
+
+| Question | What does one result row represent? | Output attributes | Boundary or special case | Expected row count |
+|---:|---|---|---|---:|
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+
+::: {.activity-checkpoint}
+**Checkpoint:** Before moving on, compare contracts with another group. If your expected row counts differ, identify the interpretation responsible for the difference.
+:::
+
+## Part B — Write and predict
+
+Translate each question from Part A into SQL. For each query, record the exact expected rows **before** running it.
+
+### Query 1
+
+```sql
+-- Return observation_id and temperature_c for observations
+-- whose temperature is at least 20°C.
+
+```
+
+**Predicted result:**
+
+| observation_id | temperature_c |
+|---:|---:|
+| | |
+
+### Query 2
+
+```sql
+-- List each represented site_id once.
+
+```
+
+**Predicted result:**
+
+| site_id |
+|---:|
+| |
+
+### Query 3
+
+```sql
+-- Return observation_id and quality_note when temperature is missing.
+
+```
+
+**Predicted result:**
+
+| observation_id | quality_note |
+|---:|---|
+| | |
+
+When instructed, execute the queries in the provided database environment. Record any difference between the predicted and observed result and explain the revision you made.
+
+## Part C — Break the plausible query
+
+Each query below is syntactically plausible. Determine whether it answers the stated question for **all valid data**, not merely whether it happens to look reasonable.
+
+### Case 1: a boundary disappears
+
+**Requirement:** Return observations at least 20°C.
+
+```sql
+SELECT observation_id, temperature_c
+FROM observation
+WHERE temperature_c > 20;
+```
+
+1. Which supplied row distinguishes `>` from `>=`?
+2. What result does the incorrect query omit?
+3. Correct the query.
+
+### Case 2: repeated sites
+
+**Requirement:** List each site represented in `observation`, once per site.
+
+```sql
+SELECT site_id
+FROM observation;
+```
+
+1. Why is the output's number of rows inconsistent with the result contract?
+2. Which keyword expresses “once per site”?
+3. Correct the query without hard-coding site identifiers.
+
+### Case 3: equality with missing information
+
+**Requirement:** Return observations with no recorded temperature.
+
+```sql
+SELECT observation_id, quality_note
+FROM observation
+WHERE temperature_c = NULL;
+```
+
+1. What truth value does `temperature_c = NULL` produce?
+2. Why does `WHERE` not retain that tuple?
+3. Correct the query.
+
+### Case 4: ambiguous logical grouping
+
+**Requirement:** Return observations from site 103 that are either reviewed or at least 20°C.
+
+```sql
+SELECT observation_id, site_id, temperature_c, quality_note
+FROM observation
+WHERE site_id = 103
+  AND quality_note = 'reviewed'
+   OR temperature_c >= 20;
+```
+
+1. Add a hypothetical warm observation from site 102. Would the query return it?
+2. Should it be returned under the stated requirement?
+3. Add parentheses that make the intended grouping explicit.
+
+## Part D — Design one counterexample
+
+Choose **one** of the following incorrect queries. Add the smallest possible set of rows needed to demonstrate the error. You may reuse supplied rows when they already form a sufficient counterexample.
+
+### Option A
+
+**Requirement:** Return observations from site 101 with temperatures from 9°C through 10°C, including both boundaries.
+
+```sql
+SELECT observation_id, temperature_c
+FROM observation
+WHERE site_id = 101
+  AND temperature_c > 9
+  AND temperature_c < 10;
+```
+
+### Option B
+
+**Requirement:** Return observations whose temperature is either below 8°C or unknown.
+
+```sql
+SELECT observation_id, temperature_c
+FROM observation
+WHERE temperature_c < 8;
+```
+
+### Option C
+
+**Requirement:** List every sensor that has reported an observation, once per sensor.
+
+```sql
+SELECT sensor_id
+FROM observation
+ORDER BY sensor_id;
+```
+
+Record your evidence:
+
+| Field | Group response |
+|---|---|
+| Chosen option | |
+| Minimal test row or rows | |
+| Expected result under the requirement | |
+| Result from the incorrect query | |
+| Corrected SQL | |
+| Why this test distinguishes the queries | |
+
+::: {.callout-tip appearance="simple"}
+## A counterexample is stronger than “this looks wrong”
+
+A counterexample identifies a specific valid database instance on which the candidate query and the requirement produce different answers.
+:::
+
+## Part E — Connect SQL to relational algebra
+
+Choose Query 1 or Query 3 from Part B. Complete both representations.
+
+### Plain-language operations
+
+1. Begin with the relation ____________________.
+2. Select tuples satisfying ____________________.
+3. Project the attributes ____________________.
+
+### Relational-algebra template
+
+$$
+\pi_{\text{attributes}}
+\left(
+\sigma_{\text{predicate}}(\text{relation})
+\right)
+$$
+
+Write your completed expression and then answer:
+
+1. Which operation determines the result's tuples?
+2. Which operation determines the result's attributes?
+3. Which operation occurs first when the expression is read from the inside outward?
+
+## Part F — Individual accountability
+
+Before submitting, each group member adds one concise annotation to the shared artifact:
+
+- identify one SQL choice made by the group;
+- name the requirement that choice expresses; and
+- identify one test case that provides evidence for it.
+
+Use initials or names so each annotation has a clear author.
+
+## What to submit
+
+Submit one group artifact containing:
+
+- the completed result contracts from Part A;
+- the three SQL queries and predicted results from Part B;
+- corrections and explanations for the four cases in Part C;
+- one completed counterexample record from Part D;
+- one SQL-to-algebra translation from Part E; and
+- one individual annotation from each group member.
+
+The artifact may be a short document, a rendered Quarto page, or the course submission form specified by the instructor. Concise answers are expected; evidence and reasoning matter more than visual polish.
+
+## Completion criteria
+
+A complete submission:
+
+- defines what one row of each result represents;
+- distinguishes `>` from `>=` using a boundary value;
+- uses `DISTINCT` only when the requirement calls for duplicate elimination;
+- tests missing values with `IS NULL` rather than equality;
+- makes mixed `AND`/`OR` logic explicit with parentheses;
+- uses a concrete counterexample to diagnose an incorrect query; and
+- explains one query as selection followed by projection.
+
+::: {.takeaway-panel}
+## The habit to keep
+
+For every important query: state the result contract, predict the answer, and find the smallest case that would prove a plausible alternative wrong.
+:::

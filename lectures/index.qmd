@@ -11,6 +11,11 @@ Submittable work lives separately under [labs and activities](../activities/inde
 
 - [Is a database just a glorified spreadsheet?](week-01-database-or-spreadsheet.qmd) — Where tabular files work, where they break, and what keys, relationships, constraints, and transactions add.
 
+## Week 2
+
+- [From tables to relations](week-02-from-tables-to-relations.qmd) — The historical and mathematical motivation for relations, declarative queries, and relational algebra.
+- [Asking precise questions with SQL](week-02-asking-questions-with-sql.qmd) — Selection, projection, expressions, ordering, nulls, and evidence that a query means what we intend.
+
 ## Planned organization
 
 Each lecture page will generally include:

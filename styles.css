@@ -266,6 +266,50 @@ body.quarto-dark main.content > section.level2 > h2 {
   background: var(--course-sand);
 }
 
+/* Desktop teaching mode: hide only the course-navigation sidebar while
+   preserving the right-side page outline. The companion header script adds
+   the toggle and remembers the reader's preference. */
+.course-sidebar-toggle {
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.course-sidebar-toggle:hover,
+.course-sidebar-toggle:focus-visible {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.course-sidebar-toggle:focus-visible {
+  outline: 0.15rem solid rgba(255, 255, 255, 0.8);
+  outline-offset: 0.1rem;
+}
+
+@media (min-width: 992px) {
+  #quarto-sidebar,
+  #quarto-content main.content {
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  html.course-sidebar-collapsed #quarto-sidebar {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-105%);
+  }
+
+  html.course-sidebar-collapsed #quarto-content main.content {
+    grid-column: screen-start-inset / body-content-end;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .course-sidebar-toggle {
+    display: none !important;
+  }
+}
+
 /* Quarto callouts inherit different colors from the light and dark themes.
    Make their titles and body text explicit so tinted panels stay legible. */
 .quarto-light .callout.callout-style-simple .callout-title-container,

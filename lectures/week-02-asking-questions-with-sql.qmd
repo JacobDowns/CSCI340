@@ -1,0 +1,458 @@
+---
+title: "Week 2B — Asking precise questions with SQL"
+subtitle: "Selection, projection, expressions, ordering, nulls, and query tests"
+description: "A first SQL lesson that connects SELECT-FROM-WHERE to relational operations and treats testing as part of query writing."
+author: "CSCI 340"
+toc: true
+toc-depth: 3
+code-fold: false
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 2B · SQL FOUNDATIONS AND QUERY TESTING
+:::
+
+# A query is a claim about the answer.
+
+A SQL query can be syntactically valid and still answer the wrong question. Writing the query is therefore only part of the work. We must also predict its result and construct cases that distinguish the intended meaning from plausible mistakes.
+
+::: {.lesson-question}
+**Guiding question:** How can we translate a question into SQL—and gather evidence that our translation is correct?
+:::
+:::
+
+## Learning goals
+
+By the end of this lesson, you should be able to:
+
+1. read a relation schema and identify the attributes available to a query;
+2. write single-relation queries using `SELECT`, `FROM`, and `WHERE`;
+3. connect SQL projection and filtering to relational-algebra operations;
+4. use expressions, aliases, `DISTINCT`, `ORDER BY`, and `NULL` tests deliberately; and
+5. construct a small boundary case that exposes an incorrect query.
+
+::: {.callout-tip appearance="simple" icon="false"}
+## Keep one sentence in mind
+
+A trustworthy query includes both an expression of intent and evidence that the expression behaves as intended.
+:::
+
+## 1. Our relation for today
+
+We will begin with one relation so that each new clause has a visible purpose. Joins and aggregation arrive next week.
+
+$$
+\text{observation}(\text{observation\_id},\ \text{site\_id},\ \text{sensor\_id},\ \text{observed\_at},\ \text{temperature\_c},\ \text{quality\_note})
+$$
+
+| observation_id | site_id | sensor_id | observed_at | temperature_c | quality_note |
+|---:|---:|---:|---|---:|---|
+| 1 | 101 | 501 | 2026-05-01 09:00 | 8.4 | `NULL` |
+| 2 | 101 | 501 | 2026-05-01 10:00 | 9.1 | `NULL` |
+| 3 | 102 | 501 | 2026-05-01 09:00 | 7.8 | suspected ice |
+| 4 | 101 | 501 | 2026-05-01 11:00 | 9.7 | `NULL` |
+| 5 | 103 | 502 | 2026-05-01 09:00 | 20.0 | `NULL` |
+| 6 | 103 | 502 | 2026-05-01 10:00 | 20.1 | reviewed |
+| 7 | 102 | 503 | 2026-05-01 10:00 | `NULL` | sensor offline |
+
+Assume that `temperature_c` records degrees Celsius and may be unknown when an instrument fails to produce a reading.
+
+::: {.callout-question appearance="simple"}
+## Predict before querying
+
+How many observations have a known temperature at least 9°C? Which observation tests whether “at least” was translated correctly?
+:::
+
+## 2. The basic query shape
+
+A small SQL query often has three central clauses:
+
+```sql
+SELECT observed_at, temperature_c
+FROM observation
+WHERE temperature_c >= 9;
+```
+
+Read the clauses as answers to three questions:
+
+| Clause | Question it answers | Relational connection |
+|---|---|---|
+| `FROM observation` | Which relation supplies the tuples? | Input relation |
+| `WHERE temperature_c >= 9` | Which tuples qualify? | Selection, $\sigma$ |
+| `SELECT observed_at, temperature_c` | Which expressions appear in the result? | Projection, $\pi$ |
+
+SQL writes `SELECT` first, but a useful conceptual reading is:
+
+```{mermaid}
+flowchart LR
+    A["FROM<br/>begin with observation"] --> B["WHERE<br/>keep qualifying tuples"]
+    B --> C["SELECT<br/>form result attributes"]
+    C --> D["ORDER BY<br/>arrange the display, if requested"]
+
+    classDef input fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
+    classDef operation fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    classDef display fill:#173b4d,stroke:#173b4d,color:#ffffff;
+    class A input;
+    class B,C operation;
+    class D display;
+```
+
+This is a learning model, not a complete specification of SQL's logical-processing rules. It is enough to reason about today's queries.
+
+### The predicted result
+
+| observed_at | temperature_c |
+|---|---:|
+| 2026-05-01 10:00 | 9.1 |
+| 2026-05-01 11:00 | 9.7 |
+| 2026-05-01 09:00 | 20.0 |
+| 2026-05-01 10:00 | 20.1 |
+
+The table shows the qualifying values, but its row order is not guaranteed because the query did not request one.
+
+## 3. Selection chooses tuples
+
+The `WHERE` clause evaluates a predicate for each candidate tuple. A tuple remains in the result when the predicate evaluates to `TRUE`.
+
+```sql
+SELECT *
+FROM observation
+WHERE site_id = 101;
+```
+
+The asterisk asks for all available attributes. It can be useful during exploration, but named attributes usually communicate a result contract more clearly.
+
+### Comparisons
+
+| SQL operator | Meaning |
+|:---:|---|
+| `=` | equal |
+| `<>` or `!=` | not equal |
+| `<`, `<=` | less than, at most |
+| `>`, `>=` | greater than, at least |
+| `BETWEEN a AND b` | within an inclusive range |
+
+```sql
+SELECT observation_id, temperature_c
+FROM observation
+WHERE temperature_c BETWEEN 8 AND 10;
+```
+
+`BETWEEN 8 AND 10` includes both 8 and 10. Boundary values are therefore particularly valuable tests.
+
+::: {.activity-checkpoint}
+**Checkpoint:** How would the result differ if the requirement said “warmer than 20°C” rather than “at least 20°C”? Which sample row makes the two predicates distinguishable?
+:::
+
+### Combining predicates
+
+```sql
+SELECT observation_id, observed_at, temperature_c
+FROM observation
+WHERE site_id = 101
+  AND temperature_c >= 9;
+```
+
+The logical connectives are:
+
+- `AND`: both conditions must hold;
+- `OR`: at least one condition must hold; and
+- `NOT`: reverse a condition's truth value, subject to SQL's handling of `NULL`.
+
+Parentheses make intended grouping explicit:
+
+```sql
+SELECT observation_id, site_id, temperature_c, quality_note
+FROM observation
+WHERE site_id = 103
+  AND (temperature_c >= 20 OR quality_note = 'reviewed');
+```
+
+::: {.callout-warning appearance="simple"}
+## English “and” and “or” can hide ambiguity
+
+“Find reviewed or warm observations at site 103” could mean `(reviewed OR warm) AND site 103`, but a hurried translation can produce `reviewed OR (warm AND site 103)`. Parentheses document the interpretation.
+:::
+
+## 4. Projection shapes the result
+
+Projection is not merely hiding columns from a display. It defines which expressions and attribute names belong to the query result.
+
+```sql
+SELECT observation_id, temperature_c
+FROM observation;
+```
+
+### Expressions create derived values
+
+SQL expressions can calculate a result without altering the stored relation.
+
+```sql
+SELECT
+    observation_id,
+    temperature_c,
+    temperature_c * 9.0 / 5.0 + 32 AS temperature_f
+FROM observation;
+```
+
+`temperature_f` is an alias for a derived result attribute. The query does not add a Fahrenheit column to `observation`.
+
+::: {.callout-note appearance="simple"}
+## A result is itself tabular
+
+SQL queries return relations in the practical SQL sense: named columns and rows that can be displayed, consumed by an application, nested inside another query, or used to define a view.
+:::
+
+### Names are part of the interface
+
+Compare:
+
+```sql
+SELECT temperature_c * 9.0 / 5.0 + 32
+FROM observation;
+```
+
+with:
+
+```sql
+SELECT temperature_c * 9.0 / 5.0 + 32 AS temperature_f
+FROM observation;
+```
+
+Both calculate the same values. The alias makes the result easier for people and downstream programs to interpret.
+
+## 5. Duplicates: `SELECT` is not automatically set projection
+
+Which sites appear in `observation`?
+
+```sql
+SELECT site_id
+FROM observation;
+```
+
+The result contains seven rows because SQL normally preserves duplicates:
+
+```text
+101
+101
+102
+101
+103
+103
+102
+```
+
+If the question asks for each represented site once, say so:
+
+```sql
+SELECT DISTINCT site_id
+FROM observation;
+```
+
+```text
+101
+102
+103
+```
+
+::: {.callout-important appearance="simple"}
+## `DISTINCT` changes the meaning
+
+Do not add `DISTINCT` merely to conceal unexpected duplicates. First decide whether repeated rows represent repeated facts, an incorrect query, or a result in which multiplicity matters.
+:::
+
+This is one important difference between classical relational algebra and SQL: mathematical relations are sets, while SQL queries generally use **bag** or **multiset** behavior unless duplicate elimination is requested.
+
+## 6. Ordering is requested, not inherited
+
+To request warm observations from highest to lowest temperature:
+
+```sql
+SELECT observation_id, temperature_c
+FROM observation
+WHERE temperature_c >= 9
+ORDER BY temperature_c DESC, observation_id ASC;
+```
+
+The second ordering expression breaks ties. Without it, rows with equal temperatures could appear in either order.
+
+| Keyword | Direction |
+|---|---|
+| `ASC` | ascending; the default when direction is omitted |
+| `DESC` | descending |
+
+`ORDER BY` controls the presentation of the query result. It is not part of classical relational algebra because a mathematical relation is unordered.
+
+::: {.activity-checkpoint}
+**Checkpoint:** If `observation_id` increases over time in today's data, is `ORDER BY observation_id` a reliable substitute for `ORDER BY observed_at`? What unstated assumption would that make?
+:::
+
+## 7. `NULL` is not an ordinary value
+
+Observation 7 has no recorded temperature. SQL uses `NULL` to represent missing or inapplicable information, but `NULL` does not behave like a normal number or string.
+
+This predicate does **not** find it:
+
+```sql
+WHERE temperature_c = NULL
+```
+
+Use the dedicated predicate:
+
+```sql
+SELECT observation_id, quality_note
+FROM observation
+WHERE temperature_c IS NULL;
+```
+
+### Why equality fails
+
+If `NULL` represents an unknown temperature, then the truth of “unknown temperature equals 20” is itself unknown. The same is true of “unknown temperature does not equal 20.”
+
+| Predicate | Result |
+|---|---|
+| `20 = 20` | `TRUE` |
+| `20 = 9` | `FALSE` |
+| `NULL = 20` | `UNKNOWN` |
+| `NULL <> 20` | `UNKNOWN` |
+| `NULL IS NULL` | `TRUE` |
+
+A `WHERE` clause retains only tuples for which its predicate is `TRUE`. Tuples producing `FALSE` or `UNKNOWN` are filtered out.
+
+::: {.callout-caution appearance="simple"}
+## `NULL` does not explain why a value is absent
+
+A missing value might mean unknown, not yet measured, not applicable, withheld, or sensor failure. If the distinction matters, represent the reason explicitly rather than asking one marker to carry several meanings.
+:::
+
+### Include warm or missing readings
+
+```sql
+SELECT observation_id, temperature_c, quality_note
+FROM observation
+WHERE temperature_c >= 20
+   OR temperature_c IS NULL;
+```
+
+This query makes the two qualifying cases explicit.
+
+## 8. One question in SQL and algebra
+
+Return the identifiers and temperatures of observations at least 20°C.
+
+```sql
+SELECT observation_id, temperature_c
+FROM observation
+WHERE temperature_c >= 20;
+```
+
+One relational-algebra expression for the same intention is:
+
+$$
+\pi_{\text{observation\_id},\ \text{temperature\_c}}
+\left(
+\sigma_{\text{temperature\_c} \ge 20}(\text{observation})
+\right)
+$$
+
+```{mermaid}
+flowchart LR
+    A["observation<br/>6 attributes · 7 tuples"] --> B["σ temperature_c ≥ 20<br/>keep qualifying tuples"]
+    B --> C["π observation_id, temperature_c<br/>keep requested attributes"]
+    C --> D["result<br/>2 attributes · 2 tuples"]
+
+    classDef relation fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    classDef operation fill:#173b4d,stroke:#173b4d,color:#ffffff;
+    class A,D relation;
+    class B,C operation;
+```
+
+The algebra makes the composition visible. The SQL is the practical language we send to the DBMS. Neither representation eliminates the need to test the interpretation.
+
+## 9. Query writing is a testing activity
+
+Suppose the requirement is:
+
+> List each site represented by an observation at or above 20°C, once per site.
+
+A disciplined process is:
+
+### Step 1: State the result contract
+
+- one output attribute: `site_id`;
+- one row per represented site, not per observation;
+- include a reading exactly equal to 20;
+- exclude unknown temperatures.
+
+### Step 2: Write a candidate
+
+```sql
+SELECT DISTINCT site_id
+FROM observation
+WHERE temperature_c >= 20;
+```
+
+### Step 3: Construct distinguishing cases
+
+| Test row or condition | Mistake it can expose |
+|---|---|
+| A reading exactly equal to 20.0 | `>` used instead of `>=` |
+| Two qualifying readings at the same site | missing `DISTINCT` |
+| A row with `temperature_c IS NULL` | incorrect assumptions about missing values |
+| A warm reading at a second site | query accidentally hard-codes one site |
+
+### Step 4: Predict before executing
+
+For the supplied instance, the expected result is one row containing `103`.
+
+### Step 5: Compare evidence with the contract
+
+If the result differs, revise either the query or the interpretation. A query that matches one sample by accident is not yet trustworthy.
+
+::: {.callout-tip appearance="simple"}
+## The best tiny dataset is not necessarily realistic
+
+A useful test dataset contains deliberately chosen duplicates, boundary values, missing values, and near misses. Its job is to distinguish meanings with as few rows as possible.
+:::
+
+## 10. A reusable translation routine
+
+When you receive a new question, work through this sequence:
+
+```{mermaid}
+flowchart LR
+    A["Question and<br/>result contract"] --> B["SQL<br/>candidate"]
+    B --> C["Prediction and<br/>boundary cases"]
+    C --> D["Execute, compare,<br/>and revise"]
+
+    classDef thought fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
+    classDef query fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    classDef evidence fill:#173b4d,stroke:#173b4d,color:#ffffff;
+    class A thought;
+    class B,C query;
+    class D evidence;
+```
+
+The phrase **define one result row** is especially important. It prevents many later mistakes involving duplicates and aggregation.
+
+::: {.takeaway-panel}
+## The main claim
+
+`SELECT`, `FROM`, and `WHERE` are compact, but the real skill is translating a question into a precise result contract and then testing whether the query satisfies it.
+:::
+
+## Continue to Lab 2
+
+Apply this process in [Lab 2 — Ask it, write it, break it](../activities/week-02-query-reasoning-lab.qmd). Your group will translate questions into SQL, predict results, and design counterexamples for plausible incorrect queries.
+
+## Exit ticket
+
+Respond in three or four sentences:
+
+> Why is seeing the expected rows in one sample database not enough to establish that a query is correct? Name one boundary case you would intentionally add to a query test.
+
+## Sources and further reading
+
+- Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapters 2–3.
+- PostgreSQL documentation, [Queries](https://www.postgresql.org/docs/current/queries.html) and [Comparison Functions and Operators](https://www.postgresql.org/docs/current/functions-comparison.html).

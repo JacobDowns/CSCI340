@@ -36,9 +36,9 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 ### Week 2: August 31-September 4 - SQL foundations
 
-**Concepts:** selection, projection, filtering, expressions, ordering, nulls, and tests for queries.
+**Lectures:** [From tables to relations](lectures/week-02-from-tables-to-relations.qmd) introduces the relational model, its historical and mathematical foundations, and relational algebra as a language for query meaning and transformation. [Asking precise questions with SQL](lectures/week-02-asking-questions-with-sql.qmd) develops selection, projection, predicates, expressions, ordering, duplicates, nulls, and tests for queries.
 
-**Lab:** Translate natural-language questions into small SQL queries. Construct boundary cases that distinguish correct results from plausible mistakes.
+**Lab:** [Ask it, write it, break it](activities/week-02-query-reasoning-lab.qmd). Translate natural-language questions into small SQL queries, predict results, and construct boundary cases that distinguish correct results from plausible mistakes.
 
 ### Week 3: September 7-11 - Joins and aggregation
 

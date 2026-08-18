@@ -1,0 +1,89 @@
+<script>
+(function () {
+  const storageKey = "csci340-sidebar-collapsed";
+  const root = document.documentElement;
+  const desktopQuery = window.matchMedia("(min-width: 992px)");
+
+  function storedPreference() {
+    try {
+      return window.localStorage.getItem(storageKey) === "true";
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function storePreference(collapsed) {
+    try {
+      window.localStorage.setItem(storageKey, String(collapsed));
+    } catch (_error) {
+      // The toggle still works when storage is unavailable, including some
+      // local file previews; it simply will not persist between pages.
+    }
+  }
+
+  function setCollapsed(collapsed, button) {
+    const active = desktopQuery.matches && collapsed;
+    root.classList.toggle("course-sidebar-collapsed", active);
+
+    if (button) {
+      const label = active
+        ? "Show course navigation"
+        : "Hide course navigation";
+      button.setAttribute("aria-label", label);
+      button.setAttribute("title", label);
+      button.setAttribute("aria-expanded", String(!active));
+      button.classList.toggle("active", active);
+
+      const icon = button.querySelector("i");
+      if (icon) {
+        icon.className = active
+          ? "bi bi-layout-sidebar-inset"
+          : "bi bi-layout-sidebar-inset-reverse";
+      }
+    }
+  }
+
+  function exitReaderMode() {
+    const readerToggle = document.querySelector(".quarto-reader-toggle.reader");
+    if (readerToggle && typeof window.quartoToggleReader === "function") {
+      window.quartoToggleReader();
+    }
+  }
+
+  if (desktopQuery.matches && storedPreference()) {
+    root.classList.add("course-sidebar-collapsed");
+  }
+
+  window.addEventListener("DOMContentLoaded", function () {
+    const tools = document.querySelector(".quarto-navbar-tools");
+    const sidebar = document.getElementById("quarto-sidebar");
+
+    if (!tools || !sidebar || tools.querySelector(".course-sidebar-toggle")) {
+      return;
+    }
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "course-sidebar-toggle quarto-navigation-tool px-1";
+    button.innerHTML = '<i class="bi" aria-hidden="true"></i>';
+    tools.prepend(button);
+
+    if (root.classList.contains("course-sidebar-collapsed")) {
+      exitReaderMode();
+    }
+
+    setCollapsed(root.classList.contains("course-sidebar-collapsed"), button);
+
+    button.addEventListener("click", function () {
+      const collapsed = !root.classList.contains("course-sidebar-collapsed");
+      exitReaderMode();
+      setCollapsed(collapsed, button);
+      storePreference(collapsed);
+    });
+
+    desktopQuery.addEventListener("change", function () {
+      setCollapsed(storedPreference(), button);
+    });
+  });
+})();
+</script>

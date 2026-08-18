@@ -47,10 +47,13 @@ website:
         contents:
           - lectures/index.qmd
           - lectures/week-01-database-or-spreadsheet.qmd
+          - lectures/week-02-from-tables-to-relations.qmd
+          - lectures/week-02-asking-questions-with-sql.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd
           - activities/week-01-file-representation-lab.qmd
+          - activities/week-02-query-reasoning-lab.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd
@@ -70,6 +73,7 @@ format:
       light: cosmo
       dark: darkly
     css: styles.css
+    include-in-header: includes/sidebar-toggle.html
     toc: true
     code-copy: true
     code-overflow: wrap

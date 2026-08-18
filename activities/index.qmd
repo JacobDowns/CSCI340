@@ -16,6 +16,10 @@ Labs and activities provide the applied rhythm of the course. Most are completed
 
 - [Lab 1 — Make the file fail on purpose](week-01-file-representation-lab.qmd): expose the assumptions and failure modes hidden in a convenient flat file, then propose a first relational model.
 
+## Week 2
+
+- [Lab 2 — Ask it, write it, break it](week-02-query-reasoning-lab.qmd): translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.
+
 ## Submission principle
 
 Lab submissions are deliberately small. They should preserve enough reasoning that the instructor can see what the group tried, what it concluded, and which assumptions remain unresolved. The detailed submission location and deadline will be announced with each offering.
