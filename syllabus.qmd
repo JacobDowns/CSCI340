@@ -122,7 +122,7 @@ Milestone instructions will identify both shared and individual responsibilities
 | 15: Nov 30-Dec 4 | Spatial joins, integration, and review | PostGIS indexes, design defense, and final review | Final system and memo |
 | Finals: Dec 7-11 | Cumulative final examination | Provisional exam Wednesday, December 9 | Final defense materials complete |
 
-See the [expanded schedule](schedule.qmd) for draft readings, activities, and deliverables.
+See the [course schedule](schedule.qmd) for the week-by-week course map.
 
 ## Working practices
 
@@ -147,7 +147,7 @@ AI use on the individual midterm is not permitted unless the assessment instruct
 
 ### Late work and revision
 
-The proposed policy is a 48-hour grace window for routine assignments, followed by a predictable late penalty, with advance arrangements for documented or significant circumstances. Capstone checkpoints may be revised after feedback when the revision is substantive and submitted by the stated deadline. The approved course offering will state the exact penalty and extension procedures.
+The proposed policy is a 48-hour grace window for routine assignments, followed by a predictable late penalty, with advance arrangements for documented or significant circumstances. Project checkpoints may be revised after feedback when the revision is substantive and submitted by the stated deadline. The approved course offering will state the exact penalty and extension procedures.
 
 ### Accessibility and belonging
 

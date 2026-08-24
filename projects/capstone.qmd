@@ -1,11 +1,11 @@
 ---
-title: "Semester capstone"
+title: "Semester project"
 subtitle: "From messy data to a defensible data architecture"
 ---
 
 ## Purpose
 
-The capstone revisits one authentic data problem throughout the semester. The goal is not to accumulate unrelated features; it is to show how database theory changes the quality of an evolving design.
+The project revisits one authentic data problem throughout the semester. The goal is not to accumulate unrelated features; it is to show how database theory changes the quality of an evolving design.
 
 ::: {.design-question}
 Your final claim should answer: Why is this representation and division of work appropriate for the stated users, rules, and workload?

@@ -1,159 +1,89 @@
 ---
 title: "Course schedule"
-subtitle: "Autumn 2026: a 15-week progression from representation to design defense"
+subtitle: "Autumn 2026: a week-by-week course map"
 ---
 
 ::: {.draft-banner}
-This schedule uses the supplied Autumn 2026 academic calendar. Assignment due dates and the final-exam time will be added after the regular class meeting pattern is known.
+This schedule gives the approximate sequence of topics for Autumn 2026. Specific activity, assignment, and project due dates will be posted in Canvas.
 :::
 
 ## Key dates
 
 | Date | Course-calendar significance |
 |---|---|
-| August 17-21 | Student Orientation; classes have not begun |
 | Monday, August 24 | Autumn semester classes begin |
-| Monday, September 7 | Labor Day; no classes |
-| Monday, October 12 | Indigenous People's Day; no classes |
+| Monday, September 7 | Labor Day; no class |
+| Monday, October 12 | Indigenous Peoples' Day; no class |
 | Friday, October 23 | Provisional midterm examination during the regular class meeting |
-| Wednesday, November 11 | Veterans Day observed; no classes |
+| Wednesday, November 11 | Veterans Day observed; no class |
 | Wednesday, November 25 | Non-instructional travel day |
 | November 26-27 | Thanksgiving holiday; UM closed |
 | Friday, December 4 | Last day of regular classes |
 | December 7-11 | Final examinations |
-| Wednesday, December 9 | Provisional final-exam date; exact time follows the registrar's meeting-time matrix |
-| Friday, December 11 | Autumn Commencement |
+| Wednesday, December 9 | Provisional final-exam date |
 
-## Unit 1 - Represent and query
+## Week-by-week approximate schedule
 
-### Week 1: August 24-28 - Why databases?
+### Week 1 (August 24-28) - Why databases?
 
-**Concepts:** relations, attributes, tuples, schemas, instances, data independence, and databases versus files.
+Introduce spreadsheets, files, and databases as different tools for different problems. Focus on repeated information, hidden assumptions, naive tabular representations, and why data integrity becomes hard to maintain.
 
-**Lab:** [Make the file fail on purpose](activities/week-01-file-representation-lab.qmd). Identify repeated facts, implicit entities, identifiers, unenforced rules, and questions the current representation makes difficult. Submit one short group artifact.
+### Week 2 (August 31-September 4) - Relational foundations
 
-**Capstone:** Dataset and stakeholder sketch.
+Introduce the relational model, core terminology, keys, and the idea of data independence. Develop relational algebra as a formal language for query meaning, then connect those ideas to first SQL queries.
 
-### Week 2: August 31-September 4 - Relational foundations
+### Week 3 (September 7-11) - Joins and aggregation
 
-**Lectures:** [Why describe data as relations?](lectures/week-02-from-tables-to-relations.qmd) introduces the relational vocabulary, keys, foreign keys, and the idea of data independence. [Relational algebra and query meaning](lectures/week-02-relational-algebra.qmd) develops selection, projection, join, closure, and equivalent logical expressions. [Asking precise questions with SQL](lectures/week-02-asking-questions-with-sql.qmd) then translates those ideas into `SELECT`, `FROM`, `WHERE`, predicates, expressions, ordering, duplicates, nulls, and query tests.
+Develop joins, grouping, aggregation, set versus bag behavior, and query decomposition. No class Monday, September 7, because of Labor Day.
 
-**Lab:** [Ask it, write it, break it](activities/week-02-query-reasoning-lab.qmd). Translate natural-language questions into small SQL queries, predict results, and construct boundary cases that distinguish correct results from plausible mistakes.
+### Week 4 (September 14-18) - Query reasoning, equivalence, and first DataFrames
 
-### Week 3: September 7-11 - Joins and aggregation
+Compare equivalent query forms, logical query plans, and the difference between query meaning and execution strategy. Introduce a first comparison between SQL-style transformations and DataFrame-style transformations.
 
-**Calendar:** Labor Day is Monday, September 7; no class.
+### Week 5 (September 21-25) - ER modeling foundations
 
-**Concepts:** inner and outer joins, grouping, aggregation, set and bag behavior, and query decomposition.
+Introduce entities, attributes, identifiers, relationships, cardinality, participation, and the role of assumptions in conceptual modeling.
 
-**Lab:** Build joins incrementally and test how missing or duplicated relationships affect results.
+### Week 6 (September 28-October 2) - ER modeling in depth
 
-**Capstone:** Candidate questions and initial workload.
+Extend ER modeling to weak and associative entities, recursive relationships, specialization/generalization, temporal requirements, and multivalued information.
 
-### Week 4: September 14-18 - Query reasoning, equivalence, and first DataFrames
+### Week 7 (October 5-9) - From ER diagrams to relational schemas
 
-**Concepts:** compositional reasoning, equivalence, logical query plans, the difference between query meaning and execution strategy, and a first comparison between SQL-style transformations and DataFrame expressions.
+Translate conceptual models into relations, keys, domain constraints, entity integrity, and referential integrity.
 
-**Activity:** Translate SQL into algebra, compare equivalent expressions, and implement the same small transformation in both SQL and a DataFrame library.
+### Week 8 (October 12-16) - Dependencies and normalization
 
-## Unit 2 - Model and normalize
+Introduce functional dependencies, candidate keys, anomalies, 3NF, BCNF, lossless decomposition, and dependency preservation. No class Monday, October 12, because of Indigenous Peoples' Day.
 
-### Week 5: September 21-25 - ER modeling foundations
+### Week 9 (October 19-23) - Review and midterm examination
 
-**Concepts:** entities, attributes, identifiers, relationships, cardinality, participation, and diagram conventions.
+Synthesize SQL, relational algebra, ER modeling, relational mapping, keys, constraints, dependencies, and normalization. Midterm examination: Friday, October 23, during the regular class meeting.
 
-**Activity:** Convert an ambiguous registration, field-research, or reservation specification into competing ER diagrams. Document assumptions rather than hiding them in the diagram.
+### Week 10 (October 26-30) - Advanced SQL
 
-**Capstone:** Initial ER diagram.
+Develop common table expressions, window functions, conditional aggregation, views, and recursive queries as time permits.
 
-### Week 6: September 28-October 2 - ER modeling in depth
+### Week 11 (November 2-6) - Storage, indexes, and query plans
 
-**Concepts:** weak and associative entities, recursive relationships, specialization/generalization, temporal requirements, and multivalued information.
+Introduce pages, records, B-trees, hashing, composite indexes, selectivity, scans, join algorithms, cardinality estimates, and plan choices.
 
-**Activity:** Critique diagrams using counterexamples. Revise a model when a new requirement invalidates an earlier assumption.
+### Week 12 (November 9-13) - Transactions and concurrency
 
-**Capstone:** ER critique and revision.
+Develop atomicity, isolation, consistency, durability, schedules, anomalies, serializability, isolation levels, locking, and MVCC. No class Wednesday, November 11, because of Veterans Day observed.
 
-### Week 7: October 5-9 - From ER diagrams to relational schemas
+### Week 13 (November 16-20) - Analytical systems and cross-engine comparison
 
-**Concepts:** mapping entities and relationships to relations, natural and surrogate keys, domain constraints, entity integrity, and referential integrity.
+Compare OLTP and OLAP, row and column layouts, Parquet, DuckDB, Polars, projection/filter pushdown, and data-movement tradeoffs across systems.
 
-**Lab:** Map an ER design to PostgreSQL DDL and construct tests for core integrity rules.
+### Week 14 (November 23-27) - Spatial database foundations
 
-**Capstone:** Requirements, ER model, and relational mapping review.
+Introduce spatial types, geometry versus geography, coordinate reference systems, and spatial predicates. Instruction is limited this week because Wednesday, November 25 is a non-instructional travel day and November 26-27 is Thanksgiving holiday.
 
-### Week 8: October 12-16 - Dependencies and normalization
+### Week 15 (November 30-December 4) - Spatial joins, integration, and review
 
-**Calendar:** Indigenous People's Day is Monday, October 12; no class.
+Develop PostGIS spatial joins and indexes, selected broader database architectures, and final synthesis across correctness, query behavior, performance, and representation.
 
-**Concepts:** functional dependencies, closure, candidate keys, anomalies, 3NF, BCNF, lossless decomposition, and dependency preservation.
+## Final examination
 
-**Lab:** Diagnose a scientific spreadsheet and a transactional schema. Explain when a less-normalized design might be deliberate.
-
-**Capstone:** Relational design review.
-
-### Week 9: October 19-23 - Synthesis and midterm examination
-
-**Review:** SQL, relational algebra, ER diagrams, relational mapping, keys, constraints, dependencies, and normalization.
-
-**Midterm:** **Friday, October 23**, during the regular class meeting. The midterm is worth 20% of the course grade.
-
-## Unit 3 - Implement, explain, and protect
-
-### Week 10: October 26-30 - Advanced SQL
-
-**Concepts:** common table expressions, window functions, conditional aggregation, views, and recursive queries as time permits.
-
-**Lab:** Answer an analytical question with progressively clearer query structures and test boundary cases.
-
-**Capstone:** PostgreSQL schema, ingestion, constraints, and representative queries.
-
-### Week 11: November 2-6 - Storage, indexes, and query plans
-
-**Concepts:** pages, records, B-trees, hashing, composite indexes, selectivity, scans, join algorithms, cardinality estimates, and plan choices.
-
-**Experiment:** Predict whether an index will improve a workload, inspect `EXPLAIN (ANALYZE)`, and reconcile the evidence with the prediction.
-
-**Capstone:** Performance hypothesis and benchmark evidence.
-
-### Week 12: November 9-13 - Transactions and concurrency
-
-**Calendar:** Veterans Day is Wednesday, November 11; no class.
-
-**Concepts:** atomicity, isolation, consistency, durability, schedules, anomalies, serializability, isolation levels, locking, and MVCC.
-
-**Simulation:** Use a reservation or inventory case to reproduce concurrency anomalies. Decide which rule belongs in a constraint, transaction, or application boundary.
-
-**Capstone:** Correctness and transaction memo.
-
-## Unit 4 - Extend, integrate, and defend
-
-### Week 13: November 16-20 - Analytical systems and cross-engine comparison
-
-**Concepts:** a condensed comparison of OLTP and OLAP, row and column layouts, Parquet, DuckDB, projection/filter pushdown, data movement, and when to prefer database SQL, analytical SQL, or DataFrame workflows.
-
-**Lab:** Solve one analytical question in database SQL, DuckDB, and Polars. Identify the shared relational operations, the different execution boundaries, and the costs of moving data across systems.
-
-**Capstone:** Cross-engine analysis.
-
-### Week 14: November 23-27 - Spatial database foundations
-
-**Calendar:** Wednesday is a non-instructional travel day; Thursday and Friday are the Thanksgiving holiday. Regular instruction is therefore limited to the beginning of the week.
-
-**Concepts:** spatial types, geometry versus geography, coordinate reference systems, and spatial predicates.
-
-**Capstone:** Spatial question and data preparation.
-
-### Week 15: November 30-December 4 - Spatial joins, integration, and review
-
-**Concepts:** PostGIS spatial joins and indexes, selected broader database architectures, and choosing where computation should occur.
-
-**Activity:** Present the system as a sequence of justified decisions. Review correctness, query behavior, performance evidence, representation, data movement, ethics, and limitations.
-
-**Capstone:** Final system, architecture memo, and design defense.
-
-**Calendar:** Friday, December 4 is the last day of regular classes.
-
-## Final examination: December 7-11
-
-The cumulative final examination is worth 20% of the course grade. Its **provisional date is Wednesday, December 9**. The exact time must be aligned with the registrar's final-exam schedule after the regular class meeting time is known. Autumn Commencement is Friday, December 11.
+The cumulative final examination is worth 20% of the course grade. Its provisional date is **Wednesday, December 9, 2026**. The exact time must be aligned with the registrar's final-exam schedule after the regular meeting time is known.

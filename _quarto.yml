@@ -2,10 +2,11 @@ project:
   type: website
   output-dir: _site
   render:
-    - "*.qmd"
+    - "index.qmd"
+    - "schedule.qmd"
+    - "resources.qmd"
     - "activities/*.qmd"
     - "lectures/*.qmd"
-    - "notebooks/*.qmd"
     - "assignments/*.qmd"
     - "projects/*.qmd"
 
@@ -22,25 +23,20 @@ website:
     left:
       - text: Home
         href: index.qmd
-      - text: Syllabus
-        href: syllabus.qmd
       - text: Schedule
         href: schedule.qmd
       - text: Lectures
         href: lectures/index.qmd
       - text: Labs
         href: activities/index.qmd
-      - text: Capstone
+      - text: Project
         href: projects/capstone.qmd
-      - text: Notebooks
-        href: notebooks/index.qmd
   sidebar:
     style: docked
     search: true
     contents:
       - section: Course
         contents:
-          - syllabus.qmd
           - schedule.qmd
           - resources.qmd
       - section: Lectures
@@ -59,11 +55,6 @@ website:
         contents:
           - assignments/index.qmd
           - projects/capstone.qmd
-      - section: Computational notebooks
-        contents:
-          - notebooks/index.qmd
-          - notebooks/02-one-question-three-engines.qmd
-          - notebooks/03-spatial-joins.qmd
   page-footer:
     left: "CSCI 340 | Database Systems and Data Management"
     right: "Built with Quarto"

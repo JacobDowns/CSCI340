@@ -5,7 +5,7 @@ subtitle: "Guided explanations, examples, questions, and in-class activities"
 
 Lecture pages are the main narrative course materials. They are designed to move from one idea to the next like a class meeting: a motivating claim, a concrete example, an explanation, and a checkpoint.
 
-Submittable work lives separately under [labs and activities](../activities/index.qmd). Computational work lives in the [notebooks](../notebooks/index.qmd). A lecture may link to either when applying the idea or collecting evidence materially improves the lesson, but the lecture itself should remain readable without a computational environment.
+Submittable work lives separately under [labs and activities](../activities/index.qmd). A lecture may still reference applied or computational work when it helps illuminate the idea, but the lecture itself should remain readable on its own.
 
 ## Week 1
 

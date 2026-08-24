@@ -53,9 +53,9 @@ Examples rotate among three settings so that no single application style becomes
 
 ## Start here
 
-- Read the [draft syllabus](syllabus.qmd).
 - See the [dated Autumn 2026 course map](schedule.qmd).
 - Follow the [lecture notes](lectures/index.qmd).
 - Find [labs and activities](activities/index.qmd) and their deliverables.
-- Explore the [capstone project](projects/capstone.qmd).
-- Open the [computational labs and notebooks](notebooks/index.qmd).
+- Explore the [semester project](projects/capstone.qmd).
+
+The official syllabus will be distributed in Canvas.

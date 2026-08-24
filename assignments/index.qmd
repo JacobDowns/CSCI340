@@ -11,11 +11,11 @@ Short, frequent work on relational algebra, dependencies, normalization, query m
 
 ### Labs and activities
 
-Applied class sessions with a clearly identified small submission. Some are conceptual design activities; others use reproducible Quarto notebooks containing a question, prediction, implementation, evidence, and interpretation. See the [labs and activities index](../activities/index.qmd).
+Applied class sessions with a clearly identified small submission. Some are conceptual design activities; others involve reproducible computational work when that is necessary to answer the question well. See the [labs and activities index](../activities/index.qmd).
 
-### Semester capstone
+### Semester project
 
-An iterative database and analytical workflow built around a real dataset and an authentic workload. See the [capstone brief](../projects/capstone.qmd).
+An iterative database and analytical workflow built around a real dataset and an authentic workload. See the [project brief](../projects/capstone.qmd).
 
 ## Default submission checklist
 

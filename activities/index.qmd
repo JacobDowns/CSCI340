@@ -10,7 +10,6 @@ Labs and activities provide the applied rhythm of the course. Most are completed
 - **Activities** are brief conceptual exercises, critiques, predictions, or worked examples.
 - **Labs** are longer applied sessions with a clearly identified deliverable.
 - Each lab page states the expected time, collaboration format, submission, and completion criteria.
-- Some later labs will link to a [computational notebook](../notebooks/index.qmd) when running code is central to the task.
 
 ## Week 1
 
