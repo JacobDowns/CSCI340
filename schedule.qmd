@@ -34,9 +34,9 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 **Capstone:** Dataset and stakeholder sketch.
 
-### Week 2: August 31-September 4 - SQL foundations
+### Week 2: August 31-September 4 - Relational foundations
 
-**Lectures:** [From tables to relations](lectures/week-02-from-tables-to-relations.qmd) introduces the relational model, its historical and mathematical foundations, and relational algebra as a language for query meaning and transformation. [Asking precise questions with SQL](lectures/week-02-asking-questions-with-sql.qmd) develops selection, projection, predicates, expressions, ordering, duplicates, nulls, and tests for queries.
+**Lectures:** [Why describe data as relations?](lectures/week-02-from-tables-to-relations.qmd) introduces the relational vocabulary, keys, foreign keys, and the idea of data independence. [Relational algebra and query meaning](lectures/week-02-relational-algebra.qmd) develops selection, projection, join, closure, and equivalent logical expressions. [Asking precise questions with SQL](lectures/week-02-asking-questions-with-sql.qmd) then translates those ideas into `SELECT`, `FROM`, `WHERE`, predicates, expressions, ordering, duplicates, nulls, and query tests.
 
 **Lab:** [Ask it, write it, break it](activities/week-02-query-reasoning-lab.qmd). Translate natural-language questions into small SQL queries, predict results, and construct boundary cases that distinguish correct results from plausible mistakes.
 
@@ -50,11 +50,11 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 **Capstone:** Candidate questions and initial workload.
 
-### Week 4: September 14-18 - Relational algebra and equivalence
+### Week 4: September 14-18 - Query reasoning, equivalence, and first DataFrames
 
-**Concepts:** relational operators, compositional reasoning, equivalence, and logical query plans.
+**Concepts:** compositional reasoning, equivalence, logical query plans, the difference between query meaning and execution strategy, and a first comparison between SQL-style transformations and DataFrame expressions.
 
-**Activity:** Translate SQL into algebra, transform expressions, and state which transformations preserve meaning under set or bag semantics.
+**Activity:** Translate SQL into algebra, compare equivalent expressions, and implement the same small transformation in both SQL and a DataFrame library.
 
 ## Unit 2 - Model and normalize
 
@@ -128,11 +128,11 @@ This schedule uses the supplied Autumn 2026 academic calendar. Assignment due da
 
 ## Unit 4 - Extend, integrate, and defend
 
-### Week 13: November 16-20 - Analytical databases and DataFrames
+### Week 13: November 16-20 - Analytical systems and cross-engine comparison
 
-**Concepts:** a condensed comparison of OLTP and OLAP, row and column layouts, Parquet, DuckDB, projection/filter pushdown, data movement, and Polars lazy expressions.
+**Concepts:** a condensed comparison of OLTP and OLAP, row and column layouts, Parquet, DuckDB, projection/filter pushdown, data movement, and when to prefer database SQL, analytical SQL, or DataFrame workflows.
 
-**Lab:** Solve one analytical question in database SQL, DuckDB, and Polars. Identify the shared relational operations and the different execution boundaries.
+**Lab:** Solve one analytical question in database SQL, DuckDB, and Polars. Identify the shared relational operations, the different execution boundaries, and the costs of moving data across systems.
 
 **Capstone:** Cross-engine analysis.
 

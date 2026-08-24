@@ -24,7 +24,7 @@ description: "A modern database course grounded in relational theory, evidence-b
 
 Databases are not merely places to store tables. They are systems for representing knowledge, enforcing rules, answering questions, coordinating concurrent work, and moving between operational and analytical uses of data. This course develops the theory and practice needed to make those systems correct, efficient, and explainable.
 
-We begin with the relational model, SQL, relational algebra, conceptual modeling, dependencies, and normalization. We then examine storage, indexes, query execution, optimization, transactions, and concurrency. The final part of the course connects those foundations to contemporary analytical and spatial workflows using PostgreSQL/PostGIS, DuckDB, Parquet, and Polars. Examples rotate across scientific, transactional, and organizational settings.
+We begin with the relational model, relational algebra, SQL, conceptual modeling, dependencies, and normalization. Early in the course we also introduce DataFrame-style transformations as a comparison point rather than treating them as a separate world. We then examine storage, indexes, query execution, optimization, transactions, and concurrency. The final part of the course returns to contemporary analytical and spatial workflows using PostgreSQL/PostGIS, DuckDB, Parquet, and Polars. Examples rotate across scientific, transactional, and organizational settings.
 
 ::: {.design-question}
 **Course question:** How should we represent, organize, query, validate, and analyze data - and what design choices make those operations correct and efficient?
@@ -65,7 +65,7 @@ The primary systems are:
 - **PostgreSQL** for relational design, constraints, transactions, indexing, and query plans.
 - **PostGIS** for spatial types, relationships, joins, coordinate systems, and spatial indexes.
 - **DuckDB and Parquet** for local analytical SQL and columnar data.
-- **Polars** for DataFrame expressions, lazy execution, and comparison with relational plans.
+- **Polars** for DataFrame expressions, lazy execution, and comparison with relational plans, first in small early examples and later in fuller analytical workflows.
 - **Quarto and Jupyter** for computational narratives that combine questions, code, evidence, and interpretation.
 
 No single textbook is required in this draft. Assigned readings will combine instructor notes, selected textbook chapters or library copies, and official documentation. Suggested references include *Database System Concepts* (Silberschatz, Korth, and Sudarshan), selected systems notes from established database courses, and selected chapters from *Designing Data-Intensive Applications*.
@@ -106,9 +106,9 @@ Milestone instructions will identify both shared and individual responsibilities
 | Week and dates | Focus | Lab or activity emphasis | Group project milestone |
 |---:|---|---|---|
 | 1: Aug 24-28 | Why databases? Relations, schemas, and data independence | Diagnose a messy scientific dataset | Dataset and stakeholder sketch |
-| 2: Aug 31-Sep 4 | SQL foundations | Questions, filters, tests, and nulls | - |
+| 2: Aug 31-Sep 4 | Relational foundations: model, algebra, and first SQL | Questions, filters, tests, and nulls | - |
 | 3: Sep 7-11 | Joins and aggregation; Labor Day Sep 7 | Query decomposition and boundary cases | Candidate questions and workload |
-| 4: Sep 14-18 | Relational algebra and equivalence | Translate SQL to algebra | - |
+| 4: Sep 14-18 | Query reasoning, equivalence, and first DataFrames | Translate SQL to algebra and compare a small DataFrame expression | - |
 | 5: Sep 21-25 | ER modeling foundations | Model entities, attributes, relationships, and cardinality | Initial ER diagram |
 | 6: Sep 28-Oct 2 | ER modeling in depth | Weak/associative entities, specialization, and ambiguous rules | ER critique and revision |
 | 7: Oct 5-9 | ER-to-relational mapping and constraints | Map models to schemas and test integrity rules | Requirements, ER model, and mapping review |
@@ -117,7 +117,7 @@ Milestone instructions will identify both shared and individual responsibilities
 | 10: Oct 26-30 | Advanced SQL | CTEs, windows, and reusable views | PostgreSQL implementation |
 | 11: Nov 2-6 | Storage, indexes, and query plans | Predict, measure, and explain index effects | Performance hypothesis |
 | 12: Nov 9-13 | Transactions and concurrency; no class Nov 11 | Reproduce anomalies and reason about schedules | Correctness and transaction memo |
-| 13: Nov 16-20 | Analytical databases and DataFrames | Condensed DuckDB, Parquet, and Polars comparison | Cross-engine analysis |
+| 13: Nov 16-20 | Analytical systems and cross-engine comparison | DuckDB, Parquet, Polars, and data-movement tradeoffs | Cross-engine analysis |
 | 14: Nov 23-27 | Spatial foundations; travel day Nov 25 and Thanksgiving Nov 26-27 | Spatial types, CRS, and predicates | Spatial question |
 | 15: Nov 30-Dec 4 | Spatial joins, integration, and review | PostGIS indexes, design defense, and final review | Final system and memo |
 | Finals: Dec 7-11 | Cumulative final examination | Provisional exam Wednesday, December 9 | Final defense materials complete |

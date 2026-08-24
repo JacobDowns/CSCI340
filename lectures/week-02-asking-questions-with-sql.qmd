@@ -1,5 +1,5 @@
 ---
-title: "Week 2B — Asking precise questions with SQL"
+title: "Week 2C - Asking precise questions with SQL"
 subtitle: "Selection, projection, expressions, ordering, nulls, and query tests"
 description: "A first SQL lesson that connects SELECT-FROM-WHERE to relational operations and treats testing as part of query writing."
 author: "CSCI 340"
@@ -10,12 +10,12 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 2B · SQL FOUNDATIONS AND QUERY TESTING
+WEEK 2C · SQL FOUNDATIONS AND QUERY TESTING
 :::
 
 # A query is a claim about the answer.
 
-A SQL query can be syntactically valid and still answer the wrong question. Writing the query is therefore only part of the work. We must also predict its result and construct cases that distinguish the intended meaning from plausible mistakes.
+A SQL query can be syntactically valid and still answer the wrong question. Writing the query is therefore only part of the work. We must also predict its result and construct cases that distinguish the intended meaning from plausible mistakes. The relational-algebra ideas from the previous lecture now become practical: SQL is the language we write, but the meaning still comes from the logical operations the query expresses.
 
 ::: {.lesson-question}
 **Guiding question:** How can we translate a question into SQL—and gather evidence that our translation is correct?
@@ -446,13 +446,7 @@ The phrase **define one result row** is especially important. It prevents many l
 
 Apply this process in [Lab 2 — Ask it, write it, break it](../activities/week-02-query-reasoning-lab.qmd). Your group will translate questions into SQL, predict results, and design counterexamples for plausible incorrect queries.
 
-## Exit ticket
-
-Respond in three or four sentences:
-
-> Why is seeing the expected rows in one sample database not enough to establish that a query is correct? Name one boundary case you would intentionally add to a query test.
-
 ## Sources and further reading
 
-- Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapters 2–3.
+- Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapters 2-3.
 - PostgreSQL documentation, [Queries](https://www.postgresql.org/docs/current/queries.html) and [Comparison Functions and Operators](https://www.postgresql.org/docs/current/functions-comparison.html).

@@ -1,7 +1,7 @@
 ---
-title: "Week 2A — From tables to relations"
-subtitle: "Why database language sounds mathematical—and why that helps"
-description: "A guided introduction to the relational model, its historical motivation, and relational algebra as a language for reasoning about queries."
+title: "Week 2A - Why describe data as relations?"
+subtitle: "Relational vocabulary, keys, and data independence"
+description: "A guided introduction to the relational model, its core terminology, and why formal data descriptions matter before we discuss query languages."
 author: "CSCI 340"
 toc: true
 toc-depth: 3
@@ -10,15 +10,15 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 2A · HISTORY, RELATIONS, AND QUERY MEANING
+WEEK 2A · RELATIONAL VOCABULARY, KEYS, AND DATA INDEPENDENCE
 :::
 
-# Why does database language sound like mathematics?
+# Why use this abstract language at all?
 
-Words such as *relation*, *tuple*, *domain*, *predicate*, and *algebra* can make databases sound more abstract than the rows and columns on the screen. That language arose in response to a practical systems problem: how can we ask questions about data without encoding exactly how the machine must find the answer?
+The relational model gives us a precise way to describe data, relationships, and identifiers without tying those descriptions to one file layout, pointer structure, or access algorithm. That precision is the point: we want a stable language for saying what data means before we talk about how a system stores or traverses it.
 
 ::: {.lesson-question}
-**Guiding question:** What do mathematical relations give us that a collection of linked records does not?
+**Guiding question:** What do we gain when we describe data as relations instead of as files, records, or screen layouts?
 :::
 :::
 
@@ -26,21 +26,212 @@ Words such as *relation*, *tuple*, *domain*, *predicate*, and *algebra* can make
 
 By the end of this lesson, you should be able to:
 
-1. explain why early data systems often coupled programs to storage and navigation details;
+1. use the terms **relation**, **attribute**, **tuple**, **domain**, **schema**, and **instance** precisely;
 2. distinguish a relation from its tabular display;
-3. use the terms **attribute**, **tuple**, **domain**, **schema**, and **instance** precisely;
-4. explain why relational algebra remains useful when SQL is the predominant query language; and
-5. read a small relational-algebra expression as a composition of familiar operations.
+3. explain the difference among a **superkey**, **candidate key**, **primary key**, and **foreign key**;
+4. explain why the relational model separates logical description from physical storage; and
+5. explain why a formal data model is useful even before we introduce a query language.
 
 ::: {.callout-tip appearance="simple" icon="false"}
 ## Keep one sentence in mind
 
-The relational model lets us describe the **meaning of a question** separately from the **mechanism used to answer it**.
+The relational model gives us a language for describing **what data means** without committing to **how the data is stored or traversed**.
 :::
 
-## 1. The problem before the relational model
+## 1. Start with a shared vocabulary
 
-Suppose observations are stored in records connected by pointers. To find warm readings from Clear Creek, a program might be told to:
+We will use a small stream-monitoring example throughout the unit.
+
+$$
+\text{site}(\text{site\_id},\ \text{site\_code},\ \text{watershed},\ \text{reach\_name})
+$$
+
+$$
+\text{observation}(\text{observation\_id},\ \text{site\_id},\ \text{observed\_at},\ \text{temperature\_c})
+$$
+
+Here is one possible instance of `site`:
+
+| site_id | site_code | watershed | reach_name |
+|---:|---|---|---|
+| 101 | CC-01 | Clark Fork | Clear Creek Lower |
+| 102 | BF-01 | Blackfoot | North Fork |
+| 103 | RK-02 | Rock Creek | Ranch Bend |
+
+Here is one possible instance of `observation`:
+
+| observation_id | site_id | observed_at | temperature_c |
+|---:|---:|---|---:|
+| 1 | 101 | 2026-05-01 09:00 | 8.4 |
+| 2 | 101 | 2026-05-01 10:00 | 9.1 |
+| 3 | 102 | 2026-05-01 09:00 | 7.8 |
+| 4 | 101 | 2026-05-01 11:00 | 9.7 |
+
+### The core terms
+
+| Term | Clear definition | Example here |
+|---|---|---|
+| Relation | An abstract set of tuples over named attributes | `site` or `observation` |
+| Attribute | A named component of a relation | `site_id`, `observed_at` |
+| Tuple | One fact-record in the relation: one value for each attribute | `(2, 101, 2026-05-01 10:00, 9.1)` |
+| Domain | The set of allowed or meaningful values for an attribute | Site codes such as `CC-01`; temperatures measured in degrees C |
+| Schema | The relation name together with its attributes | `observation(observation_id, site_id, observed_at, temperature_c)` |
+| Instance | The tuples currently present in the relation | The four displayed `observation` tuples |
+
+::: {.callout-important appearance="simple"}
+## Schema and instance are different
+
+The **schema** says what kind of facts may be stored. The **instance** says which facts are stored right now. A relation can have a schema even when its current instance is empty.
+:::
+
+### A relation is not the same thing as a grid on the screen
+
+The displayed table is a convenient representation of a relation instance, but the relation itself is more abstract than its display.
+
+- The relation does not depend on a particular column width, font, or interface.
+- The relation does not depend on a particular file layout on disk.
+- The relation does not inherently come with a row order.
+
+For example, these two displays can represent the same relation instance:
+
+| Run | Possible display order of `observation_id` values |
+|---|---|
+| First execution | 1, 2, 3, 4 |
+| Later execution | 3, 1, 4, 2 |
+
+### Attributes have meaning, not just types
+
+`site_id` and `observation_id` might both be stored as integers, but they do not mean the same thing. Likewise, a timestamp in `observed_at` has a different role from a timestamp in some hypothetical `reviewed_at` attribute, even if both use the same SQL type.
+
+This is why the relational vocabulary matters. It encourages us to ask not only "what type is this value?" but also "what role does this attribute play in the relation?"
+
+## 2. Keys identify tuples
+
+When we say an attribute set is a key, we are making a statement about all valid instances of a relation, not just the sample currently on the screen.
+
+### Key terminology
+
+| Term | Definition | Example in this lesson |
+|---|---|---|
+| Superkey | Any set of attributes that uniquely identifies a tuple | `{site_id}` or `{site_id, watershed}` in `site` |
+| Candidate key | A minimal superkey | `{site_id}` and `{site_code}` in `site` |
+| Primary key | The candidate key chosen as the main identifier | `site_id` in `site` |
+| Foreign key | An attribute whose values must match a key in another relation | `observation.site_id` referencing `site.site_id` |
+
+### A worked example: key versus superkey
+
+In the `site` relation, suppose the course design intends both `site_id` and `site_code` to be unique for every site.
+
+Then:
+
+- `{site_id}` is a superkey because no two site tuples should share the same `site_id`.
+- `{site_code}` is also a superkey because no two site tuples should share the same `site_code`.
+- `{site_id, watershed}` is also a superkey, but it is not minimal.
+
+Why is `{site_id, watershed}` not a candidate key? Because `site_id` by itself is already enough. Adding `watershed` does not help identify the tuple; it only makes the identifying set larger.
+
+::: {.callout-note appearance="simple"}
+## Minimality is the difference
+
+A **candidate key** is not just unique. It is unique with no unnecessary attributes attached.
+:::
+
+### Additional example 1: a relation with multiple candidate keys
+
+Consider a simple student relation:
+
+$$
+\text{student}(\text{student\_id},\ \text{netid},\ \text{university\_email},\ \text{display\_name})
+$$
+
+| student_id | netid | university_email | display_name |
+|---:|---|---|---|
+| 2001 | aria7 | aria7@umontana.edu | Aria Chen |
+| 2002 | mateo3 | mateo3@umontana.edu | Mateo Ruiz |
+| 2003 | priya11 | priya11@umontana.edu | Priya Shah |
+
+If the institution guarantees that `student_id`, `netid`, and `university_email` are each unique, then all three are candidate keys.
+
+- `{student_id}` is a candidate key.
+- `{netid}` is a candidate key.
+- `{university_email}` is a candidate key.
+- `{student_id, display_name}` is a superkey, but not a candidate key, because `student_id` already suffices.
+- `{display_name}` is not a superkey, because two students could share the same name.
+
+If we choose `student_id` as the primary key, the other two candidate keys still matter. They remain alternate ways of identifying a student uniquely.
+
+::: {.activity-checkpoint}
+**Class prompt:** Which of the following are superkeys for `student`: `{netid}`, `{display_name}`, `{student_id, netid}`, `{university_email, display_name}`? Which of those are candidate keys?
+:::
+
+### Additional example 2: a relation whose key is composite
+
+Now consider course sections and enrollments:
+
+$$
+\text{section}(\text{section\_id},\ \text{course\_code},\ \text{term\_code},\ \text{section\_number})
+$$
+
+$$
+\text{enrollment}(\text{student\_id},\ \text{section\_id},\ \text{enrolled\_on},\ \text{final\_letter\_grade})
+$$
+
+| section_id | course_code | term_code | section_number |
+|---:|---|---|---:|
+| 501 | CSCI340 | 2026FA | 1 |
+| 502 | CSCI340 | 2026FA | 2 |
+| 610 | MATH152 | 2026FA | 1 |
+
+| student_id | section_id | enrolled_on | final_letter_grade |
+|---:|---:|---|---|
+| 2001 | 501 | 2026-08-17 | A- |
+| 2002 | 501 | 2026-08-17 | B+ |
+| 2001 | 610 | 2026-08-18 | A |
+
+In `enrollment`, no single attribute identifies a tuple by itself:
+
+- `student_id` is not enough because one student can enroll in multiple sections.
+- `section_id` is not enough because one section contains multiple students.
+- `{student_id, section_id}` is a candidate key if the design allows at most one enrollment record per student per section.
+
+This example is useful because it also makes foreign keys visible:
+
+- `enrollment.student_id` is a foreign key referencing `student.student_id`.
+- `enrollment.section_id` is a foreign key referencing `section.section_id`.
+
+So `enrollment` is a good reminder that a relation can have:
+
+- a composite primary key;
+- multiple foreign keys; and
+- attributes such as `enrolled_on` and `final_letter_grade` that describe the relationship rather than either entity alone.
+
+::: {.activity-checkpoint}
+**Class prompt:** Why is `{student_id, section_id, enrolled_on}` a superkey but not a candidate key for `enrollment`? What real-world rule makes `{student_id, section_id}` work as a key?
+:::
+
+### What is not a key?
+
+In the sample above, the attribute `watershed` is not a superkey. Multiple sites could belong to the Clark Fork watershed, so `watershed = 'Clark Fork'` does not identify one tuple uniquely.
+
+Likewise, in `observation`, the fact that all four displayed timestamps happen to be different does **not** prove that `observed_at` is a candidate key. A future tuple could easily reuse a time:
+
+| observation_id | site_id | observed_at | temperature_c |
+|---:|---:|---|---:|
+| 5 | 103 | 2026-05-01 10:00 | 11.2 |
+
+Now two tuples share `observed_at = 2026-05-01 10:00`, so `observed_at` alone cannot identify an observation.
+
+::: {.activity-checkpoint}
+**Checkpoint:** In `observation`, is `{observation_id, site_id}` a candidate key or only a superkey? Explain your answer using minimality.
+:::
+
+## 3. Why this abstraction is useful
+
+The vocabulary above is not academic decoration. It supports a practical goal: users and designers should be able to describe data and relationships without specifying one traversal strategy or one storage format.
+
+### Before declarative query languages
+
+Suppose observations are stored in records connected by pointers. To find warm readings from site `CC-01`, a program might be written to:
 
 1. locate the record for `CC-01`;
 2. follow its pointer to the first observation;
@@ -48,52 +239,51 @@ Suppose observations are stored in records connected by pointers. To find warm r
 4. inspect each temperature; and
 5. copy qualifying fields into an output record.
 
-That procedure can work. But notice how much the application must know: where to begin, which link to follow, how records are connected, and when the traversal ends.
-
 ```{mermaid}
 flowchart LR
-    S["Site record<br/>CC-01"] --> O1["Observation<br/>08:00 · 7.9°C"]
-    O1 --> O2["Observation<br/>09:00 · 8.4°C"]
-    O2 --> O3["Observation<br/>10:00 · 9.1°C"]
-    O3 --> O4["Observation<br/>11:00 · 9.7°C"]
+    S["Site record<br/>CC-01"] --> O1["Observation<br/>08:00 · 7.9C"]
+    O1 --> O2["Observation<br/>09:00 · 8.4C"]
+    O2 --> O3["Observation<br/>10:00 · 9.1C"]
+    O3 --> O4["Observation<br/>11:00 · 9.7C"]
 
     classDef record fill:#eaf4f7,stroke:#247487,color:#173b4d;
     class S,O1,O2,O3,O4 record;
 ```
 
-If the storage structure changes, the program may also need to change—even if the question remains exactly the same.
+That program may work, but notice what it assumes:
 
-::: {.callout-question appearance="simple"}
-## What belongs to the question?
+- where to begin;
+- which links exist;
+- how records are chained together; and
+- how to traverse the storage structure.
 
-Which parts of the procedure express the user's intent, and which parts merely describe one possible storage arrangement?
-:::
+If the storage design changes, the program may need to change even when the question stays the same.
 
-### From navigation to declaration
+### Separate the description of a question from one algorithm
 
-Compare the procedure above with this request:
+Compare the pointer-following procedure above with this request:
 
-> Return the time and temperature of observations from site `CC-01` whose temperature is at least 9°C.
+> Return the time and temperature of observations from site `CC-01` whose temperature is at least 9C.
 
-The request identifies the desired result but does not say whether the DBMS should scan a file, follow pointers, use an index, process sites first, or process observations first.
+This request states the desired result, but it does not say whether the system should scan a file, use an index, follow pointers, process observations first, or process sites first.
 
 ::: {.concept-strip}
-**Navigational request:** specifies a path through stored records<br>
-**Declarative request:** specifies properties of the desired result
+**Navigation-dependent request:** tied to one path through stored records<br>
+**Logical request:** states what properties the desired answer must have
 :::
 
-The declarative request creates freedom. A database system can change its storage structures or choose a different execution strategy without requiring the user to rewrite the question.
+That separation creates flexibility. The system can change storage structures or execution strategies without forcing the user to rewrite the meaning of the question.
 
-## 2. A short history of an abstraction
+## 4. A short history of the separation
 
-Database history is not simply a progression from “bad” systems to “good” systems. Each generation responded to the hardware, workloads, and organizational problems of its time. One important shift, however, was the separation of logical questions from physical navigation.
+Database systems did not become relational because earlier systems were foolish. They were built for different hardware and workload constraints. But one major shift was the move from navigation-dependent programs toward logical descriptions of data.
 
 ```{mermaid}
 flowchart LR
     A["Application-specific files<br/>record layouts in programs"] --> B["Hierarchical and network systems<br/>predefined navigation paths"]
     B --> C["Relational model<br/>data described as relations"]
-    C --> D["Declarative SQL<br/>state the desired result"]
-    D --> E["Query optimization<br/>choose among equivalent plans"]
+    C --> D["Formal query languages<br/>over relations"]
+    D --> E["DBMS chooses storage and<br/>execution details"]
 
     classDef early fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
     classDef model fill:#eaf4f7,stroke:#247487,color:#173b4d;
@@ -103,279 +293,24 @@ flowchart LR
     class E system;
 ```
 
-In his 1970 paper, E. F. Codd proposed describing shared data using mathematical relations while insulating users from many internal representation details. The practical ambition was **data independence**: applications should depend on the logical meaning of data more than on one storage layout.
+In his 1970 paper, E. F. Codd proposed describing shared data using mathematical relations while insulating users from many internal representation details. The engineering goal was **data independence**: applications should depend more on the logical meaning of data than on a particular physical layout.
 
 ::: {.callout-note appearance="simple"}
-## The mathematical language serves an engineering goal
+## The formality serves an engineering purpose
 
-Mathematics gives us definitions precise enough to say what an operation means, whether two expressions return the same result, and when a system may replace one expression with another.
+Precise definitions let us say what a relation is, what counts as a key, what kinds of facts may be represented, and later, what a query means independently of one implementation.
 :::
 
-### The idea survives beyond traditional databases
+## 5. Put the ideas together
 
-Modern systems include relational databases, document stores, graph databases, analytical engines, DataFrame libraries, and distributed processing systems. They do not all implement the same model. Nevertheless, operations such as filtering, projecting, joining, grouping, and ordering appear across many of them.
-
-The relational model is therefore both a particular database model and a durable vocabulary for reasoning about structured data.
-
-## 3. A relation is not merely a grid
-
-Return to the stream-monitoring system. One possible relation schema is:
-
-$$
-\text{observation}(\text{observation\_id},\ \text{site\_id},\ \text{sensor\_id},\ \text{observed\_at},\ \text{temperature\_c})
-$$
-
-The notation names a relation and its attributes. It does **not** specify how the values appear on a screen or how bytes are arranged on disk.
-
-| observation_id | site_id | sensor_id | observed_at | temperature_c |
-|---:|---:|---:|---|---:|
-| 1 | 101 | 501 | 2026-05-01 09:00 | 8.4 |
-| 2 | 101 | 501 | 2026-05-01 10:00 | 9.1 |
-| 3 | 102 | 501 | 2026-05-01 09:00 | 7.8 |
-| 4 | 101 | 501 | 2026-05-01 11:00 | 9.7 |
-
-This table is a convenient **display** of one relation instance. The relation itself is the abstract collection of tuples and their interpretation.
-
-### Translating the vocabulary
-
-| Informal or implementation term | Relational term | Meaning here |
-|---|---|---|
-| Table definition | Relation schema | The relation's name, attributes, and associated structure |
-| Current table contents | Relation instance | The tuples present at a particular time |
-| Column | Attribute | A named role within the relation |
-| Permitted column values | Domain | The values from which an attribute may be drawn |
-| Row | Tuple | One collection of attribute values in the relation |
-
-::: {.callout-important appearance="simple"}
-## Schema and instance answer different questions
-
-The **schema** says what kind of facts may be represented. The **instance** is the collection of facts represented now. An empty relation still has a schema.
-:::
-
-### Attributes have roles, not just types
-
-`site_id` and `sensor_id` might both use the SQL type `INTEGER`, but their meanings are not interchangeable. A domain is more than a storage width: it concerns the set and interpretation of valid values for an attribute.
-
-Similarly, a timestamp in `observed_at` means something different from a timestamp in `reviewed_at`, even if PostgreSQL stores both with the same type.
-
-### Relations are unordered
-
-The order in which tuples are displayed is not an intrinsic part of a relation. A DBMS may return rows in different orders unless a query explicitly requests an order.
-
-| Run | Possible display order |
-|---|---|
-| First execution | 1, 2, 3, 4 |
-| Later execution | 3, 1, 4, 2 |
-
-Both displays can represent the same relation instance.
-
-::: {.callout-warning appearance="simple"}
-## “It came out in that order last time” is not a guarantee
-
-Storage layout, indexes, parallel execution, and query plans can change. Use `ORDER BY` when order is part of the requested result.
-:::
-
-## 4. Keys are statements about possible instances
-
-A key is not merely a column that happens to be unique in today's sample. It is a claim about every valid instance of the relation.
-
-| Term | Working definition | Stream example |
-|---|---|---|
-| Superkey | Any attribute set sufficient to identify a tuple uniquely | `{observation_id}` or `{observation_id, observed_at}` |
-| Candidate key | A minimal superkey | `{observation_id}` |
-| Primary key | The candidate key selected as the principal identifier | `observation_id` |
-| Foreign key | Attribute values required to match a key in another relation | `site_id` referring to `site.site_id` |
-
-Why is `{observation_id, observed_at}` not a candidate key if `observation_id` is already sufficient? Removing `observed_at` leaves a key, so the larger set is not minimal.
-
-::: {.activity-checkpoint}
-**Checkpoint:** Four sample rows have different timestamps. Does that prove `observed_at` is a candidate key? Construct one plausible future observation that answers the question.
-:::
-
-## 5. Two mathematical views of a query
-
-The relational tradition includes two complementary ways to characterize a query.
-
-::: {.tool-comparison}
-::: {.tool-card}
-### Relational calculus
-
-Describe the properties a result tuple must satisfy: **what** belongs in the answer?
-:::
-
-::: {.tool-card}
-### Relational algebra
-
-Compose operations that produce the answer: **which logical transformations** define it?
-:::
-
-::: {.tool-card}
-### SQL
-
-Use a practical declarative language influenced by these ideas to communicate with a DBMS.
-:::
-:::
-
-We will not study relational calculus notation in depth. Its perspective matters, however: a declarative query describes the desired result rather than one required traversal of stored records.
-
-## 6. Why relational algebra if we have SQL?
-
-Consider this query:
-
-```sql
-SELECT o.observed_at, o.temperature_c
-FROM observation AS o
-JOIN site AS s ON o.site_id = s.site_id
-WHERE s.watershed = 'Clark Fork'
-  AND o.temperature_c >= 20;
-```
-
-SQL communicates the request. The DBMS still needs a plan for producing the result.
+The lesson's logic is one chain:
 
 ```{mermaid}
 flowchart LR
-    Q["Question"] --> S["SQL query"]
-    S --> L["Logical plan<br/>relational operations"]
-    L --> R["Equivalent rewritten plan"]
-    R --> P["Physical plan<br/>scans, indexes, join algorithms"]
-    P --> A["Answer"]
-
-    classDef intent fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
-    classDef logical fill:#eaf4f7,stroke:#247487,color:#173b4d;
-    classDef physical fill:#173b4d,stroke:#173b4d,color:#ffffff;
-    class Q,S intent;
-    class L,R logical;
-    class P,A physical;
-```
-
-Relational algebra gives us a compact language for the **logical plan**. It is useful because it supports:
-
-- **meaning:** state the operations a query denotes without committing to a physical algorithm;
-- **composition:** build a complex query from small operations;
-- **correctness:** expose missing filters, attributes, or join conditions;
-- **equivalence:** determine when differently structured expressions produce the same answer; and
-- **optimization:** rearrange equivalent operations to reduce intermediate work.
-
-::: {.callout-tip appearance="simple"}
-## A useful analogy
-
-SQL resembles a high-level programming language. Relational operations resemble an intermediate representation that can be inspected and transformed before the machine chooses low-level execution steps.
-:::
-
-### The same answer, different amounts of work
-
-Imagine a hypothetical database with one million observations and one thousand sites. Only twelve sites belong to the Clark Fork watershed.
-
-::: {.tool-comparison}
-::: {.tool-card}
-### Plan A
-
-1. Combine sites with observations.
-2. Filter the combined result to one watershed.
-3. Filter to warm observations.
-4. Keep two output attributes.
-:::
-
-::: {.tool-card}
-### Plan B
-
-1. Filter sites to one watershed.
-2. Filter observations to warm readings.
-3. Combine the smaller results.
-4. Keep two output attributes.
-:::
-
-::: {.tool-card}
-### The question
-
-If both plans are equivalent, which plan is likely to create smaller intermediate results?
-:::
-:::
-
-The optimizer's real decision depends on statistics, indexes, physical algorithms, and implementation details. Relational equivalence does not by itself determine the fastest plan. It makes alternative logical plans possible.
-
-## 7. Begin with verbs, then attach symbols
-
-For now, read each operator as a familiar transformation.
-
-| Intent | Relational operation | Common notation | SQL connection |
-|---|---|:---:|---|
-| Keep tuples satisfying a predicate | Selection | $\sigma$ | `WHERE` |
-| Keep selected attributes | Projection | $\pi$ | expressions in `SELECT` |
-| Give a result or attribute a useful name | Rename | $\rho$ | `AS` |
-| Pair tuples from two relations | Cartesian product | $\times$ | multiple inputs before a join condition |
-| Combine related tuples | Join | $\bowtie$ | `JOIN ... ON` |
-
-The request “return the time and temperature of observations at least 9°C” can be expressed as:
-
-$$
-\pi_{\text{observed\_at},\ \text{temperature\_c}}
-\left(
-\sigma_{\text{temperature\_c} \ge 9}(\text{observation})
-\right)
-$$
-
-Read from the inside outward:
-
-1. begin with `observation`;
-2. select tuples whose temperature is at least 9; and
-3. project the time and temperature attributes.
-
-The corresponding SQL is:
-
-```sql
-SELECT observed_at, temperature_c
-FROM observation
-WHERE temperature_c >= 9;
-```
-
-### Closure makes composition possible
-
-Each relational-algebra operation accepts one or more relations and produces another relation. Because the output has the same general kind as the input, operations can be nested and assembled into larger expressions.
-
-```{mermaid}
-flowchart LR
-    A["observation"] --> B["select warm tuples<br/>σ"]
-    B --> C["project time and temperature<br/>π"]
-    C --> D["result relation"]
-
-    classDef relation fill:#eaf4f7,stroke:#247487,color:#173b4d;
-    classDef operation fill:#173b4d,stroke:#173b4d,color:#ffffff;
-    class A,D relation;
-    class B,C operation;
-```
-
-::: {.activity-checkpoint}
-**Read, do not calculate:** In the expression above, which operation happens first? Which operation determines the result's attributes? Which operation determines its tuples?
-:::
-
-## 8. SQL is relational—but not pure relational algebra
-
-The mapping between SQL and relational algebra is powerful, but it is not exact.
-
-| Classical relational model | SQL in practice |
-|---|---|
-| Relations are sets | Query results may contain duplicate rows |
-| Tuples have no inherent order | `ORDER BY` can request an ordered presentation |
-| Predicates are usually introduced with two-valued logic | `NULL` leads SQL to use `TRUE`, `FALSE`, and `UNKNOWN` |
-| Operators are defined over relations | SQL includes expressions and features beyond basic algebra |
-
-::: {.callout-caution appearance="simple"}
-## Use the model without confusing it for the implementation
-
-Relational algebra is a deliberately clean model for reasoning. Real SQL systems extend and modify that model. Later lessons will make the differences explicit rather than silently treating them as identical.
-:::
-
-## 9. Put the ideas together
-
-The historical and mathematical pieces now form one chain:
-
-```{mermaid}
-flowchart LR
-    A["Navigation-dependent<br/>programs"] --> B["Logical and physical<br/>independence"]
-    B --> C["Relations and<br/>declarative questions"]
-    C --> D["Composable, equivalent<br/>logical plans"]
-    D --> E["Physical execution<br/>choices"]
+    A["Precise vocabulary<br/>for data"] --> B["Keys identify tuples<br/>across valid instances"]
+    B --> C["Relations describe facts<br/>and relationships"]
+    C --> D["Logical meaning stays stable<br/>when storage changes"]
+    D --> E["Formal query languages become possible"]
 
     classDef problem fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
     classDef idea fill:#eaf4f7,stroke:#247487,color:#173b4d;
@@ -388,20 +323,14 @@ flowchart LR
 ::: {.takeaway-panel}
 ## The main claim
 
-Database language is mathematical because a DBMS needs precise rules for what queries mean—and for deciding when one plan can replace another without changing the answer.
+The relational model sounds mathematical because it is trying to be exact about data. That exactness is what lets us describe information and relationships in a way that survives changes in storage layout and execution strategy.
 :::
-
-## Exit ticket
-
-Respond in three or four sentences:
-
-> A user already knows SQL and asks why they should learn relational algebra. Give one reason involving correctness or meaning and one reason involving query execution.
 
 ## Looking ahead
 
-Next, we will use `SELECT`, `FROM`, and `WHERE` to ask precise questions of a single relation. We will repeatedly connect each SQL clause to its relational purpose, predict the result, and test our prediction against boundary cases.
+Next, we will use **relational algebra** as a formal language for expressing questions over relations. The point will not be to guess one traversal algorithm, but to describe the logical operations that define the answer.
 
 ## Sources and further reading
 
-- Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapters 2–3.
+- Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapters 2-3.
 - E. F. Codd, [“A Relational Model of Data for Large Shared Data Banks”](https://doi.org/10.1145/362384.362685), 1970.

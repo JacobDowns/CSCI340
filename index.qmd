@@ -11,10 +11,6 @@ toc: false
 This course asks how we should represent, organize, query, validate, and analyze data - and what makes those choices correct, efficient, and explainable.
 :::
 
-::: {.draft-banner}
-**Course site status:** This is a working course-development draft. Instructor, term, meeting, and institution-specific policy details still need to be supplied.
-:::
-
 ## The recurring question
 
 ::: {.design-question}

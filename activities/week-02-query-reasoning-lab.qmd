@@ -40,7 +40,7 @@ One query-and-test record per group
 :::
 :::
 
-Before beginning, read [Week 2A — From tables to relations](../lectures/week-02-from-tables-to-relations.qmd) and [Week 2B — Asking precise questions with SQL](../lectures/week-02-asking-questions-with-sql.qmd).
+Before beginning, read [Week 2A - Why describe data as relations?](../lectures/week-02-from-tables-to-relations.qmd), [Week 2B - Relational algebra and query meaning](../lectures/week-02-relational-algebra.qmd), and [Week 2C - Asking precise questions with SQL](../lectures/week-02-asking-questions-with-sql.qmd).
 
 ## Learning goals
 

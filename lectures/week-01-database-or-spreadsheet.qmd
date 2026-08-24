@@ -1,5 +1,5 @@
 ---
-title: "Week 1 — Is a database just a glorified spreadsheet?"
+title: "Week 1 - Is a database just a glorified spreadsheet?"
 subtitle: "Where tabular files work, where they break, and what a database adds"
 description: "An introductory database lesson built around a deliberately provocative comparison with spreadsheets and CSV files."
 author: "CSCI 340"
@@ -10,15 +10,15 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 1 · REPRESENTATION, RULES, AND RELATIONSHIPS
+WEEK 1 · REPRESENTATION, RULES, AND SHARED DATA
 :::
 
 # A database is just a glorified spreadsheet.
 
-That claim is useful precisely because it is **almost plausible**. Both tools organize values into rows and columns. Both can sort, filter, calculate, and summarize. So what changes when a table becomes a database?
+That claim is useful precisely because it is almost plausible. Spreadsheets, CSV files, and database tables can all put values into rows and columns. The real question is not what they look like. The real question is what kinds of work they support reliably.
 
 ::: {.lesson-question}
-**Guiding question:** Where does a simple file representation of data begin to fall apart—and what capabilities do databases add in response?
+**Guiding question:** When does a simple table stop being "good enough," and what problem is a database actually solving?
 :::
 :::
 
@@ -26,21 +26,21 @@ That claim is useful precisely because it is **almost plausible**. Both tools or
 
 By the end of this lesson, you should be able to:
 
-1. explain why spreadsheets, CSV files, and relational tables initially look similar;
-2. distinguish a **database** from a **database management system**;
-3. identify repeated facts, ambiguous identity, and common modification anomalies;
-4. explain how keys, constraints, relationships, and transactions address specific failures; and
+1. explain why spreadsheets, CSV files, and database tables initially look similar;
+2. distinguish a file or spreadsheet from a database system used for shared structured data;
+3. identify repeated information, hidden assumptions, and common inconsistency risks in a naive table;
+4. explain why identity, relationships, and rules are hard to maintain in an ordinary file; and
 5. choose a spreadsheet, a collection of files, or a database for a small scenario and defend the choice.
 
 ::: {.callout-tip appearance="simple" icon="false"}
 ## Keep one sentence in mind
 
-A database is valuable not merely because it stores data, but because it can make important **relationships and rules explicit**.
+A database is valuable not merely because it stores data, but because it helps make important **information, rules, and relationships explicit**.
 :::
 
 ## 1. Why the comparison feels reasonable
 
-Imagine receiving this table from a field team monitoring stream temperature.
+Imagine receiving this file from a field team monitoring stream temperature.
 
 | observation_id | site_code | site_name | sensor_model | observed_at | temperature_c |
 |---:|---|---|---|---|---:|
@@ -55,23 +55,23 @@ At first glance, the same information could live in several places:
 ::: {.tool-card}
 ### Spreadsheet
 
-A visible grid with formatting, formulas, charts, and direct editing.
+A visible grid with formulas, charts, formatting, and direct editing.
 :::
 
 ::: {.tool-card}
 ### CSV file
 
-A portable text representation of rows and delimited values.
+A portable text file that stores rows and delimited values.
 :::
 
 ::: {.tool-card}
 ### Database table
 
-A named relation managed by software that can query and enforce rules.
+Rows and columns managed by software designed for shared structured data.
 :::
 :::
 
-They share a familiar tabular surface:
+They share a familiar surface:
 
 ```{mermaid}
 flowchart LR
@@ -88,183 +88,224 @@ flowchart LR
     class E,F,G tool;
 ```
 
-This is the source of the “glorified spreadsheet” intuition. The visual shape is similar, and for small tasks the observable behavior may be similar too.
+This is why the comparison feels reasonable. For small tasks, the tools may even behave similarly.
 
 ### What all three can do
 
 - Store rectangular data.
 - Label fields with column names.
-- Select particular rows and columns.
-- Sort and aggregate values.
-- Exchange data with other tools.
+- Let a person inspect values directly.
+- Support sorting, filtering, and simple summarizing.
+- Move data from one tool to another.
 
-::: {.callout-question appearance="simple"}
-## Opening poll
+::: {.opening-prompt}
+## Opening Question
 
-If this file contains only a few hundred measurements and one person maintains it, what problem would a database solve **today**? “None yet” is a legitimate hypothesis.
+If this file contains only a few hundred rows and one person maintains it, what problem would a database solve today? "Probably none yet" is a legitimate answer.
 :::
 
-## 2. Three different things hiding behind one grid
+## 2. A simple table can fail in predictable ways
 
-The visual similarity can conceal important distinctions.
+The core issue is not that rows and columns are bad. The core issue is that a naive table often tries to do several jobs at once.
 
-::: {.concept-strip}
-**Spreadsheet** → a document and interactive calculation environment<br>
-**CSV** → a serialization format for values<br>
-**Database** → an organized collection of related data<br>
-**DBMS** → the software that stores, queries, protects, and coordinates the database
-:::
+In this example, one file is trying to:
 
-PostgreSQL is a **database management system**. A particular PostgreSQL database contains tables, constraints, indexes, users, and other objects. A CSV is not a lightweight DBMS; it is a file format with very few built-in semantics.
+- record individual observations;
+- describe sites;
+- describe sensors; and
+- carry rules that readers are expected to remember.
 
-```{mermaid}
-flowchart TB
-    U["People and applications"] --> Q["Database management system<br/>PostgreSQL"]
-    Q --> T1["site"]
-    Q --> T2["sensor"]
-    Q --> T3["observation"]
-    Q --> R["Rules, permissions,<br/>transactions, and indexes"]
+That creates several predictable failure patterns.
 
-    classDef actor fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
-    classDef system fill:#173b4d,stroke:#173b4d,color:#ffffff;
-    classDef data fill:#eaf4f7,stroke:#247487,color:#173b4d;
-    class U actor;
-    class Q system;
-    class T1,T2,T3,R data;
-```
+| Failure pattern | Central question |
+|---|---|
+| Repeated information | What information is being copied across many rows? |
+| Inferred but unenforced rules | What does a human assume that the file does not guarantee? |
+| Slippery identity | How do we tell whether two rows refer to the same thing? |
+| Awkward relationships | What structure does one wide table hide poorly? |
+| Shared editing | What happens when several people change the same data? |
 
-::: {.callout-note appearance="simple"}
-## Vocabulary matters
+## 3. Failure pattern 1: repeated information invites inconsistent edits
 
-In casual speech we often say “the database rejected the row.” More precisely, the DBMS evaluated the database's declared rules and rejected a change that would violate them.
-:::
-
-## 3. Failure point one: the table mixes different kinds of facts
-
-Return to the stream table. Each row records an **observation**, but it also repeats facts about a **site** and a **sensor model**.
+Return to the stream table. Each row looks like one record, but it actually mixes information about several different things.
 
 ::: {.fact-grid}
 ::: {.fact-card}
-### Observation facts
+### Observation information
 
-- when the reading occurred
-- measured temperature
-- which site and sensor were involved
+- when the reading happened
+- what temperature was recorded
 :::
 
 ::: {.fact-card}
-### Site facts
+### Site information
 
-- site code
-- site name
-- perhaps location and watershed
+- the site code
+- the site name
 :::
 
 ::: {.fact-card}
-### Sensor facts
+### Sensor information
 
-- model name
-- manufacturer
-- perhaps accuracy and serial number
+- the sensor model
+- perhaps other details not shown here
 :::
 :::
 
-The file stores these facts together because that is convenient for reading a row. Convenience has a cost: `Clear Creek` may be repeated thousands of times.
+The file stores that information together because that is convenient for reading one row. But convenience has a cost: some information now repeats every time a new observation is added.
 
-### Modification anomalies
+::: {.tool-comparison}
+::: {.tool-card}
+### What repeats
 
-When one table repeats the same fact, ordinary operations become surprisingly difficult.
+Information about sites and sensors is copied into many observation rows.
+:::
 
-| Operation | What can go wrong? | Name commonly given to the problem |
-|---|---|---|
-| Update a site's name | Only some rows are changed, leaving contradictory names | Update anomaly |
-| Add a site before it has observations | An empty or fake observation must be created | Insertion anomaly |
-| Delete a site's final observation | The only record of the site disappears too | Deletion anomaly |
+::: {.tool-card}
+### What can go wrong
+
+One copy is edited while another is not, so the file starts making contradictory claims.
+:::
+
+::: {.tool-card}
+### Why it matters
+
+The problem is not one typo. The problem is a structure that makes contradiction easy.
+:::
+:::
+
+The problem is not simply that a value appears more than once. The problem is that the same information about the same thing appears in many rows.
+
+For example:
+
+- "`CC-01` refers to Clear Creek" is information about a site.
+- "`TempCo T100` is the sensor model used here" is information about a sensor.
+
+That information is copied again and again as more observations are recorded.
 
 ::: {.callout-warning appearance="simple"}
 ## Row 4 is not merely a typo
 
-`CC-01` now has two names: **Clear Creek** and **Clear Creak**. The deeper problem is that the file contains no enforceable declaration that one site code identifies one site.
+`CC-01` now appears with both `Clear Creek` and `Clear Creak`. The visible mistake matters, but the design issue matters more: the file makes it easy for the same site information to be copied inconsistently.
 :::
 
-### Checkpoint: locate the repeated facts
+### A small inconsistency can spread
 
-For each field below, decide what kind of thing it describes.
+Suppose the site name changes, or the original name was misspelled.
 
-| Field | Observation | Site | Sensor | Not enough information |
-|---|:---:|:---:|:---:|:---:|
-| `observed_at` | □ | □ | □ | □ |
-| `site_name` | □ | □ | □ | □ |
-| `sensor_model` | □ | □ | □ | □ |
-| `temperature_c` | □ | □ | □ | □ |
+| Task | Risk in one flat file |
+|---|---|
+| Correct the site name | Some rows get updated and others do not |
+| Add a new site before its first reading | You may be forced to invent a fake reading or leave the site out entirely |
+| Delete the final reading from a site | You may also delete the only remaining record of the site |
 
-What would happen if a sensor model name were corrected after one million observations had been collected?
+You do not need formal vocabulary yet to see the pattern: when one file mixes several kinds of information, ordinary edits become risky.
 
-## 4. Failure point two: identity is implicit
-
-Humans are good at treating labels as identities—until labels change, collide, or are entered inconsistently.
-
-Consider the phrase “the Clear Creek site.” Which field identifies it?
-
-- `site_name` is readable, but names can change and may not be unique.
-- `site_code` looks stable, but only if the organization guarantees its meaning.
-- the row number identifies an observation, not the site.
-- latitude and longitude may drift when coordinates are corrected.
-
-::: {.callout-important appearance="simple"}
-## A key is a claim
-
-Declaring a key is not just a technical maneuver. It asserts that a value—or combination of values—uniquely identifies something in the modeled world.
+::: {.activity-checkpoint}
+**Checkpoint:** Which information in the table is about one reading, and which information is about something that exists across many readings?
 :::
 
-The choice should follow requirements rather than convenience. Before choosing a key, ask:
+## 4. Failure pattern 2: human readers infer rules the file does not enforce
+
+A human reader naturally makes inferences from the table:
+
+- that `CC-01` identifies one site;
+- that `site_name` should be consistent for that site;
+- that every observation came from a real site;
+- that `2026-05-01 09:00` is intended to be a date-time value;
+- that temperature should be numeric and within some plausible range.
+
+Some of those assumptions may be reasonable. But notice that the file itself does not explain which are guaranteed and which are merely guesses.
+
+::: {.callout-note appearance="simple"}
+## People can carry rules that the file cannot
+
+Humans can look at a column and think, "those are timestamps," or "those codes should be unique." A plain file does not automatically enforce either claim.
+:::
+
+::: {.tool-comparison}
+::: {.tool-card}
+### What people infer
+
+Certain columns "should" be unique, numeric, or date-like.
+:::
+
+::: {.tool-card}
+### What the file knows
+
+Usually much less than the reader assumes.
+:::
+
+::: {.tool-card}
+### Why it matters
+
+Data can look meaningful and still fail to preserve that meaning reliably.
+:::
+:::
+
+### A table can suggest structure without enforcing it
+
+Consider the values below:
+
+| Column | What a person may infer | What the file itself guarantees |
+|---|---|---|
+| `site_code` | One code per site | Very little by itself |
+| `observed_at` | A date and time | Only that some text was stored |
+| `temperature_c` | A numeric Celsius value | Only that a value was entered |
+
+This is one reason data integrity is hard in a naive representation. The meaning may be clear to a person and still be fragile in the data itself.
+
+## 5. Failure pattern 3: identity becomes slippery
+
+When a table is small, people often act as if labels are identities. That works until labels change, collide, or are entered differently by different people.
+
+Consider the phrase "the Clear Creek site." What exactly identifies it?
+
+- The name is readable, but names can change or be typed inconsistently.
+- The code looks stable, but only if the organization treats it as stable.
+- The row number identifies a row in this file, not necessarily the real-world site.
+
+The practical issue is simple: if you do not decide how something is identified, you will eventually struggle to tell whether two rows refer to the same thing.
+
+::: {.tool-comparison}
+::: {.tool-card}
+### The tempting shortcut
+
+Treat the most readable label as the identifier.
+:::
+
+::: {.tool-card}
+### The risk
+
+Readable labels can change, collide, or be entered inconsistently.
+:::
+
+::: {.tool-card}
+### Why it matters
+
+Once identity is unclear, correction, merging, and querying all become harder.
+:::
+:::
+
+### Questions worth asking early
+
+Before relying on a field as an identifier, ask:
 
 1. Can the value change?
-2. Can two records legitimately share it?
-3. Can it be missing when the record is created?
-4. Who controls its meaning?
-5. Does it identify the real-world thing or only the current row?
+2. Can two real things legitimately share it?
+3. Can it be missing?
+4. Is it controlled carefully, or typed freely by many people?
+5. Does it identify the thing itself, or only one row in one file?
 
-### A database response: separate identity from description
+::: {.callout-question appearance="simple"}
+## Interpret the evidence
 
-One possible redesign separates sites, sensor models, and observations.
-
-```{mermaid}
-erDiagram
-    SITE ||--o{ OBSERVATION : "has"
-    SENSOR ||--o{ OBSERVATION : "records"
-
-    SITE {
-        integer site_id PK
-        text site_code UK
-        text site_name
-    }
-
-    SENSOR {
-        integer sensor_id PK
-        text model_name
-    }
-
-    OBSERVATION {
-        integer observation_id PK
-        integer site_id FK
-        integer sensor_id FK
-        timestamp observed_at
-        decimal temperature_c
-    }
-```
-
-This diagram says that each observation refers to one site and one sensor, while a site or sensor may participate in many observations.
-
-::: {.callout-caution appearance="simple"}
-## A diagram is a hypothesis, not an answer key
-
-Do we mean a sensor **model** or an individual physical instrument? Can two sensors record at the same site and time? Can site names change historically? The correct design depends on facts not yet stated.
+Does `site_code` look more stable than `site_name` here? Why might that still be only an inference rather than a guarantee?
 :::
 
-## 5. Failure point three: relationships become awkward
+## 6. Failure pattern 4: relationships fit awkwardly into one wide table
 
-Rectangular files encourage us to flatten related things into one wide table. This works until the relationships stop being simple.
+Flat tables are good at listing rows. They are less good at representing more complicated relationships.
 
 Suppose one observation can have several quality flags:
 
@@ -272,7 +313,7 @@ Suppose one observation can have several quality flags:
 - `sensor_recalibrated`
 - `manually_reviewed`
 
-Several spreadsheet-style designs are tempting:
+Several file-based designs are tempting:
 
 ```text
 flag_1 | flag_2 | flag_3
@@ -286,7 +327,32 @@ flags = "suspected_ice; manually_reviewed"
 suspected_ice | sensor_recalibrated | manually_reviewed
 ```
 
-Each representation makes some future operations harder. How would we add a new flag type? Prevent misspellings? Attach a reviewer and timestamp to one flag? Find observations with two particular flags?
+Each choice solves one short-term problem while creating new long-term ones.
+
+- How do we add a new flag type later?
+- How do we prevent misspellings?
+- How do we record who added a flag and when?
+- How do we ask for observations that have two specific flags?
+
+::: {.tool-comparison}
+::: {.tool-card}
+### The shortcut
+
+Pack relationship information into extra columns or encoded text.
+:::
+
+::: {.tool-card}
+### The risk
+
+New cases become awkward, inconsistent, or hard to query.
+:::
+
+::: {.tool-card}
+### Why it matters
+
+The file hides structure instead of representing it directly.
+:::
+:::
 
 ```{mermaid}
 flowchart LR
@@ -297,75 +363,76 @@ flowchart LR
     F2 --> O2
     F3 --> O2
 
-    classDef observation fill:#173b4d,stroke:#173b4d,color:#fff;
+    classDef observation fill:#173b4d,stroke:#173b4d,color:#ffffff;
     classDef flag fill:#eaf4f7,stroke:#247487,color:#173b4d;
     class O,O2 observation;
     class F1,F2,F3 flag;
 ```
 
-Databases do not eliminate complexity. They give us tools—multiple related tables, keys, and joins—to represent the complexity directly instead of hiding it inside columns or text.
+The main point is not that spreadsheets are bad. The point is that some relationships fit awkwardly into one rectangular file.
 
-## 6. Failure point four: rules live in people's heads
+## 7. Why databases help with these failure patterns
 
-A spreadsheet can visually suggest rules through color, validation menus, protected cells, or instructions. A CSV cannot even do that. In both cases, another program can often bypass those conventions.
+A spreadsheet can hint at rules through formatting, protected cells, validation menus, or written instructions. A CSV cannot even do that. In both cases, another person or program may still enter values that break the intended structure.
 
 For the stream data, plausible rules include:
 
-- every observation must refer to a known site;
-- a site code must be unique;
-- an observation must have a timestamp;
-- temperature must be within a defensible range;
-- two rows must not represent the same observation event.
+- every observation should refer to a real site;
+- a site code should not mean two different sites;
+- every observation should have a time;
+- temperature should stay in a defensible range;
+- two rows should not accidentally describe the same observation event.
 
-### From convention to constraint
+You do not need formal syntax yet to see the issue. If a rule matters, relying on memory and careful typing may not be enough.
 
-| Intended rule | Database mechanism |
-|---|---|
-| Every site has a stable identifier | `PRIMARY KEY` |
-| Site codes do not repeat | `UNIQUE` |
-| Every observation names a real site | `FOREIGN KEY` |
-| Required values cannot disappear | `NOT NULL` |
-| Temperature stays in an accepted range | `CHECK` |
+### A database changes the job of the software
 
-Here is a preview of what some of those declarations look like in SQL. You do **not** need to master the syntax today; read it as a set of claims.
+A file mostly stores values.
 
-```sql
-CREATE TABLE site (
-    site_id   INTEGER PRIMARY KEY,
-    site_code TEXT NOT NULL UNIQUE,
-    site_name TEXT NOT NULL
-);
+A database system can do more:
 
-CREATE TABLE observation (
-    observation_id INTEGER PRIMARY KEY,
-    site_id        INTEGER NOT NULL REFERENCES site(site_id),
-    observed_at    TIMESTAMP NOT NULL,
-    temperature_c  NUMERIC NOT NULL
-                   CHECK (temperature_c BETWEEN -5 AND 50),
-    UNIQUE (site_id, observed_at)
-);
-```
+- reject some invalid changes;
+- keep related pieces of data consistent;
+- coordinate changes from multiple people;
+- recover from some failures; and
+- answer many different questions over the same stored data.
 
-::: {.callout-question appearance="simple"}
-## Challenge the schema
+That is why a database is not just a bigger file. The software is participating in the management of the data, not merely holding it.
 
-The database can enforce only the rules we declare, and declared rules can be wrong. Is `UNIQUE (site_id, observed_at)` appropriate if two sensors can operate at the same site simultaneously? What additional information would you need?
-:::
+## 8. Failure pattern 5: shared editing creates coordination problems
 
-## 7. Failure point five: several people act at once
-
-File-based workflows often handle collaboration by creating copies:
+Many file-based workflows handle collaboration by creating copies:
 
 ```text
 observations.csv
 observations_jake_edits.csv
-observations_FINAL.csv
-observations_FINAL_v2_really_final.csv
+observations_final.csv
+observations_final_v2_really_final.csv
 ```
 
-Copies create a coordination problem: which file is authoritative, and how should conflicting changes be reconciled?
+Copies solve one problem and create another: which file is authoritative?
 
-Even a shared spreadsheet can expose a more subtle problem when several operations must succeed or fail together. Imagine transferring the responsibility for a sensor from one field team to another.
+Even shared spreadsheets can produce subtler conflicts. Two people may each make a reasonable change based on what they saw, yet the combined result may be inconsistent.
+
+::: {.tool-comparison}
+::: {.tool-card}
+### What each person sees
+
+A plausible local picture of the data.
+:::
+
+::: {.tool-card}
+### What can go wrong
+
+Independent reasonable edits combine into a bad global state.
+:::
+
+::: {.tool-card}
+### Why it matters
+
+Shared data needs coordination, not only storage.
+:::
+:::
 
 ```{mermaid}
 sequenceDiagram
@@ -376,36 +443,26 @@ sequenceDiagram
     B->>D: Read sensor status = available
     A->>D: Assign sensor to Team North
     B->>D: Assign sensor to Team South
-    Note over A,B: Both decisions were reasonable<br/>from the state each analyst saw.
+    Note over A,B: Both actions looked reasonable<br/>from each person's point of view.
 ```
 
-A DBMS provides **transactions** and concurrency control so related operations can be treated as a unit and simultaneous work can be coordinated under stated guarantees.
+The Week 1 point is simple: once data is shared, the problem is not only storage. It is also coordination.
 
-::: {.concept-strip}
-**Transaction:** a logical unit of work that should preserve the database's rules even when failures or concurrent actions occur.
-:::
+## 9. Questions can outgrow the file
 
-We will spend much more time on transactions later. For Week 1, the key idea is that a database is not only a container; it is an active participant in coordinating change.
+Small files are easy to inspect manually. Over time, the workload often changes:
 
-## 8. Failure point six: questions outgrow the file
-
-Small files are easy to inspect. As data grows, the workload changes:
-
-- combine observations with sites, sensors, maintenance, and weather;
-- give different users different access;
-- recover after a failed write;
-- reproduce a report from a known state;
-- find a small subset without scanning everything;
-- serve many readers while new observations arrive.
+- combine observations with sites, maintenance, weather, or other files;
+- answer different questions for different audiences;
+- reproduce an earlier report from a trusted state;
+- find a small subset quickly;
+- allow many readers while new data keeps arriving.
 
 ```{mermaid}
 flowchart LR
-    A["One table<br/>one person<br/>occasional edits"] --> B["Repeated facts<br/>several entities"]
-    B --> C["Many users<br/>concurrent changes"]
-    C --> D["Large workloads<br/>security and recovery"]
-
-    A -. "spreadsheet may fit" .-> A
-    D -. "DBMS capabilities matter" .-> D
+    A["One table<br/>one person<br/>occasional edits"] --> B["Repeated facts<br/>several kinds of things"]
+    B --> C["Shared editing<br/>and conflicting changes"]
+    C --> D["Larger workload<br/>more rules and questions"]
 
     classDef early fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
     classDef middle fill:#eaf4f7,stroke:#247487,color:#173b4d;
@@ -415,9 +472,9 @@ flowchart LR
     class D late;
 ```
 
-Performance is part of the story, but “databases are for big data” is incomplete. A tiny database may be worthwhile because the rules matter. A very large immutable dataset may work well in files because it is written once and analyzed in batches.
+Performance is part of the story, but "databases are for big data" is incomplete. A tiny dataset may deserve a database because the rules matter. A huge dataset may work fine in files if it is written once and analyzed in batches.
 
-## 9. Spreadsheets are not failed databases
+## 10. Spreadsheets are not failed databases
 
 ::: {.callout-tip appearance="simple"}
 ## Use the simplest tool that preserves what matters
@@ -425,59 +482,58 @@ Performance is part of the story, but “databases are for big data” is incomp
 The point is not to replace every spreadsheet. The point is to recognize when a document-oriented grid no longer matches the problem.
 :::
 
-### A spreadsheet may be the better choice when…
+### A spreadsheet may be the better choice when
 
 - one person is exploring or entering a modest amount of data;
 - layout, annotation, formulas, and charts are part of the artifact;
 - the structure changes frequently;
-- the consequence of an inconsistent value is small and visible; or
-- the document itself—not a long-lived shared data system—is the product.
+- inconsistent values are easy to notice and low-risk; or
+- the document itself is the product.
 
-### A database becomes attractive when…
+### A database becomes attractive when
 
-- several kinds of things and relationships must be represented;
-- identifiers and integrity rules must be reliable;
+- several kinds of things and relationships must be tracked together;
+- identifiers and important rules must stay reliable;
 - many people or applications read and write shared data;
-- changes must be atomic, auditable, recoverable, or permission-controlled;
-- queries repeatedly combine data in different ways; or
-- the data must outlive the spreadsheet layout or original author.
+- changes must be coordinated and recoverable; or
+- the same data must answer many different questions over time.
 
 ### Decision matrix
 
-| Situation | Spreadsheet | CSV/files | Relational database |
+| Situation | Spreadsheet | CSV/files | Database system |
 |---|:---:|:---:|:---:|
 | Quick personal exploration | Strong | Moderate | Possible, often unnecessary |
 | Portable data interchange | Weak | Strong | Usually exported |
 | Rich manual formatting | Strong | None | Not its purpose |
-| Enforced relationships | Limited | None | Strong |
+| Shared rules and relationships | Limited | Weak | Strong |
 | Concurrent structured updates | Limited | Weak | Strong |
-| Transactions and recovery | Weak | Weak | Strong |
-| Fine-grained permissions | Limited | File-level | Strong |
+| Recovery from mistakes or failures | Weak | Weak | Strong |
+| Long-lived shared data | Limited | Weak | Strong |
 
 ::: {.callout-note appearance="simple"}
 ## The boundary is contextual
 
-There is no universal row count at which a spreadsheet “becomes” a database problem. The important questions concern relationships, rules, coordination, risk, and workload—not just size.
+There is no universal row count at which a spreadsheet "becomes" a database problem. The important questions concern rules, repetition, identity, coordination, risk, and workload, not only size.
 :::
 
 ::: {.callout-important appearance="simple"}
 ## Continue to Lab 1
 
-Apply these ideas in [Lab 1 — Make the file fail on purpose](../activities/week-01-file-representation-lab.qmd). Working in a small group, you will expose failure cases, sketch a first relational model, and submit one short group artifact.
+Apply these ideas in [Lab 1 - Make the file fail on purpose](../activities/week-01-file-representation-lab.qmd). Working in a small group, you will identify repeated information, surface hidden assumptions, and sketch a first better representation.
 :::
 
-## 10. What changed when we moved toward a database?
+## 11. What changed when we moved toward a database?
 
-We did not merely split one file into several smaller files. We added semantics.
+We did not merely split one file into smaller pieces. We changed what the data system is expected to preserve.
 
 ```{mermaid}
 flowchart TD
-    A["A convenient grid"] --> B["Identify distinct kinds of facts"]
-    B --> C["Choose identities"]
-    C --> D["Represent relationships"]
-    D --> E["Declare rules"]
-    E --> F["Coordinate and test changes"]
-    F --> G["A defensible data model"]
+    A["A convenient grid"] --> B["Notice repeated information"]
+    B --> C["Ask what identifies things"]
+    C --> D["Ask which relationships matter"]
+    D --> E["Ask which rules must hold"]
+    E --> F["Ask how shared changes stay trustworthy"]
+    F --> G["A more defensible data system"]
 
     classDef start fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
     classDef process fill:#eaf4f7,stroke:#247487,color:#173b4d;
@@ -490,15 +546,9 @@ flowchart TD
 ::: {.takeaway-panel}
 ## The revised claim
 
-A relational database may **look** like a collection of spreadsheets, but a DBMS adds a language for declaring identity, relationships, and rules—and machinery for querying, coordinating, protecting, and recovering shared data.
+A database may look like a collection of tables, but its real value is that it helps preserve meaning, rules, and coordination in data that must be shared and trusted.
 :::
-
-## Exit ticket
-
-Respond in three or four sentences:
-
-> Name one situation in which you would deliberately choose a spreadsheet over a database, and one change in requirements that would make you reconsider. Refer to at least one of these concepts: identity, repetition, relationships, constraints, concurrent work, or recovery.
 
 ## Looking ahead
 
-Next, we will learn enough SQL to treat a database not as a static grid but as a system for asking precise questions. We will return to the stream observations and test which claims the database can actually enforce.
+Next, we will build a more precise vocabulary for talking about data: relation, tuple, attribute, schema, keys, and the difference between a displayed table and the underlying structure it represents.

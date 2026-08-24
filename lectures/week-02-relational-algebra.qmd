@@ -1,0 +1,298 @@
+---
+title: "Week 2B - Relational algebra and query meaning"
+subtitle: "Selection, projection, joins, and equivalent expressions before SQL"
+description: "A guided introduction to relational algebra as a formal language for expressing questions over relations and reasoning about equivalent query meanings."
+author: "CSCI 340"
+toc: true
+toc-depth: 3
+code-fold: false
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 2B · RELATIONAL ALGEBRA, COMPOSITION, AND EQUIVALENCE
+:::
+
+# How can we ask questions without prescribing one algorithm?
+
+Once relations give us a way to describe data, we still need a way to describe questions about that data. Relational algebra provides that language: it names logical operations over relations without committing to one storage layout or one execution strategy.
+
+::: {.lesson-question}
+**Guiding question:** How can a query describe the answer we want without dictating exactly how the machine must compute it?
+:::
+:::
+
+## Learning goals
+
+By the end of this lesson, you should be able to:
+
+1. explain why relational algebra is a formal query language over relations;
+2. read and write small expressions using **selection**, **projection**, **rename**, and **join**;
+3. explain **closure** and why it makes query composition possible;
+4. compare two algebra expressions and ask whether they produce the same result; and
+5. explain how one logical query can correspond to multiple execution strategies.
+
+::: {.callout-tip appearance="simple" icon="false"}
+## Keep one sentence in mind
+
+Relational algebra describes the **logical transformations** that define an answer, not the low-level steps a particular system must use to compute it.
+:::
+
+## 1. From a question to logical operations
+
+Return to the stream-monitoring example from the previous lecture:
+
+$$
+\text{site}(\text{site\_id},\ \text{site\_code},\ \text{watershed},\ \text{reach\_name})
+$$
+
+$$
+\text{observation}(\text{observation\_id},\ \text{site\_id},\ \text{observed\_at},\ \text{temperature\_c})
+$$
+
+Suppose the question is:
+
+> Return the time and temperature of observations whose temperature is at least 9C.
+
+That question can be described as two logical steps:
+
+1. keep only tuples whose `temperature_c` is at least 9; and
+2. keep only the `observed_at` and `temperature_c` attributes in the result.
+
+Relational algebra gives names and symbols to those steps.
+
+## 2. Read the operators as verbs first
+
+For now, treat each operator as a familiar transformation.
+
+| Intent | Relational operation | Common notation |
+|---|---|:---:|
+| Keep tuples satisfying a predicate | Selection | $\sigma$ |
+| Keep selected attributes | Projection | $\pi$ |
+| Give a result or attribute a useful name | Rename | $\rho$ |
+| Pair related tuples from two relations | Join | $\bowtie$ |
+
+The question above can be expressed as:
+
+$$
+\pi_{\text{observed\_at},\ \text{temperature\_c}}
+\left(
+\sigma_{\text{temperature\_c} \ge 9}(\text{observation})
+\right)
+$$
+
+Read from the inside out:
+
+1. begin with `observation`;
+2. keep tuples whose temperature is at least 9; and
+3. keep only `observed_at` and `temperature_c` in the result.
+
+::: {.activity-checkpoint}
+**Checkpoint:** In the expression above, which operator determines which tuples remain? Which operator determines which attributes remain?
+:::
+
+## 3. The basic operators
+
+### Selection filters tuples
+
+Selection keeps the tuples that satisfy a predicate.
+
+$$
+\sigma_{\text{site\_id} = 101}(\text{observation})
+$$
+
+Read: "from `observation`, keep only tuples whose `site_id` is 101."
+
+### Projection chooses attributes
+
+Projection keeps selected attributes in the result.
+
+$$
+\pi_{\text{observation\_id},\ \text{temperature\_c}}(\text{observation})
+$$
+
+Read: "from `observation`, keep only `observation_id` and `temperature_c`."
+
+### Rename helps us speak precisely
+
+Rename is useful when an intermediate result needs a clearer name, especially when the same relation plays multiple roles in a larger expression.
+
+$$
+\rho_{\text{warm\_observation}}
+\left(
+\sigma_{\text{temperature\_c} \ge 9}(\text{observation})
+\right)
+$$
+
+For now, the important point is simple: rename does not change which facts are present. It changes how we refer to the result.
+
+### Join combines related tuples
+
+Suppose we want the `observed_at`, `temperature_c`, and `watershed` for observations.
+
+We can combine `observation` with `site` on `site_id`:
+
+$$
+\text{observation} \bowtie_{\text{observation.site\_id} = \text{site.site\_id}} \text{site}
+$$
+
+Conceptually, the join pairs tuples whose `site_id` values match so that information from both relations can appear in the same result.
+
+## 4. Build expressions by composition
+
+A larger query is built by composing smaller operations.
+
+Suppose the question is:
+
+> Return the observation time and temperature for observations in the Clark Fork watershed whose temperature is at least 20C.
+
+One relational-algebra expression is:
+
+$$
+\pi_{\text{observed\_at},\ \text{temperature\_c}}
+\left(
+\sigma_{\text{watershed} = \text{'Clark Fork'} \land \text{temperature\_c} \ge 20}
+\left(
+\text{observation} \bowtie_{\text{observation.site\_id} = \text{site.site\_id}} \text{site}
+\right)
+\right)
+$$
+
+Read from the inside out:
+
+1. join `observation` with `site`;
+2. keep only tuples for the Clark Fork watershed with warm temperatures; and
+3. keep only the time and temperature attributes.
+
+```{mermaid}
+flowchart LR
+    A["observation"] --> C["join on site_id"]
+    B["site"] --> C["join on site_id"]
+    C --> D["select Clark Fork and warm tuples"]
+    D --> E["project time and temperature"]
+    E --> F["result relation"]
+
+    classDef relation fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    classDef operation fill:#173b4d,stroke:#173b4d,color:#ffffff;
+    class A,B,F relation;
+    class C,D,E operation;
+```
+
+## 5. Closure makes composition possible
+
+Each relational-algebra operator takes one or more relations and produces another relation. That property is called **closure**.
+
+Because the output is again a relation:
+
+- the result of a selection can be projected;
+- the result of a join can be filtered;
+- the result of one expression can become the input to another.
+
+Without closure, query expressions would stop after one step. With closure, we can build complex questions from small, understandable parts.
+
+::: {.callout-note appearance="simple"}
+## Why closure matters
+
+Closure is what turns a list of isolated operators into a language.
+:::
+
+## 6. Equivalent expressions and different work
+
+One reason relational algebra matters is that two different expressions can mean the same thing.
+
+Imagine a database with one million observations and one thousand sites. Only twelve sites belong to the Clark Fork watershed.
+
+::: {.tool-comparison}
+::: {.tool-card}
+### Expression A
+
+1. Join `site` and `observation`.
+2. Select Clark Fork tuples.
+3. Select warm tuples.
+4. Project time and temperature.
+:::
+
+::: {.tool-card}
+### Expression B
+
+1. Select Clark Fork sites.
+2. Select warm observations.
+3. Join the smaller results.
+4. Project time and temperature.
+:::
+
+::: {.tool-card}
+### The question
+
+If both expressions return the same answer, which one is likely to produce smaller intermediate relations?
+:::
+:::
+
+The point is not that algebra by itself tells us the fastest plan. The point is that algebra gives us a disciplined way to recognize when multiple logical forms have the same meaning.
+
+## 7. Logical meaning versus execution details
+
+It is useful to separate three things:
+
+| Layer | Main question |
+|---|---|
+| User question | What information is wanted? |
+| Relational algebra expression | Which logical operations define that answer? |
+| Execution algorithm | How will the DBMS actually compute it? |
+
+```{mermaid}
+flowchart LR
+    Q["Question"] --> A["Algebra expression"]
+    A --> E["Equivalent rewritten expression"]
+    E --> P["Physical plan<br/>scans, indexes, join algorithms"]
+    P --> R["Answer"]
+
+    classDef intent fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
+    classDef logical fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    classDef physical fill:#173b4d,stroke:#173b4d,color:#ffffff;
+    class Q intent;
+    class A,E logical;
+    class P,R physical;
+```
+
+This is the key curricular point: a query may guide implementation, but it is not identical to one implementation. The same logical query can be computed by different algorithms in different systems.
+
+::: {.callout-caution appearance="simple"}
+## Do not confuse a query with one plan
+
+If two expressions are logically equivalent, a DBMS may choose different execution strategies depending on indexes, statistics, storage layout, and implementation details.
+:::
+
+## 8. Put the ideas together
+
+The lesson's logic is one chain:
+
+```{mermaid}
+flowchart LR
+    A["Relations describe<br/>data"] --> B["Algebra describes<br/>questions over relations"]
+    B --> C["Expressions compose<br/>by closure"]
+    C --> D["Equivalent expressions<br/>support reasoning"]
+    D --> E["DBMS can choose among<br/>different algorithms"]
+
+    classDef problem fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
+    classDef idea fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    classDef outcome fill:#173b4d,stroke:#173b4d,color:#ffffff;
+    class A,B problem;
+    class C,D idea;
+    class E outcome;
+```
+
+::: {.takeaway-panel}
+## The main claim
+
+Relational algebra is useful because it describes the meaning of a query as a composition of logical operations. That makes it possible to reason about correctness, equivalence, and alternative execution strategies before we talk about a practical language like SQL.
+:::
+
+## Looking ahead
+
+Next, we will move to **SQL** as the practical query language students actually write. The main task will be to connect `SELECT`, `FROM`, and `WHERE` to the logical ideas you now have in relational algebra.
+
+## Sources and further reading
+
+- Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapters 2-3.
+- E. F. Codd, [“A Relational Model of Data for Large Shared Data Banks”](https://doi.org/10.1145/362384.362685), 1970.

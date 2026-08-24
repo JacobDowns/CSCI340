@@ -13,7 +13,8 @@ Submittable work lives separately under [labs and activities](../activities/inde
 
 ## Week 2
 
-- [From tables to relations](week-02-from-tables-to-relations.qmd) — The historical and mathematical motivation for relations, declarative queries, and relational algebra.
+- [Why describe data as relations?](week-02-from-tables-to-relations.qmd) — Relational vocabulary, keys, relationships, and why formal data descriptions help before we discuss query languages.
+- [Relational algebra and query meaning](week-02-relational-algebra.qmd) — Selection, projection, join, closure, and the idea that one query meaning can correspond to multiple execution strategies.
 - [Asking precise questions with SQL](week-02-asking-questions-with-sql.qmd) — Selection, projection, expressions, ordering, nulls, and evidence that a query means what we intend.
 
 ## Planned organization

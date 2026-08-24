@@ -133,6 +133,28 @@ body.quarto-dark {
   margin: 0;
 }
 
+.opening-prompt {
+  margin: 1.4rem 0 1.8rem;
+  padding: 1.05rem 1.2rem;
+  border-left: 0.4rem solid var(--course-teal);
+  border-radius: 0.55rem;
+  color: var(--course-ink);
+  background:
+    linear-gradient(90deg, rgba(234, 244, 247, 0.95), rgba(247, 243, 234, 0.95));
+  box-shadow: 0 0.18rem 0.6rem rgba(23, 59, 77, 0.06);
+}
+
+.opening-prompt h2,
+.opening-prompt h3 {
+  margin-top: 0;
+  margin-bottom: 0.45rem;
+  color: var(--course-navy);
+}
+
+.opening-prompt > :last-child {
+  margin-bottom: 0;
+}
+
 .tool-comparison,
 .fact-grid {
   display: grid;
