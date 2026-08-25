@@ -49,6 +49,7 @@ website:
       - section: Labs and activities
         contents:
           - activities/index.qmd
+          - activities/week-01-tool-choice-discussion.qmd
           - activities/week-01-file-representation-lab.qmd
           - activities/week-02-query-reasoning-lab.qmd
       - section: Assignments

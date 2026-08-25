@@ -1,0 +1,135 @@
+---
+title: "Activity 1 — What tool fits the job?"
+subtitle: "A short discussion about storage, sharing, and computation"
+description: "A Week 1 small-group discussion on choosing tools for different kinds of data work."
+toc: true
+toc-depth: 2
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 1 ACTIVITY · CHOOSING TOOLS WITH INTENTION
+:::
+
+# What problem are we actually trying to solve?
+
+The same information can be put in a spreadsheet, a file, a database, or a program. The useful question is not "Which tool is best?" It is **what must this particular system make easy, safe, or possible?**
+
+::: {.lesson-question}
+**Activity question:** Given a situation, what should be the primary tool or storage format, and what tradeoff comes with that choice?
+:::
+:::
+
+::: {.activity-meta-grid}
+::: {.activity-meta-card}
+### Time
+
+Approximately 15-20 minutes
+:::
+
+::: {.activity-meta-card}
+### Collaboration
+
+Groups of two or three
+:::
+
+::: {.activity-meta-card}
+### Product
+
+Brief verbal defense
+:::
+:::
+
+This is a discussion, not a quiz. Several answers can be reasonable if the group names its assumptions and explains the consequences. Read the Week 1 lecture, [Is a database just a glorified spreadsheet?](../lectures/week-01-database-or-spreadsheet.qmd), before beginning.
+
+## The choices
+
+For each scenario, choose a primary starting point. You may also propose a combination.
+
+| Choice | Useful when... | Watch out for... |
+|---|---|---|
+| Spreadsheet | A small group needs to see, edit, and discuss a modest amount of information directly. | Repeated information, inconsistent edits, and weak shared rules. |
+| Plain data file (`CSV`, `JSON`, or similar) | Data is exchanged, versioned, or processed by a program rather than edited collaboratively. | The file alone does little to enforce relationships or coordinate changes. |
+| Relational database | Many records, related kinds of information, repeated queries, concurrent users, or important rules must be handled reliably. | Setup and design effort can be unnecessary for a small, temporary task. |
+| Program or computation environment | The central challenge is calculation, simulation, modeling, or transformation. | A program still needs somewhere appropriate to read and store its inputs and results. |
+| Mixed design | Different parts of the problem have different needs. | The connections among tools need to be designed deliberately. |
+
+## Group work
+
+Assign one scenario to each group, or let each group choose two. Do not begin the whole-class discussion yet: first, reach a group decision.
+
+### 1. Decide in small groups
+
+Take five minutes to discuss the scenario and prepare a one-minute defense. Your group should agree on a primary choice, while noting any reasonable alternative. Be ready to state:
+
+1. your primary choice;
+2. what information would be stored there;
+3. the most important requirement driving your choice; and
+4. one risk or limitation you would accept.
+
+If useful, begin with: "We would choose ___ because ___. We would be concerned about ___."
+
+### 2. Compare as a class
+
+Once groups have decided, each group shares its choice and reasoning. Listen for groups that chose differently: the goal is to identify which assumptions or requirements caused the different answer, not simply to vote for one winner.
+
+## Scenarios
+
+### A. Planning a department picnic
+
+One staff member is collecting dietary preferences, attendance responses, and carpool offers from about 35 colleagues. The plan will be used for two weeks and everyone wants to see the latest version.
+
+### B. Running a campus equipment checkout service
+
+Students reserve cameras, microphones, and laptops. The service must know which item is available, prevent double bookings, retain a checkout history, and let several staff members work at the same time.
+
+### C. Publishing a public dataset
+
+An instructor wants to share a cleaned table of county population estimates with students and researchers. The dataset is replaced once per year. Most people will download it, inspect it, or analyze it in their own software; no one needs to edit the publisher's copy directly.
+
+### D. Estimating travel time across town
+
+A transportation researcher has one month of timestamped traffic observations and wants to test several mathematical models, run simulations, and plot the results. The central question is which model predicts travel time most accurately.
+
+### E. Tracking a small bookstore
+
+An independent bookstore wants to keep customers, books, suppliers, purchases, stock levels, and returns. A customer may make many purchases; a book may have many suppliers; two employees may be recording sales while another is receiving a delivery.
+
+### F. Managing a collection of wildlife photos
+
+A field team has tens of thousands of image files. They need to preserve the original photographs, search by location/date/species, record who identified each species, and allow later corrections to those identifications.
+
+::: {.callout-question appearance="simple"}
+## The curveball
+
+Which scenario is primarily a computation problem rather than a data-management problem? Which scenarios need both? Explain the distinction without treating stored data and computation as opposites.
+:::
+
+## Whole-class discussion
+
+As groups report, compare the requirements that changed their choices:
+
+- Does more than one person need to change the information at the same time?
+- Are there repeated pieces of information that should stay consistent?
+- Are there meaningful relationships, such as customers and orders or photos and identifications?
+- Is the important task reliable retrieval and updating, or is it calculation and modeling?
+- Must the data be shared as a portable snapshot, or managed as a living system?
+
+::: {.callout-tip collapse="true" appearance="simple"}
+## Instructor discussion guide
+
+There is no single mandated answer, but these are productive starting points:
+
+- **A:** a shared spreadsheet is usually proportionate to a small, short-lived planning task. A database may be overkill unless the event grows or has important constraints.
+- **B:** a relational database is a strong fit because availability, reservations, staff access, and history are connected and must remain consistent.
+- **C:** a plain `CSV` file is a strong fit for publishing a stable, downloadable snapshot. A database may be used by the publisher internally, but it need not be the delivery format.
+- **D:** a program or computation environment is the primary tool. The observations may begin in a file or database, but a database does not itself perform the modeling and simulation work.
+- **E:** a relational database is a strong fit because of many related entities, shared updates, and rules around stock and sales.
+- **F:** a mixed design is likely: image files in file or object storage, with a relational database (or other metadata system) tracking descriptions, identifiers, searches, and corrections.
+
+Bring the discussion back to the point that a database is not simply a bigger spreadsheet or a general-purpose calculation engine. It is one tool for representing related information and enforcing useful rules while separating those concerns from physical storage details.
+:::
+
+## Closing prompt
+
+Name one new requirement that would make you reconsider your group’s choice. For example: a second editor, a need for historical records, a relationship to another kind of information, a much larger data volume, or a new computational task.

@@ -13,6 +13,7 @@ Labs and activities provide the applied rhythm of the course. Most are completed
 
 ## Week 1
 
+- [Activity 1 — What tool fits the job?](week-01-tool-choice-discussion.qmd): discuss when a spreadsheet, plain file, database, program, or combination best fits a situation.
 - [Lab 1 — Make the file fail on purpose](week-01-file-representation-lab.qmd): expose the assumptions and failure modes hidden in a convenient flat file, then propose a first relational model.
 
 ## Week 2
