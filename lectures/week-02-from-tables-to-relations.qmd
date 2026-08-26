@@ -17,25 +17,6 @@ WEEK 2A · RELATIONAL VOCABULARY, KEYS, AND DATA INDEPENDENCE
 
 The relational model gives us a precise way to describe data, relationships, and identifiers without tying those descriptions to one file layout, pointer structure, or access algorithm. That precision is the point: we want a stable language for saying what data means before we talk about how a system stores or traverses it.
 
-::: {.lesson-question}
-**Guiding question:** What do we gain when we describe data as relations instead of as files, records, or screen layouts?
-:::
-:::
-
-## Learning goals
-
-By the end of this lesson, you should be able to:
-
-1. use the terms **relation**, **attribute**, **tuple**, **domain**, **schema**, and **instance** precisely;
-2. distinguish a relation from its tabular display;
-3. explain the difference among a **superkey**, **candidate key**, **primary key**, and **foreign key**;
-4. explain why the relational model separates logical description from physical storage; and
-5. explain why a formal data model is useful even before we introduce a query language.
-
-::: {.callout-tip appearance="simple" icon="false"}
-## Keep one sentence in mind
-
-The relational model gives us a language for describing **what data means** without committing to **how the data is stored or traversed**.
 :::
 
 ## 1. Start with a shared vocabulary

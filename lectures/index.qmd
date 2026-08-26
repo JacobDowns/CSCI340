@@ -3,9 +3,7 @@ title: "Lecture notes"
 subtitle: "Guided explanations, examples, questions, and in-class activities"
 ---
 
-Lecture pages are the main narrative course materials. They are designed to move from one idea to the next like a class meeting: a motivating claim, a concrete example, an explanation, and a checkpoint.
-
-Submittable work lives separately under [labs and activities](../activities/index.qmd). A lecture may still reference applied or computational work when it helps illuminate the idea, but the lecture itself should remain readable on its own.
+Lecture pages provide the course narrative; submittable work lives under [labs and activities](../activities/index.qmd).
 
 ## Week 1
 
@@ -16,14 +14,3 @@ Submittable work lives separately under [labs and activities](../activities/inde
 - [Why describe data as relations?](week-02-from-tables-to-relations.qmd) — Relational vocabulary, keys, relationships, and why formal data descriptions help before we discuss query languages.
 - [Relational algebra and query meaning](week-02-relational-algebra.qmd) — Selection, projection, join, closure, and the idea that one query meaning can correspond to multiple execution strategies.
 - [Asking precise questions with SQL](week-02-asking-questions-with-sql.qmd) — Selection, projection, expressions, ordering, nulls, and evidence that a query means what we intend.
-
-## Planned organization
-
-Each lecture page will generally include:
-
-1. a motivating question or claim;
-2. explicit learning goals;
-3. short, visually separated topics;
-4. diagrams and worked examples;
-5. prediction or discussion checkpoints; and
-6. a clear handoff to any related lab or activity.

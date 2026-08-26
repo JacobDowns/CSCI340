@@ -17,25 +17,6 @@ WEEK 2B · RELATIONAL ALGEBRA, COMPOSITION, AND EQUIVALENCE
 
 Once relations give us a way to describe data, we still need a way to describe questions about that data. Relational algebra provides that language: it names logical operations over relations without committing to one storage layout or one execution strategy.
 
-::: {.lesson-question}
-**Guiding question:** How can a query describe the answer we want without dictating exactly how the machine must compute it?
-:::
-:::
-
-## Learning goals
-
-By the end of this lesson, you should be able to:
-
-1. explain why relational algebra is a formal query language over relations;
-2. read and write small expressions using **selection**, **projection**, **rename**, and **join**;
-3. explain **closure** and why it makes query composition possible;
-4. compare two algebra expressions and ask whether they produce the same result; and
-5. explain how one logical query can correspond to multiple execution strategies.
-
-::: {.callout-tip appearance="simple" icon="false"}
-## Keep one sentence in mind
-
-Relational algebra describes the **logical transformations** that define an answer, not the low-level steps a particular system must use to compute it.
 :::
 
 ## 1. From a question to logical operations

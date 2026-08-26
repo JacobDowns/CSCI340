@@ -17,25 +17,6 @@ WEEK 2C · SQL FOUNDATIONS AND QUERY TESTING
 
 A SQL query can be syntactically valid and still answer the wrong question. Writing the query is therefore only part of the work. We must also predict its result and construct cases that distinguish the intended meaning from plausible mistakes. The relational-algebra ideas from the previous lecture now become practical: SQL is the language we write, but the meaning still comes from the logical operations the query expresses.
 
-::: {.lesson-question}
-**Guiding question:** How can we translate a question into SQL—and gather evidence that our translation is correct?
-:::
-:::
-
-## Learning goals
-
-By the end of this lesson, you should be able to:
-
-1. read a relation schema and identify the attributes available to a query;
-2. write single-relation queries using `SELECT`, `FROM`, and `WHERE`;
-3. connect SQL projection and filtering to relational-algebra operations;
-4. use expressions, aliases, `DISTINCT`, `ORDER BY`, and `NULL` tests deliberately; and
-5. construct a small boundary case that exposes an incorrect query.
-
-::: {.callout-tip appearance="simple" icon="false"}
-## Keep one sentence in mind
-
-A trustworthy query includes both an expression of intent and evidence that the expression behaves as intended.
 :::
 
 ## 1. Our relation for today

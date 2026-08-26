@@ -15,42 +15,9 @@ WEEK 2 LAB · SQL, PREDICTION, AND COUNTEREXAMPLES
 
 A plausible query often works on ordinary rows. The most revealing tests use boundaries, duplicates, missing values, and near misses to separate the intended query from a subtly incorrect one.
 
-::: {.lesson-question}
-**Lab question:** What is the smallest piece of evidence that would convince another person your query answers the stated question?
-:::
 :::
 
-::: {.activity-meta-grid}
-::: {.activity-meta-card}
-### Time
-
-Approximately 45–50 minutes
-:::
-
-::: {.activity-meta-card}
-### Collaboration
-
-Groups of two or three
-:::
-
-::: {.activity-meta-card}
-### Submission
-
-One query-and-test record per group
-:::
-:::
-
-Before beginning, read [Week 2A - Why describe data as relations?](../lectures/week-02-from-tables-to-relations.qmd), [Week 2B - Relational algebra and query meaning](../lectures/week-02-relational-algebra.qmd), and [Week 2C - Asking precise questions with SQL](../lectures/week-02-asking-questions-with-sql.qmd).
-
-## Learning goals
-
-By completing this lab, you should be able to:
-
-1. define the shape and meaning of a requested result;
-2. translate single-relation questions into `SELECT`–`FROM`–`WHERE` queries;
-3. predict query results before execution;
-4. use duplicates, boundaries, and `NULL` to distinguish correct and incorrect queries; and
-5. connect one SQL query to selection and projection in relational algebra.
+Work in groups of two or three. Define the expected result before writing a query, then use a boundary case to test whether the query means what you intend.
 
 ## Scenario and data
 

@@ -6,17 +6,9 @@ toc: false
 ---
 
 ::: {.lesson-hero}
-::: {.lesson-kicker}
-WEEK 1 LAB · FILES, RULES, AND RELATIONSHIPS
-:::
+# Use the participation worksheet
 
-# Make the file fail on purpose
-
-Use the participation worksheet for this activity. Work with your group, record your reasoning on the worksheet, and submit it as directed in class.
+Work with your group, record your reasoning on the worksheet, and submit it as directed in class.
 
 [Download the participation worksheet](week-01-make-the-file-fail-participation.docx){.btn .btn-primary}
 :::
-
-The activity asks you to distinguish useful repeated identifiers from descriptive information stored repeatedly, identify inconsistencies and assumptions, propose a first model, and defend one rule the data system should enforce.
-
-Before beginning, review the Week 1 lecture, [Is a database just a glorified spreadsheet?](../lectures/week-01-database-or-spreadsheet.qmd).

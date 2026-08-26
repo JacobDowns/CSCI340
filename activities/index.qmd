@@ -3,13 +3,7 @@ title: "Labs and activities"
 subtitle: "Apply an idea, produce a small artifact, and make your reasoning visible"
 ---
 
-Labs and activities provide the applied rhythm of the course. Most are completed during class in small groups and end with a short submission that records the group's reasoning, evidence, or design.
-
-## What to expect
-
-- **Activities** are brief conceptual exercises, critiques, predictions, or worked examples.
-- **Labs** are longer applied sessions with a clearly identified deliverable.
-- Each lab page states the expected time, collaboration format, submission, and completion criteria.
+Labs and activities are short small-group exercises that make the course ideas concrete.
 
 ## Week 1
 

@@ -17,25 +17,6 @@ WEEK 1 · REPRESENTATION, RULES, AND SHARED DATA
 
 That claim is useful precisely because it is almost plausible. Spreadsheets, CSV files, and database tables can all put values into rows and columns. The real question is not what they look like. The real question is what kinds of work they support reliably.
 
-::: {.lesson-question}
-**Guiding question:** When does a simple table stop being "good enough," and what problem is a database actually solving?
-:::
-:::
-
-## Learning goals
-
-By the end of this lesson, you should be able to:
-
-1. explain why spreadsheets, CSV files, and database tables initially look similar;
-2. distinguish a file or spreadsheet from a database system used for shared structured data;
-3. identify repeated information, hidden assumptions, and common inconsistency risks in a naive table;
-4. explain why identity, relationships, and rules are hard to maintain in an ordinary file; and
-5. choose a spreadsheet, a collection of files, or a database for a small scenario and defend the choice.
-
-::: {.callout-tip appearance="simple" icon="false"}
-## Keep one sentence in mind
-
-A database is valuable not merely because it stores data, but because it helps make important **information, rules, and relationships explicit**.
 :::
 
 ## 1. Why the comparison feels reasonable
@@ -121,8 +102,8 @@ That creates several predictable failure patterns.
 |---|---|
 | Repeated information | What information is being copied across many rows? |
 | Inferred but unenforced rules | What does a human assume that the file does not guarantee? |
-| Slippery identity | How do we tell whether two rows refer to the same thing? |
-| Awkward relationships | What structure does one wide table hide poorly? |
+| Unclear identity | How do we tell whether two rows refer to the same thing? |
+| One row cannot hold every associated detail | What information becomes awkward when a row needs a changing list? |
 | Shared editing | What happens when several people change the same data? |
 
 ## 3. Failure pattern 1: repeated information invites inconsistent edits
@@ -255,9 +236,9 @@ Consider the values below:
 
 This is one reason data integrity is hard in a naive representation. The meaning may be clear to a person and still be fragile in the data itself.
 
-## 5. Failure pattern 3: identity becomes slippery
+## 5. Failure pattern 3: it becomes unclear what each row refers to
 
-When a table is small, people often act as if labels are identities. That works until labels change, collide, or are entered differently by different people.
+When a table is small, people often treat a readable label as if it were a reliable way to identify something. That works until labels change, collide, or are entered differently by different people.
 
 Consider the phrase "the Clear Creek site." What exactly identifies it?
 
@@ -265,7 +246,7 @@ Consider the phrase "the Clear Creek site." What exactly identifies it?
 - The code looks stable, but only if the organization treats it as stable.
 - The row number identifies a row in this file, not necessarily the real-world site.
 
-The practical issue is simple: if you do not decide how something is identified, you will eventually struggle to tell whether two rows refer to the same thing.
+The practical issue is simple: if you do not decide which value identifies a site, you will eventually struggle to tell whether two rows refer to the same site.
 
 ::: {.tool-comparison}
 ::: {.tool-card}
@@ -303,9 +284,9 @@ Before relying on a field as an identifier, ask:
 Does `site_code` look more stable than `site_name` here? Why might that still be only an inference rather than a guarantee?
 :::
 
-## 6. Failure pattern 4: relationships fit awkwardly into one wide table
+## 6. Failure pattern 4: one row cannot cleanly hold a changing list
 
-Flat tables are good at listing rows. They are less good at representing more complicated relationships.
+Each observation row records one reading. But some information associated with a reading is naturally a list: there may be zero, one, or several quality flags.
 
 Suppose one observation can have several quality flags:
 
@@ -313,63 +294,74 @@ Suppose one observation can have several quality flags:
 - `sensor_recalibrated`
 - `manually_reviewed`
 
-Several file-based designs are tempting:
+Several single-row designs are tempting:
+
+### Design A: reserve a fixed number of flag slots
+
+Add several generic columns and put one flag label in each slot.
 
 ```text
-flag_1 | flag_2 | flag_3
+observation_id | flag_1        | flag_2           | flag_3
+42             | suspected_ice | manually_reviewed | [empty]
 ```
+
+This works only until an observation has more flags than there are slots. It also gives the columns no inherent meaning: is `flag_1` more important than `flag_2`?
+
+### Design B: put every flag into one text cell
+
+Add one `flags` column and append a delimited list of all flag labels.
 
 ```text
-flags = "suspected_ice; manually_reviewed"
+observation_id | flags
+42             | "suspected_ice; manually_reviewed"
 ```
+
+This is convenient to type, but the file has to parse the text before it can reliably find one flag, check spelling, or add details about a particular flag.
+
+### Design C: add one column for every possible flag
+
+Create a dedicated yes/no column for each flag type the team currently knows about.
 
 ```text
-suspected_ice | sensor_recalibrated | manually_reviewed
+observation_id | suspected_ice | sensor_recalibrated | manually_reviewed
+42             | yes           | no                   | yes
 ```
 
-Each choice solves one short-term problem while creating new long-term ones.
+This makes the known flags easy to scan, but every newly invented flag requires changing the columns of the file. It also leaves no natural place for details such as who added the flag or why.
 
-- How do we add a new flag type later?
-- How do we prevent misspellings?
-- How do we record who added a flag and when?
-- How do we ask for observations that have two specific flags?
+Each choice solves one short-term problem while creating new long-term ones. The issue is not that a flag is impossible to store. The issue is that an applied flag has information of its own: which observation it applies to, what kind of flag it is, and perhaps who added it and when.
+
+One more deliberate arrangement might keep three simple kinds of records:
+
+| Record type | Example fields | What it records |
+|---|---|---|
+| Observation | `observation_id`, `site_code`, `observed_at`, `temperature_c` | One temperature reading |
+| Applied flag | `observation_id`, `flag_code`, `added_at`, `added_by` | One flag applied to one reading |
+| Allowed flag | `flag_code`, `description` | The approved set of flag labels |
+
+Now a new flag does not require adding a new column, and the system can reject an invented or misspelled flag label. The `observation_id` in an applied-flag record tells us which reading the flag belongs with. If a flag describes a sensor rather than one particular reading, the same idea would use `sensor_code` instead.
 
 ::: {.tool-comparison}
 ::: {.tool-card}
 ### The shortcut
 
-Pack relationship information into extra columns or encoded text.
+Pack a changing list into extra columns or encoded text.
 :::
 
 ::: {.tool-card}
 ### The risk
 
-New cases become awkward, inconsistent, or hard to query.
+New flag types, misspellings, and details about who added a flag become awkward to manage.
 :::
 
 ::: {.tool-card}
 ### Why it matters
 
-The file hides structure instead of representing it directly.
+An applied flag is its own piece of information, not just another column on an observation row.
 :::
 :::
 
-```{mermaid}
-flowchart LR
-    O["One observation"] --> F1["suspected_ice"]
-    O --> F2["sensor_recalibrated"]
-    O --> F3["manually_reviewed"]
-    F1 --> O2["Many observations<br/>can share a flag type"]
-    F2 --> O2
-    F3 --> O2
-
-    classDef observation fill:#173b4d,stroke:#173b4d,color:#ffffff;
-    classDef flag fill:#eaf4f7,stroke:#247487,color:#173b4d;
-    class O,O2 observation;
-    class F1,F2,F3 flag;
-```
-
-The main point is not that spreadsheets are bad. The point is that some relationships fit awkwardly into one rectangular file.
+The main point is not that spreadsheets are bad. The point is that a wide row becomes awkward when it tries to store a list of associated items, especially when those items have their own details and rules.
 
 ## 7. Why databases help with these failure patterns
 
@@ -492,7 +484,7 @@ The point is not to replace every spreadsheet. The point is to recognize when a 
 
 ### A database becomes attractive when
 
-- several kinds of things and relationships must be tracked together;
+- several kinds of information that must stay connected are tracked together;
 - identifiers and important rules must stay reliable;
 - many people or applications read and write shared data;
 - changes must be coordinated and recoverable; or
@@ -505,7 +497,7 @@ The point is not to replace every spreadsheet. The point is to recognize when a 
 | Quick personal exploration | Strong | Moderate | Possible, often unnecessary |
 | Portable data interchange | Weak | Strong | Usually exported |
 | Rich manual formatting | Strong | None | Not its purpose |
-| Shared rules and relationships | Limited | Weak | Strong |
+| Shared rules and connected information | Limited | Weak | Strong |
 | Concurrent structured updates | Limited | Weak | Strong |
 | Recovery from mistakes or failures | Weak | Weak | Strong |
 | Long-lived shared data | Limited | Weak | Strong |
@@ -530,7 +522,7 @@ We did not merely split one file into smaller pieces. We changed what the data s
 flowchart TD
     A["A convenient grid"] --> B["Notice repeated information"]
     B --> C["Ask what identifies things"]
-    C --> D["Ask which relationships matter"]
+    C --> D["Ask how associated information should be organized"]
     D --> E["Ask which rules must hold"]
     E --> F["Ask how shared changes stay trustworthy"]
     F --> G["A more defensible data system"]
