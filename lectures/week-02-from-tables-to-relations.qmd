@@ -1,7 +1,7 @@
 ---
 title: "Week 2A - Why describe data as relations?"
 subtitle: "Relational vocabulary, keys, and data independence"
-description: "A guided introduction to the relational model, its core terminology, and why formal data descriptions matter before we discuss query languages."
+description: "An introduction to relational vocabulary, keys, and logical data descriptions that do not depend on a physical storage layout."
 author: "CSCI 340"
 toc: true
 toc-depth: 3
@@ -15,115 +15,12 @@ WEEK 2A · RELATIONAL VOCABULARY, KEYS, AND DATA INDEPENDENCE
 
 # Why use this abstract language at all?
 
-The relational model gives us a precise way to describe data, relationships, and identifiers without tying those descriptions to one file layout, pointer structure, or access algorithm. That precision is the point: we want a stable language for saying what data means before we talk about how a system stores or traverses it.
-
+The relational model gives us a precise way to say what information a system stores and how one piece of information identifies another. We can make those statements without committing to a particular file layout, data structure, or storage algorithm.
 :::
 
-## 1. Start with a shared vocabulary
+## 1. Begin with one relation
 
-We will use a small stream-monitoring example throughout the unit.
-
-$$
-\text{site}(\text{site\_id},\ \text{site\_code},\ \text{watershed},\ \text{reach\_name})
-$$
-
-$$
-\text{observation}(\text{observation\_id},\ \text{site\_id},\ \text{observed\_at},\ \text{temperature\_c})
-$$
-
-Here is one possible instance of `site`:
-
-| site_id | site_code | watershed | reach_name |
-|---:|---|---|---|
-| 101 | CC-01 | Clark Fork | Clear Creek Lower |
-| 102 | BF-01 | Blackfoot | North Fork |
-| 103 | RK-02 | Rock Creek | Ranch Bend |
-
-Here is one possible instance of `observation`:
-
-| observation_id | site_id | observed_at | temperature_c |
-|---:|---:|---|---:|
-| 1 | 101 | 2026-05-01 09:00 | 8.4 |
-| 2 | 101 | 2026-05-01 10:00 | 9.1 |
-| 3 | 102 | 2026-05-01 09:00 | 7.8 |
-| 4 | 101 | 2026-05-01 11:00 | 9.7 |
-
-### The core terms
-
-| Term | Clear definition | Example here |
-|---|---|---|
-| Relation | An abstract set of tuples over named attributes | `site` or `observation` |
-| Attribute | A named component of a relation | `site_id`, `observed_at` |
-| Tuple | One fact-record in the relation: one value for each attribute | `(2, 101, 2026-05-01 10:00, 9.1)` |
-| Domain | The set of allowed or meaningful values for an attribute | Site codes such as `CC-01`; temperatures measured in degrees C |
-| Schema | The relation name together with its attributes | `observation(observation_id, site_id, observed_at, temperature_c)` |
-| Instance | The tuples currently present in the relation | The four displayed `observation` tuples |
-
-::: {.callout-important appearance="simple"}
-## Schema and instance are different
-
-The **schema** says what kind of facts may be stored. The **instance** says which facts are stored right now. A relation can have a schema even when its current instance is empty.
-:::
-
-### A relation is not the same thing as a grid on the screen
-
-The displayed table is a convenient representation of a relation instance, but the relation itself is more abstract than its display.
-
-- The relation does not depend on a particular column width, font, or interface.
-- The relation does not depend on a particular file layout on disk.
-- The relation does not inherently come with a row order.
-
-For example, these two displays can represent the same relation instance:
-
-| Run | Possible display order of `observation_id` values |
-|---|---|
-| First execution | 1, 2, 3, 4 |
-| Later execution | 3, 1, 4, 2 |
-
-### Attributes have meaning, not just types
-
-`site_id` and `observation_id` might both be stored as integers, but they do not mean the same thing. Likewise, a timestamp in `observed_at` has a different role from a timestamp in some hypothetical `reviewed_at` attribute, even if both use the same SQL type.
-
-This is why the relational vocabulary matters. It encourages us to ask not only "what type is this value?" but also "what role does this attribute play in the relation?"
-
-## 2. Keys identify tuples
-
-When we say an attribute set is a key, we are making a statement about all valid instances of a relation, not just the sample currently on the screen.
-
-### Key terminology
-
-| Term | Definition | Example in this lesson |
-|---|---|---|
-| Superkey | Any set of attributes that uniquely identifies a tuple | `{site_id}` or `{site_id, watershed}` in `site` |
-| Candidate key | A minimal superkey | `{site_id}` and `{site_code}` in `site` |
-| Primary key | The candidate key chosen as the main identifier | `site_id` in `site` |
-| Foreign key | An attribute whose values must match a key in another relation | `observation.site_id` referencing `site.site_id` |
-
-### A worked example: key versus superkey
-
-In the `site` relation, suppose the course design intends both `site_id` and `site_code` to be unique for every site.
-
-Then:
-
-- `{site_id}` is a superkey because no two site tuples should share the same `site_id`.
-- `{site_code}` is also a superkey because no two site tuples should share the same `site_code`.
-- `{site_id, watershed}` is also a superkey, but it is not minimal.
-
-Why is `{site_id, watershed}` not a candidate key? Because `site_id` by itself is already enough. Adding `watershed` does not help identify the tuple; it only makes the identifying set larger.
-
-::: {.callout-note appearance="simple"}
-## Minimality is the difference
-
-A **candidate key** is not just unique. It is unique with no unnecessary attributes attached.
-:::
-
-### Additional example 1: a relation with multiple candidate keys
-
-Consider a simple student relation:
-
-$$
-\text{student}(\text{student\_id},\ \text{netid},\ \text{university\_email},\ \text{display\_name})
-$$
+For now, use one familiar kind of information: students. Do not worry about compact notation yet.
 
 | student_id | netid | university_email | display_name |
 |---:|---|---|---|
@@ -131,23 +28,137 @@ $$
 | 2002 | mateo3 | mateo3@umontana.edu | Mateo Ruiz |
 | 2003 | priya11 | priya11@umontana.edu | Priya Shah |
 
-If the institution guarantees that `student_id`, `netid`, and `university_email` are each unique, then all three are candidate keys.
+The terms below all describe different parts of this one display.
 
-- `{student_id}` is a candidate key.
-- `{netid}` is a candidate key.
-- `{university_email}` is a candidate key.
-- `{student_id, display_name}` is a superkey, but not a candidate key, because `student_id` already suffices.
-- `{display_name}` is not a superkey, because two students could share the same name.
+::: {.callout-note appearance="simple"}
+## Attribute
 
-If we choose `student_id` as the primary key, the other two candidate keys still matter. They remain alternate ways of identifying a student uniquely.
-
-::: {.activity-checkpoint}
-**Class prompt:** Which of the following are superkeys for `student`: `{netid}`, `{display_name}`, `{student_id, netid}`, `{university_email, display_name}`? Which of those are candidate keys?
+An **attribute** is a named kind of information.
 :::
 
-### Additional example 2: a relation whose key is composite
+- In this example, `student_id`, `netid`, `university_email`, and `display_name` are attributes.
+- An attribute name conveys a role. Even if both are stored as text, a `netid` and an `university_email` do not mean the same thing.
 
-Now consider course sections and enrollments:
+::: {.callout-note appearance="simple"}
+## Domain
+
+A **domain** is the set of allowed values for an attribute.
+:::
+
+- The domain of `student_id` contains student identifiers; the domain of `university_email` contains institution email addresses.
+- A domain conveys meaning, not merely a storage type such as text or integer.
+- For now, treat each attribute value as one indivisible value, rather than a list packed into a single cell.
+
+::: {.callout-note appearance="simple"}
+## Tuple
+
+A **tuple** is one complete assignment of values to the attributes.
+:::
+
+- The first displayed tuple is `(2001, aria7, aria7@umontana.edu, Aria Chen)`.
+- A tuple is the relational-model counterpart to what we casually call a row.
+
+::: {.callout-note appearance="simple"}
+## Relation
+
+A **relation** is a named set of tuples over a fixed collection of attributes.
+:::
+
+- The three displayed tuples form one possible relation named `student`.
+- A relation has no inherent row order, and it cannot contain two completely identical tuples.
+
+::: {.callout-note appearance="simple"}
+## Schema
+
+A **schema** describes the shape of a relation: its name, attributes, domains, and intended rules.
+:::
+
+- The `student` schema says what kind of tuples may appear, not which ones exist today.
+- It is the description or blueprint, not the current data.
+
+::: {.callout-note appearance="simple"}
+## Instance
+
+An **instance** is the particular set of tuples currently stored in a relation.
+:::
+
+- The three student tuples above are one instance of the `student` relation.
+- Tomorrow the instance may change while the schema remains the same.
+- At the next level up, a **database schema** is the collection of relation schemas and their rules; a **database instance** is the collection of relation instances at one moment in time.
+
+### Read the compact notation
+
+Once the vocabulary is in place, we can write the `student` schema compactly:
+
+$$
+\text{student}(\text{student\_id},\ \text{netid},\ \text{university\_email},\ \text{display\_name})
+$$
+
+Read this as: "There is a relation named `student` with these four attributes." The notation describes the schema. The table above shows one instance of that schema.
+
+### A relation is not the same thing as a grid on the screen
+
+The table is a convenient display of an instance, but the relation does not depend on a particular interface, column width, file layout, or row order. These two display orders can represent the same instance:
+
+| Run | Possible display order of `student_id` values |
+|---|---|
+| First execution | 2001, 2002, 2003 |
+| Later execution | 2003, 2001, 2002 |
+
+## 2. Keys identify tuples
+
+Keys are statements about all valid instances of a relation, not merely the small sample on the screen. Suppose the university guarantees that `student_id`, `netid`, and `university_email` are each unique for a student.
+
+::: {.callout-note appearance="simple"}
+## Superkey
+
+A **superkey** is any set of one or more attributes whose values uniquely identify a tuple.
+:::
+
+- In `student`, `{student_id}` is a superkey because no two valid students share the same ID.
+- `{student_id, display_name}` is also a superkey. Adding `display_name` is unnecessary, but it does not stop the combination from identifying one student.
+
+::: {.callout-note appearance="simple"}
+## Candidate key
+
+A **candidate key** is a minimal superkey: no attribute can be removed while preserving uniqueness.
+:::
+
+- `{student_id}`, `{netid}`, and `{university_email}` are candidate keys in this example.
+- `{student_id, display_name}` is not a candidate key because `student_id` alone already works.
+
+::: {.callout-note appearance="simple"}
+## Primary key
+
+A **primary key** is the candidate key chosen as the main identifier for a relation.
+:::
+
+- If we choose `student_id`, it becomes the primary key.
+- The other candidate keys remain meaningful alternate identifiers.
+
+### Work through the examples
+
+| Attribute set | Superkey? | Candidate key? | Why |
+|---|---:|---:|---|
+| `{student_id}` | Yes | Yes | It uniquely identifies each student and has no extra attribute. |
+| `{netid}` | Yes | Yes | The institution guarantees one netid per student. |
+| `{display_name}` | No | No | Different students can share a name. |
+| `{student_id, display_name}` | Yes | No | `student_id` alone is already sufficient. |
+| `{university_email, display_name}` | Yes | No | `university_email` alone is already sufficient. |
+
+::: {.activity-checkpoint}
+**Class prompt:** If two students can share a `display_name`, why does adding `display_name` to `{student_id}` not make the set less useful as a superkey? Why does it still fail to be a candidate key?
+:::
+
+### What a sample cannot prove
+
+The three displayed names happen to be different, but that does not make `display_name` a key. A key depends on a rule about valid data, not a coincidence in the current instance. A later tuple could legitimately contain `display_name = 'Aria Chen'` again.
+
+## 3. Link information across relations
+
+One relation is enough to define tuples and ordinary keys. Systems become more useful when separate relations can refer to one another without copying all descriptive information into every tuple.
+
+Consider these two relations:
 
 $$
 \text{section}(\text{section\_id},\ \text{course\_code},\ \text{term\_code},\ \text{section\_number})
@@ -169,147 +180,85 @@ $$
 | 2002 | 501 | 2026-08-17 | B+ |
 | 2001 | 610 | 2026-08-18 | A |
 
-In `enrollment`, no single attribute identifies a tuple by itself:
+::: {.callout-note appearance="simple"}
+## Foreign key
 
-- `student_id` is not enough because one student can enroll in multiple sections.
-- `section_id` is not enough because one section contains multiple students.
-- `{student_id, section_id}` is a candidate key if the design allows at most one enrollment record per student per section.
-
-This example is useful because it also makes foreign keys visible:
-
-- `enrollment.student_id` is a foreign key referencing `student.student_id`.
-- `enrollment.section_id` is a foreign key referencing `section.section_id`.
-
-So `enrollment` is a good reminder that a relation can have:
-
-- a composite primary key;
-- multiple foreign keys; and
-- attributes such as `enrolled_on` and `final_letter_grade` that describe the relationship rather than either entity alone.
-
-::: {.activity-checkpoint}
-**Class prompt:** Why is `{student_id, section_id, enrolled_on}` a superkey but not a candidate key for `enrollment`? What real-world rule makes `{student_id, section_id}` work as a key?
+A **foreign key** is an attribute whose values must match a key value in another relation.
 :::
 
-### What is not a key?
-
-In the sample above, the attribute `watershed` is not a superkey. Multiple sites could belong to the Clark Fork watershed, so `watershed = 'Clark Fork'` does not identify one tuple uniquely.
-
-Likewise, in `observation`, the fact that all four displayed timestamps happen to be different does **not** prove that `observed_at` is a candidate key. A future tuple could easily reuse a time:
-
-| observation_id | site_id | observed_at | temperature_c |
-|---:|---:|---|---:|
-| 5 | 103 | 2026-05-01 10:00 | 11.2 |
-
-Now two tuples share `observed_at = 2026-05-01 10:00`, so `observed_at` alone cannot identify an observation.
-
-::: {.activity-checkpoint}
-**Checkpoint:** In `observation`, is `{observation_id, site_id}` a candidate key or only a superkey? Explain your answer using minimality.
-:::
-
-## 3. Why this abstraction is useful
-
-The vocabulary above is not academic decoration. It supports a practical goal: users and designers should be able to describe data and relationships without specifying one traversal strategy or one storage format.
-
-### Before declarative query languages
-
-Suppose observations are stored in records connected by pointers. To find warm readings from site `CC-01`, a program might be written to:
-
-1. locate the record for `CC-01`;
-2. follow its pointer to the first observation;
-3. follow a linked list of later observations;
-4. inspect each temperature; and
-5. copy qualifying fields into an output record.
+- In `enrollment`, `student_id` refers to a student and `section_id` refers to a section.
+- The system should reject an enrollment that names a student or section that does not exist.
+- `enrollment` is the **referencing relation**; `student` and `section` are the **referenced relations**.
 
 ```{mermaid}
 flowchart LR
-    S["Site record<br/>CC-01"] --> O1["Observation<br/>08:00 · 7.9C"]
-    O1 --> O2["Observation<br/>09:00 · 8.4C"]
-    O2 --> O3["Observation<br/>10:00 · 9.1C"]
-    O3 --> O4["Observation<br/>11:00 · 9.7C"]
+    E["enrollment<br/>student_id<br/>section_id<br/>enrolled_on<br/>final_letter_grade"]
+    S["student<br/>student_id<br/>netid<br/>university_email<br/>display_name"]
+    C["section<br/>section_id<br/>course_code<br/>term_code<br/>section_number"]
 
-    classDef record fill:#eaf4f7,stroke:#247487,color:#173b4d;
-    class S,O1,O2,O3,O4 record;
+    E -->|"student_id references student_id"| S
+    E -->|"section_id references section_id"| C
+
+    classDef relation fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    class E,S,C relation;
 ```
 
-That program may work, but notice what it assumes:
+This is a **schema diagram**: it shows relation schemas and the references among them, rather than individual tuples.
 
-- where to begin;
-- which links exist;
-- how records are chained together; and
-- how to traverse the storage structure.
+### One tuple, several identifiers
 
-If the storage design changes, the program may need to change even when the question stays the same.
-
-### Separate the description of a question from one algorithm
-
-Compare the pointer-following procedure above with this request:
-
-> Return the time and temperature of observations from site `CC-01` whose temperature is at least 9C.
-
-This request states the desired result, but it does not say whether the system should scan a file, use an index, follow pointers, process observations first, or process sites first.
-
-::: {.concept-strip}
-**Navigation-dependent request:** tied to one path through stored records<br>
-**Logical request:** states what properties the desired answer must have
-:::
-
-That separation creates flexibility. The system can change storage structures or execution strategies without forcing the user to rewrite the meaning of the question.
-
-## 4. A short history of the separation
-
-Database systems did not become relational because earlier systems were foolish. They were built for different hardware and workload constraints. But one major shift was the move from navigation-dependent programs toward logical descriptions of data.
-
-```{mermaid}
-flowchart LR
-    A["Application-specific files<br/>record layouts in programs"] --> B["Hierarchical and network systems<br/>predefined navigation paths"]
-    B --> C["Relational model<br/>data described as relations"]
-    C --> D["Formal query languages<br/>over relations"]
-    D --> E["DBMS chooses storage and<br/>execution details"]
-
-    classDef early fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
-    classDef model fill:#eaf4f7,stroke:#247487,color:#173b4d;
-    classDef system fill:#173b4d,stroke:#173b4d,color:#ffffff;
-    class A,B early;
-    class C,D model;
-    class E system;
-```
-
-In his 1970 paper, E. F. Codd proposed describing shared data using mathematical relations while insulating users from many internal representation details. The engineering goal was **data independence**: applications should depend more on the logical meaning of data than on a particular physical layout.
+In `enrollment`, neither `student_id` nor `section_id` identifies a tuple by itself: a student can enroll in several sections, and a section has several students. Together, `{student_id, section_id}` can be a candidate key if the rules allow at most one enrollment record per student per section.
 
 ::: {.callout-note appearance="simple"}
-## The formality serves an engineering purpose
+## Composite key
 
-Precise definitions let us say what a relation is, what counts as a key, what kinds of facts may be represented, and later, what a query means independently of one implementation.
+A **composite key** uses more than one attribute.
 :::
+
+- In this example, `{student_id, section_id}` is composite: both attributes are needed to identify one enrollment.
+- This relation has both a key of its own and foreign keys that point to other relations.
+
+::: {.activity-checkpoint}
+**Class prompt:** What would go wrong if an `enrollment` tuple used `student_id = 9999` when no tuple with `student_id = 9999` exists in `student`?
+:::
+
+## 4. Why describe data this way?
+
+::: {.callout-note appearance="simple"}
+## Data independence
+
+**Data independence** means that applications should depend on the logical meaning of data more than on one physical storage arrangement.
+:::
+
+- The schemas describe what a student, section, and enrollment tuple mean; which values identify tuples; and which values must refer to existing information.
+- They do not specify whether a DBMS uses files, pages, indexes, or another data structure internally.
+- If the physical arrangement changes while these facts and rules remain the same, applications should not need to be rewritten.
+
+In his 1970 paper, E. F. Codd proposed describing shared data using mathematical relations while insulating users from many internal representation details. The formality is useful because it makes the logical design explicit enough to survive changes in implementation.
 
 ## 5. Put the ideas together
 
-The lesson's logic is one chain:
-
 ```{mermaid}
 flowchart LR
-    A["Precise vocabulary<br/>for data"] --> B["Keys identify tuples<br/>across valid instances"]
-    B --> C["Relations describe facts<br/>and relationships"]
-    C --> D["Logical meaning stays stable<br/>when storage changes"]
-    D --> E["Formal query languages become possible"]
+    A["Attributes and tuples<br/>describe one kind of fact"] --> B["Keys identify tuples"]
+    B --> C["Foreign keys link<br/>separate relations"]
+    C --> D["Schemas stay meaningful<br/>when storage changes"]
 
-    classDef problem fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
     classDef idea fill:#eaf4f7,stroke:#247487,color:#173b4d;
     classDef outcome fill:#173b4d,stroke:#173b4d,color:#ffffff;
-    class A,B problem;
-    class C,D idea;
-    class E outcome;
+    class A,B,C idea;
+    class D outcome;
 ```
 
 ::: {.takeaway-panel}
 ## The main claim
 
-The relational model sounds mathematical because it is trying to be exact about data. That exactness is what lets us describe information and relationships in a way that survives changes in storage layout and execution strategy.
+The relational model is formal because it needs to state exactly what kinds of facts exist, what identifies them, and how separate pieces of information may be linked. That precision lets the logical design outlive a particular storage layout.
 :::
 
 ## Looking ahead
 
-Next, we will use **relational algebra** as a formal language for expressing questions over relations. The point will not be to guess one traversal algorithm, but to describe the logical operations that define the answer.
+Week 2B introduces relational algebra: a formal language for describing questions over relations. It will build on the vocabulary and linking ideas established here.
 
 ## Sources and further reading
 
