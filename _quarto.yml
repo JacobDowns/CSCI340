@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: _site
+  resources:
+    - "notebooks/assignment-01-relational-operators-starter.ipynb"
   render:
     - "index.qmd"
     - "schedule.qmd"
@@ -45,7 +47,7 @@ website:
           - lectures/week-01-database-or-spreadsheet.qmd
           - lectures/week-02-from-tables-to-relations.qmd
           - lectures/week-02-relational-algebra.qmd
-          - lectures/week-02-asking-questions-with-sql.qmd
+          - lectures/week-03-asking-questions-with-sql.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd
@@ -55,6 +57,7 @@ website:
       - section: Assignments
         contents:
           - assignments/index.qmd
+          - assignments/assignment-01-relational-operators.qmd
           - projects/capstone.qmd
   page-footer:
     left: "CSCI 340 | Database Systems and Data Management"

@@ -1,5 +1,5 @@
 ---
-title: "Week 2C - Asking precise questions with SQL"
+title: "Week 3A - Asking precise questions with SQL"
 subtitle: "Selection, projection, expressions, ordering, nulls, and query tests"
 description: "A first SQL lesson that connects SELECT-FROM-WHERE to relational operations and treats testing as part of query writing."
 author: "CSCI 340"
@@ -10,7 +10,7 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 2C · SQL FOUNDATIONS AND QUERY TESTING
+WEEK 3A · SQL FOUNDATIONS AND QUERY TESTING
 :::
 
 # A query is a claim about the answer.

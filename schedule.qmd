@@ -28,13 +28,13 @@ This schedule gives the approximate sequence of topics for Autumn 2026. Specific
 
 Introduce spreadsheets, files, and databases as different tools for different problems. Focus on repeated information, hidden assumptions, naive tabular representations, and why data integrity becomes hard to maintain.
 
-### Week 2 (August 31-September 4) - Relational foundations
+### Week 2 (August 31-September 4) - Relational foundations and query implementation
 
-Introduce the relational model, core terminology, keys, and the idea of data independence. Develop relational algebra as a formal language for query meaning, then connect those ideas to first SQL queries.
+Introduce the relational model, core terminology, keys, and the idea of data independence. Develop relational algebra as a formal language for query meaning, introduce Assignment 1, and use class time to implement basic relational operations in Python.
 
-### Week 3 (September 7-11) - Joins and aggregation
+### Week 3 (September 7-11) - SQL foundations, joins, and aggregation
 
-Develop joins, grouping, aggregation, set versus bag behavior, and query decomposition. No class Monday, September 7, because of Labor Day.
+Begin with basic SQL, then develop joins, grouping, aggregation, set versus bag behavior, and query decomposition. No class Monday, September 7, because of Labor Day.
 
 ### Week 4 (September 14-18) - Query reasoning, equivalence, and first DataFrames
 

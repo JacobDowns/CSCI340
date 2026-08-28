@@ -25,6 +25,9 @@ __pycache__/
 .env.*
 !.env.example
 
+# Instructor-only reference materials
+/instructor-solutions/
+
 # Editors and operating systems
 .vscode/
 .idea/
