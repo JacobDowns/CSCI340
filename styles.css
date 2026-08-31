@@ -207,6 +207,50 @@ body.quarto-dark {
   background: #f6fbfc;
 }
 
+.practice-example {
+  margin: 1rem 0;
+  border: 1px solid #c8dde3;
+  border-left: 0.35rem solid var(--course-teal);
+  border-radius: 0.55rem;
+  background: #f6fbfc;
+}
+
+.practice-example > summary,
+.practice-solution > summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.practice-example > summary {
+  padding: 0.8rem 1rem;
+  color: var(--course-navy);
+}
+
+.practice-example[open] > summary {
+  border-bottom: 1px solid #c8dde3;
+}
+
+.practice-example > table {
+  box-sizing: border-box;
+  width: calc(100% - 2rem);
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.practice-example > p,
+.practice-example > ul,
+.practice-example > .practice-solution {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.practice-solution {
+  margin: 1rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.4rem;
+  background: #ffffff;
+}
+
 .activity-meta-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

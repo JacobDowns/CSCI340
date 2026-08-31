@@ -1,5 +1,5 @@
 ---
-title: "Week 2A - Why describe data as relations?"
+title: "Why describe data as relations?"
 subtitle: "Relational vocabulary, keys, and data independence"
 description: "An introduction to relational vocabulary, keys, and logical data descriptions that do not depend on a physical storage layout."
 author: "CSCI 340"
@@ -33,7 +33,7 @@ The terms below all describe different parts of this one display.
 ::: {.callout-note appearance="simple"}
 ## Attribute
 
-An **attribute** is a named kind of information.
+An **attribute** is a named column of a relation: a named kind of information.
 :::
 
 - In this example, `student_id`, `netid`, `university_email`, and `display_name` are attributes.
@@ -52,7 +52,7 @@ A **domain** is the set of allowed values for an attribute.
 ::: {.callout-note appearance="simple"}
 ## Tuple
 
-A **tuple** is one complete assignment of values to the attributes.
+A **tuple** is a sequence of values, one for each attribute of a relation.
 :::
 
 - The first displayed tuple is `(2001, aria7, aria7@umontana.edu, Aria Chen)`.
@@ -61,7 +61,7 @@ A **tuple** is one complete assignment of values to the attributes.
 ::: {.callout-note appearance="simple"}
 ## Relation
 
-A **relation** is a named set of tuples over a fixed collection of attributes.
+A **relation** is a named table - formally, a set of tuples over the same attributes.
 :::
 
 - The three displayed tuples form one possible relation named `student`.
@@ -70,10 +70,10 @@ A **relation** is a named set of tuples over a fixed collection of attributes.
 ::: {.callout-note appearance="simple"}
 ## Schema
 
-A **schema** describes the shape of a relation: its name, attributes, domains, and intended rules.
+A **relation schema** is a list of attributes and their corresponding domains that describes one relation's logical structure.
 :::
 
-- The `student` schema says what kind of tuples may appear, not which ones exist today.
+- The `student` relation schema says what kind of tuples may appear, not which ones exist today.
 - It is the description or blueprint, not the current data.
 
 ::: {.callout-note appearance="simple"}
@@ -84,26 +84,18 @@ An **instance** is the particular set of tuples currently stored in a relation.
 
 - The three student tuples above are one instance of the `student` relation.
 - Tomorrow the instance may change while the schema remains the same.
-- At the next level up, a **database schema** is the collection of relation schemas and their rules; a **database instance** is the collection of relation instances at one moment in time.
+- At the next level up, a **database schema** is the logical structure of the whole database: its relation schemas and their rules. A **database instance** is the collection of relation instances at one moment in time.
 
 ### Read the compact notation
 
-Once the vocabulary is in place, we can write the `student` schema compactly:
+Once the vocabulary is in place, we can write the `student` relation schema compactly:
 
 $$
 \text{student}(\text{student\_id},\ \text{netid},\ \text{university\_email},\ \text{display\_name})
 $$
 
-Read this as: "There is a relation named `student` with these four attributes." The notation describes the schema. The table above shows one instance of that schema.
+Read this as: "There is a relation named `student` with these four attributes." The notation describes the relation schema. The table above shows one instance of that schema.
 
-### A relation is not the same thing as a grid on the screen
-
-The table is a convenient display of an instance, but the relation does not depend on a particular interface, column width, file layout, or row order. These two display orders can represent the same instance:
-
-| Run | Possible display order of `student_id` values |
-|---|---|
-| First execution | 2001, 2002, 2003 |
-| Later execution | 2003, 2001, 2002 |
 
 ## 2. Keys identify tuples
 
@@ -112,7 +104,7 @@ Keys are statements about all valid instances of a relation, not merely the smal
 ::: {.callout-note appearance="simple"}
 ## Superkey
 
-A **superkey** is any set of one or more attributes whose values uniquely identify a tuple.
+A **superkey** is one or more attributes whose values identify at most one tuple in every valid instance of a relation.
 :::
 
 - In `student`, `{student_id}` is a superkey because no two valid students share the same ID.
@@ -130,7 +122,7 @@ A **candidate key** is a minimal superkey: no attribute can be removed while pre
 ::: {.callout-note appearance="simple"}
 ## Primary key
 
-A **primary key** is the candidate key chosen as the main identifier for a relation.
+A **primary key** is the candidate key chosen as the principal means of identifying tuples in a relation.
 :::
 
 - If we choose `student_id`, it becomes the primary key.
@@ -150,6 +142,56 @@ A **primary key** is the candidate key chosen as the main identifier for a relat
 **Class prompt:** If two students can share a `display_name`, why does adding `display_name` to `{student_id}` not make the set less useful as a superkey? Why does it still fail to be a candidate key?
 :::
 
+<details class="practice-example">
+<summary>Practice 1: campus devices</summary>
+
+Assume the university assigns every device a unique `device_id`. The manufacturer-assigned `serial_number` is also unique, but may be corrected or replaced during the device's lifetime.
+
+| device_id | serial_number | device_type | assigned_room |
+|---|---|---|---|
+| D100 | SN-A1 | Laptop | Library 101 |
+| D101 | SN-A2 | Laptop | Engineering 210 |
+| D102 | SN-B8 | Microscope | Biology 114 |
+| D103 | SN-C4 | Projector | Library 101 |
+
+**Class prompt:** Identify superkeys and candidate keys for this relation. Which candidate key would you choose as the primary key?
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+- `{device_id}` and `{serial_number}` are candidate keys because each identifies one device without needing another attribute.
+- `{device_id, device_type}` is a superkey, but not a candidate key: `device_id` alone already identifies the tuple.
+- `{device_type}` is not a superkey because more than one device can be a laptop.
+- Either candidate key could be chosen, but `device_id` is a reasonable primary key because the university controls it and intends it to remain stable.
+
+</details>
+</details>
+
+<details class="practice-example">
+<summary>Practice 2: classrooms and a composite key</summary>
+
+Assume a room number is unique only within a building. The pair `building, room_number` uniquely identifies a classroom.
+
+| building | room_number | capacity |
+|---|---:|---:|
+| Science | 101 | 42 |
+| Liberal Arts | 101 | 30 |
+| Science | 202 | 42 |
+| Fine Arts | 20 | 42 |
+
+**Class prompt:** Identify superkeys and candidate keys for this relation. Which candidate key would you choose as the primary key?
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+- `{building}`, `{room_number}`, and `{capacity}` are not superkeys. Each can describe more than one classroom.
+- `{building, room_number}` is a superkey and a candidate key. Neither attribute can be removed while preserving uniqueness.
+- `{building, room_number, capacity}` is a superkey, but not a candidate key because the first two attributes already suffice.
+- `{building, room_number}` is the primary key here, and it is a composite key because it uses two attributes.
+
+</details>
+</details>
+
 ### What a sample cannot prove
 
 The three displayed names happen to be different, but that does not make `display_name` a key. A key depends on a rule about valid data, not a coincidence in the current instance. A later tuple could legitimately contain `display_name = 'Aria Chen'` again.
@@ -159,6 +201,8 @@ The three displayed names happen to be different, but that does not make `displa
 One relation is enough to define tuples and ordinary keys. Systems become more useful when separate relations can refer to one another without copying all descriptive information into every tuple.
 
 Consider these two relations:
+
+For this example, `student_id` is the primary key of `student`, and `section_id` is the primary key of `section`.
 
 $$
 \text{section}(\text{section\_id},\ \text{course\_code},\ \text{term\_code},\ \text{section\_number})
@@ -183,24 +227,55 @@ $$
 ::: {.callout-note appearance="simple"}
 ## Foreign key
 
-A **foreign key** is an attribute whose values must match a key value in another relation.
+A **foreign key** is an attribute, or group of attributes, whose values must match primary-key values in another relation.
 :::
 
-- In `enrollment`, `student_id` refers to a student and `section_id` refers to a section.
+- In `enrollment`, `student_id` matches the primary key of `student`, and `section_id` matches the primary key of `section`.
 - The system should reject an enrollment that names a student or section that does not exist.
 - `enrollment` is the **referencing relation**; `student` and `section` are the **referenced relations**.
 
+::: {.callout-note appearance="simple"}
+## Referential integrity
+
+A **referential-integrity constraint** requires values in specified attributes of one relation to appear in specified attributes of another relation.
+:::
+
+- A foreign-key constraint is a special case of referential integrity: the referenced attributes are the primary key of the referenced relation.
+- The foreign keys in `enrollment` enforce referential integrity with `student` and `section`.
+
 ```{mermaid}
 flowchart LR
-    E["enrollment<br/>student_id<br/>section_id<br/>enrolled_on<br/>final_letter_grade"]
-    S["student<br/>student_id<br/>netid<br/>university_email<br/>display_name"]
-    C["section<br/>section_id<br/>course_code<br/>term_code<br/>section_number"]
+    subgraph enrollment["enrollment"]
+        direction TB
+        enrollment_student_id["student_id (FK)"]
+        enrollment_section_id["section_id (FK)"]
+        enrollment_other["enrolled_on<br/>final_letter_grade"]
+    end
 
-    E -->|"student_id references student_id"| S
-    E -->|"section_id references section_id"| C
+    subgraph student["student"]
+        direction TB
+        student_id["student_id (PK)"]
+        student_other["netid<br/>university_email<br/>display_name"]
+    end
 
-    classDef relation fill:#eaf4f7,stroke:#247487,color:#173b4d;
-    class E,S,C relation;
+    subgraph section["section"]
+        direction TB
+        section_id["section_id (PK)"]
+        section_other["course_code<br/>term_code<br/>section_number"]
+    end
+
+    enrollment_student_id --> student_id
+    enrollment_section_id --> section_id
+
+    classDef foreign fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
+    classDef primary fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    classDef attribute fill:#ffffff,stroke:#c8dde3,color:#173b4d;
+    class enrollment_student_id,enrollment_section_id foreign;
+    class student_id,section_id primary;
+    class enrollment_other,student_other,section_other attribute;
+    style enrollment fill:#f8fbfc,stroke:#247487,stroke-width:2px,color:#173b4d
+    style student fill:#f8fbfc,stroke:#247487,stroke-width:2px,color:#173b4d
+    style section fill:#f8fbfc,stroke:#247487,stroke-width:2px,color:#173b4d
 ```
 
 This is a **schema diagram**: it shows relation schemas and the references among them, rather than individual tuples.
@@ -225,9 +300,9 @@ A **composite key** uses more than one attribute.
 ## 4. Why describe data this way?
 
 ::: {.callout-note appearance="simple"}
-## Data independence
+## Physical data independence
 
-**Data independence** means that applications should depend on the logical meaning of data more than on one physical storage arrangement.
+**Physical data independence** means that applications do not depend on the physical schema and need not be rewritten when the physical schema changes.
 :::
 
 - The schemas describe what a student, section, and enrollment tuple mean; which values identify tuples; and which values must refer to existing information.

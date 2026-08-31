@@ -1,0 +1,199 @@
+---
+title: "Defining tables with PostgreSQL"
+subtitle: "Types, constraints, table definitions, and changes to stored data"
+description: "An introduction to defining PostgreSQL tables, choosing basic types, and adding, changing, or removing tuples."
+author: "CSCI 340"
+toc: true
+toc-depth: 2
+code-fold: false
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 3A · POSTGRESQL TABLE DEFINITIONS
+:::
+
+# Before asking a question, decide what data can exist.
+
+In Week 2, a relation schema gave us a careful description of attributes, keys, and constraints. PostgreSQL lets us put that description into a database. We first define the table and the values it permits; only then do we add tuples and ask questions about them.
+
+:::
+
+## 1. From relation schema to table definition
+
+Consider the relation schema below:
+
+$$
+\text{student}(\text{student\_id},\ \text{university\_email},\ \text{display\_name},\ \text{admitted\_on},\ \text{is\_active})
+$$
+
+In PostgreSQL, `CREATE TABLE` names the relation's attributes, assigns a type to each one, and states constraints the database should enforce.
+
+```sql
+CREATE TABLE student (
+    student_id integer PRIMARY KEY,
+    university_email text NOT NULL UNIQUE,
+    display_name text NOT NULL,
+    admitted_on date NOT NULL,
+    is_active boolean NOT NULL DEFAULT true
+);
+```
+
+::: {.callout-note appearance="simple"}
+## Schema and instance
+
+The `CREATE TABLE` statement defines the **schema**: the attributes, their allowed kinds of values, and rules for valid tuples. The table's current rows are its **instance**. Immediately after this statement, the relation has a schema but an empty instance.
+:::
+
+The constraints above express several decisions:
+
+- `student_id integer PRIMARY KEY` requires a distinct, non-null integer identifier for every tuple.
+- `NOT NULL` says an attribute must have a value when a tuple is inserted or updated.
+- `UNIQUE` prevents two tuples from sharing the same non-null email address.
+- `DEFAULT true` supplies a value when an insertion omits `is_active`.
+
+## 2. Use `CHECK` to describe valid values
+
+`CHECK` attaches a condition to an attribute or table. PostgreSQL rejects an insertion or update when the condition is false. It is useful for ranges and for an attribute whose permitted values are known in advance.
+
+```sql
+CREATE TABLE course_section (
+    section_id integer PRIMARY KEY,
+    capacity integer NOT NULL
+        CHECK (capacity BETWEEN 1 AND 400),
+    grading_basis text NOT NULL
+        CHECK (grading_basis IN ('letter', 'pass_fail'))
+);
+```
+
+The first `CHECK` prevents impossible capacities such as `0` or `500`. The second expresses a controlled set of values: `grading_basis` can be either `'letter'` or `'pass_fail'`, but not a misspelling or an unrecognized label.
+
+::: {.callout-note appearance="simple"}
+## Pair an allowed set with `NOT NULL` when a value is required
+
+A `CHECK` condition does not reject `NULL` by itself because the condition's result is unknown rather than false. Add `NOT NULL` when every tuple must choose one of the permitted values.
+:::
+
+For a small, stable list, `CHECK (... IN (...))` is clear and direct. If the list itself needs descriptions, dates, or frequent changes, we will later model it as its own relation and use a foreign key instead.
+
+## 3. Choose types for the values, not for their appearance
+
+A type says what kind of value an attribute can hold. It also determines which operations make sense. For example, dates can be compared chronologically, while a `text` value is not automatically a date just because it looks like one.
+
+| PostgreSQL type | Useful for | Example value |
+|---|---|---|
+| `integer` | whole-number quantities and identifiers | `340` |
+| `numeric(p, s)` | exact decimal quantities | `numeric(6, 2)` for `1234.50` |
+| `text` | variable-length text | `'Ava Nguyen'` |
+| `boolean` | true-or-false conditions | `true` |
+| `date` | calendar dates without a time of day | `DATE '2026-09-08'` |
+| `timestamp with time zone` | a moment in time | `TIMESTAMPTZ '2026-09-08 09:00-06'` |
+
+::: {.callout-warning appearance="simple"}
+## An identifier is often text
+
+Choose a type based on the meaning of the attribute, not only its visible characters. A course code such as `CSCI 340`, a postal code, or an ID with leading zeroes is usually `text`, even if it contains digits.
+:::
+
+## 4. Insert tuples into the table
+
+`INSERT` changes the current instance by adding new tuples. Naming the target attributes makes the correspondence between values and attributes explicit.
+
+```sql
+INSERT INTO student (
+    student_id,
+    university_email,
+    display_name,
+    admitted_on
+)
+VALUES
+    (101, 'ava.nguyen@university.edu', 'Ava Nguyen', DATE '2026-08-20'),
+    (102, 'jordan.lee@university.edu', 'Jordan Lee', DATE '2026-08-20');
+```
+
+Because `is_active` has a default, each inserted tuple receives `true`. If the `student_id` or email repeated an existing value, PostgreSQL would reject the insertion rather than quietly admit an invalid instance.
+
+::: {.callout-question appearance="simple"}
+## Predict the outcome
+
+What should PostgreSQL do if we try to insert a third tuple with `student_id` `101` but a different name and email? Which part of the table definition supports your prediction?
+:::
+
+## 5. Change or remove stored tuples deliberately
+
+`UPDATE` changes values in tuples that already exist. A `WHERE` condition identifies which tuples should change.
+
+```sql
+UPDATE student
+SET display_name = 'Jordan A. Lee'
+WHERE student_id = 102;
+```
+
+`DELETE` removes matching tuples from the current instance.
+
+```sql
+DELETE FROM student
+WHERE student_id = 102;
+```
+
+::: {.callout-warning appearance="simple"}
+## `WHERE` is the safeguard
+
+Without a `WHERE` clause, `UPDATE` changes every tuple in the table and `DELETE` removes every tuple. Before running either statement, state in plain English which tuples should be affected and check that the condition captures exactly those tuples.
+:::
+
+These commands change data, not the table's definition. The `student` schema remains the same after an insertion, update, or deletion.
+
+## 6. Change the table definition with `ALTER TABLE`
+
+Sometimes the schema itself must evolve. `ALTER TABLE` changes an existing table definition rather than its current tuples.
+
+```sql
+ALTER TABLE student
+ADD COLUMN graduation_year integer;
+```
+
+Existing tuples now have a `graduation_year` attribute whose value is initially `NULL`. We can also add a rule after the table exists:
+
+```sql
+ALTER TABLE student
+ADD CONSTRAINT student_graduation_year_range
+CHECK (graduation_year BETWEEN 2020 AND 2040);
+```
+
+The database verifies the rule for existing tuples and for future inserts or updates. A schema change is therefore not merely a new column on a spreadsheet: it can change the set of tuples the database considers valid.
+
+## 7. A short connection to keys and links
+
+We can use the same syntax to represent a relation that connects students to course sections.
+
+```sql
+CREATE TABLE enrollment (
+    student_id integer REFERENCES student(student_id),
+    section_id integer NOT NULL,
+    enrolled_on date NOT NULL,
+    PRIMARY KEY (student_id, section_id)
+);
+```
+
+Here, the pair `(student_id, section_id)` is a composite primary key: a student can appear in many sections, and a section can contain many students, but the same student-section pair cannot appear twice. `REFERENCES student(student_id)` is a foreign-key constraint that requires each stored `student_id` to identify a row in `student`.
+
+::: {.callout-note appearance="simple"}
+## Keep the two kinds of change separate
+
+- `CREATE TABLE` and `ALTER TABLE` define or change a schema.
+- `INSERT`, `UPDATE`, and `DELETE` change a relation's current instance.
+
+This distinction lets us reason separately about the structure of data and the data currently stored within that structure.
+:::
+
+## Looking ahead
+
+The next lecture uses `SELECT`, `FROM`, and `WHERE` to ask questions of tables whose structure and values we can now describe precisely.
+
+**Next:** [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd)
+
+## Sources
+
+- PostgreSQL Global Development Group. [Chapter 8: Data Types](https://www.postgresql.org/docs/current/datatype.html).
+- PostgreSQL Global Development Group. [`CREATE TABLE`](https://www.postgresql.org/docs/current/sql-createtable.html), [`INSERT`](https://www.postgresql.org/docs/current/sql-insert.html), [`DELETE`](https://www.postgresql.org/docs/current/sql-delete.html), and [`ALTER TABLE`](https://www.postgresql.org/docs/current/sql-altertable.html).

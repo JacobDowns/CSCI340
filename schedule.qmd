@@ -32,9 +32,9 @@ Introduce spreadsheets, files, and databases as different tools for different pr
 
 Introduce the relational model, core terminology, keys, and the idea of data independence. Develop relational algebra as a formal language for query meaning, introduce Assignment 1, and use class time to implement basic relational operations in Python.
 
-### Week 3 (September 7-11) - SQL foundations, joins, and aggregation
+### Week 3 (September 7-11) - PostgreSQL table definitions and SQL foundations
 
-Begin with basic SQL, then develop joins, grouping, aggregation, set versus bag behavior, and query decomposition. No class Monday, September 7, because of Labor Day.
+Begin by defining and changing PostgreSQL tables, then use basic SQL to query them. Develop joins, grouping, aggregation, set versus bag behavior, and query decomposition as the unit continues. No class Monday, September 7, because of Labor Day.
 
 ### Week 4 (September 14-18) - Query reasoning, equivalence, and first DataFrames
 

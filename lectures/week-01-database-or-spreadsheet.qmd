@@ -1,5 +1,5 @@
 ---
-title: "Week 1 - Is a database just a glorified spreadsheet?"
+title: "Is a database just a glorified spreadsheet?"
 subtitle: "Where tabular files work, where they break, and what a database adds"
 description: "An introductory database lesson built around a deliberately provocative comparison with spreadsheets and CSV files."
 author: "CSCI 340"

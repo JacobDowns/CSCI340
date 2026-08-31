@@ -1,5 +1,5 @@
 ---
-title: "Week 2B - Relational algebra and query meaning"
+title: "Relational algebra and query meaning"
 subtitle: "Selection, projection, joins, and equivalent expressions before SQL"
 description: "A guided introduction to relational algebra as a formal language for expressing questions over relations and reasoning about equivalent query meanings."
 author: "CSCI 340"

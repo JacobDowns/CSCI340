@@ -1,14 +1,14 @@
 ---
 title: "Lab 2 — Ask it, write it, break it"
 subtitle: "Translate questions into SQL and test what the query actually means"
-description: "A small-group Week 2 SQL lab centered on result contracts, boundary cases, nulls, and concise query explanations."
+description: "A small-group Week 3 SQL lab centered on result contracts, boundary cases, nulls, and concise query explanations."
 toc: true
 toc-depth: 2
 ---
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 2 LAB · SQL, PREDICTION, AND COUNTEREXAMPLES
+WEEK 3 LAB · SQL, PREDICTION, AND COUNTEREXAMPLES
 :::
 
 # Can you make the wrong query look right?

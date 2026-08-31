@@ -44,16 +44,27 @@ website:
       - section: Lectures
         contents:
           - lectures/index.qmd
-          - lectures/week-01-database-or-spreadsheet.qmd
-          - lectures/week-02-from-tables-to-relations.qmd
-          - lectures/week-02-relational-algebra.qmd
-          - lectures/week-03-asking-questions-with-sql.qmd
+          - section: Week 1
+            contents:
+              - lectures/week-01-database-or-spreadsheet.qmd
+          - section: Week 2
+            contents:
+              - lectures/week-02-from-tables-to-relations.qmd
+              - lectures/week-02-relational-algebra.qmd
+          - section: Week 3
+            contents:
+              - lectures/week-03-defining-relations-with-sql.qmd
+              - lectures/week-03-asking-questions-with-sql.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd
-          - activities/week-01-tool-choice-discussion.qmd
-          - activities/week-01-file-representation-lab.qmd
-          - activities/week-02-query-reasoning-lab.qmd
+          - section: Week 1
+            contents:
+              - activities/week-01-tool-choice-discussion.qmd
+              - activities/week-01-file-representation-lab.qmd
+          - section: Week 3
+            contents:
+              - activities/week-03-query-reasoning-lab.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd

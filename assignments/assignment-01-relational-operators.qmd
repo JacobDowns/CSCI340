@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1 - Implement relational operators"
-subtitle: "Write simple algorithms for selection, projection, and rename"
+subtitle: "Write simple algorithms for selection, projection, rename, and join"
 description: "A starter notebook for implementing and testing a few foundational relational-algebra operations in Python."
 ---
 
@@ -19,6 +19,7 @@ The starter provides a small immutable `Relation` class. It stores a relation na
 - `select(relation, predicate)`: retain tuples that satisfy a condition.
 - `project(relation, attributes)`: retain selected attributes and remove duplicate output tuples.
 - `rename(relation, new_name)`: give a relation a new name without changing its attributes or tuples.
+- `join(left, right, left_attribute, right_attribute)`: combine tuples whose specified attribute values match.
 
 The supplied tests define the expected behavior. Your functions must return new relations rather than modifying their inputs.
 
@@ -26,6 +27,6 @@ The supplied tests define the expected behavior. Your functions must return new 
 
 - Your completed starter notebook with all supplied tests passing.
 - Two additional tests of your own: one normal case and one edge case.
-- Brief written responses in the notebook explaining the composed query and how the three algorithms differ in the data they inspect or construct.
+- Brief written responses in the notebook explaining the composed query and how the operators differ in the data they inspect or construct.
 
 The goal is not to build a production DBMS. The representation is deliberately small so that you can distinguish a relational operation's logical meaning from the Python algorithm used to compute it.

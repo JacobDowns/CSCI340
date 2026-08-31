@@ -1,5 +1,5 @@
 ---
-title: "Week 3A - Asking precise questions with SQL"
+title: "Asking precise questions with SQL"
 subtitle: "Selection, projection, expressions, ordering, nulls, and query tests"
 description: "A first SQL lesson that connects SELECT-FROM-WHERE to relational operations and treats testing as part of query writing."
 author: "CSCI 340"
@@ -10,18 +10,18 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 3A · SQL FOUNDATIONS AND QUERY TESTING
+WEEK 3B · SQL FOUNDATIONS AND QUERY TESTING
 :::
 
 # A query is a claim about the answer.
 
-A SQL query can be syntactically valid and still answer the wrong question. Writing the query is therefore only part of the work. We must also predict its result and construct cases that distinguish the intended meaning from plausible mistakes. The relational-algebra ideas from the previous lecture now become practical: SQL is the language we write, but the meaning still comes from the logical operations the query expresses.
+A SQL query can be syntactically valid and still answer the wrong question. Writing the query is therefore only part of the work. We must also predict its result and construct cases that distinguish the intended meaning from plausible mistakes. The relational-algebra ideas from Week 2 now become practical: SQL is the language we write, but the meaning still comes from the logical operations the query expresses.
 
 :::
 
 ## 1. Our relation for today
 
-We will begin with one relation so that each new clause has a visible purpose. Joins and aggregation arrive next week.
+We will begin with one relation so that each new clause has a visible purpose. Joins and aggregation come after we are comfortable reasoning about one relation.
 
 $$
 \text{observation}(\text{observation\_id},\ \text{site\_id},\ \text{sensor\_id},\ \text{observed\_at},\ \text{temperature\_c},\ \text{quality\_note})
@@ -425,7 +425,7 @@ The phrase **define one result row** is especially important. It prevents many l
 
 ## Continue to Lab 2
 
-Apply this process in [Lab 2 — Ask it, write it, break it](../activities/week-02-query-reasoning-lab.qmd). Your group will translate questions into SQL, predict results, and design counterexamples for plausible incorrect queries.
+Apply this process in [Lab 2 — Ask it, write it, break it](../activities/week-03-query-reasoning-lab.qmd). Your group will translate questions into SQL, predict results, and design counterexamples for plausible incorrect queries.
 
 ## Sources and further reading
 

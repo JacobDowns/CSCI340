@@ -3,7 +3,7 @@ title: "Lecture notes"
 subtitle: "Guided explanations, examples, questions, and in-class activities"
 ---
 
-Lecture pages provide the course narrative; submittable work lives under [labs and activities](../activities/index.qmd).
+Lecture pages provide the course narrative. Related practice and submissions appear under [labs and activities](../activities/index.qmd) and [assignments](../assignments/index.qmd).
 
 ## Week 1
 
@@ -13,4 +13,10 @@ Lecture pages provide the course narrative; submittable work lives under [labs a
 
 - [Why describe data as relations?](week-02-from-tables-to-relations.qmd) — Relational vocabulary, keys, relationships, and why formal data descriptions help before we discuss query languages.
 - [Relational algebra and query meaning](week-02-relational-algebra.qmd) — Selection, projection, join, closure, and the idea that one query meaning can correspond to multiple execution strategies.
-- [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd) — Selection, projection, expressions, ordering, nulls, and evidence that a query means what we intend.
+- [Assignment 1 — Implement relational operators](../assignments/assignment-01-relational-operators.qmd) — Implement and test selection, projection, and rename over a small in-memory relation.
+
+## Week 3
+
+- [Defining tables with PostgreSQL](week-03-defining-relations-with-sql.qmd) — Translate relational schemas into PostgreSQL types, constraints, table definitions, and controlled changes to stored tuples.
+- [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd) — Use selection, projection, expressions, ordering, and nulls to retrieve the intended tuples and attributes.
+- [Lab 2 — Ask it, write it, break it](../activities/week-03-query-reasoning-lab.qmd) — Translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.

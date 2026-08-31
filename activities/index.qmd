@@ -10,9 +10,9 @@ Labs and activities are short small-group exercises that make the course ideas c
 - [Activity 1 — What tool fits the job?](week-01-tool-choice-discussion.qmd): discuss when a spreadsheet, plain file, database, program, or combination best fits a situation.
 - [Lab 1 — Make the file fail on purpose](week-01-file-representation-lab.qmd): expose the assumptions and failure modes hidden in a convenient flat file, then propose a first relational model.
 
-## Week 2
+## Week 3
 
-- [Lab 2 — Ask it, write it, break it](week-02-query-reasoning-lab.qmd): translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.
+- [Lab 2 — Ask it, write it, break it](week-03-query-reasoning-lab.qmd): translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.
 
 ## Submission principle
 
