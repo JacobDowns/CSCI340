@@ -10,6 +10,10 @@ Labs and activities are short small-group exercises that make the course ideas c
 - [Activity 1 — What tool fits the job?](week-01-tool-choice-discussion.qmd): discuss when a spreadsheet, plain file, database, program, or combination best fits a situation.
 - [Lab 1 — Make the file fail on purpose](week-01-file-representation-lab.qmd): expose the assumptions and failure modes hidden in a convenient flat file, then propose a first relational model.
 
+## Week 2
+
+- [Activity 2 — Relations and keys](week-02-relations-and-keys.qmd): write relation schemas, identify superkeys and candidate keys, choose primary keys, locate foreign keys, and reason about checking uniqueness in a relation instance.
+
 ## Week 3
 
 - [Lab 2 — Ask it, write it, break it](week-03-query-reasoning-lab.qmd): translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.

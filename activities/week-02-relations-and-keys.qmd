@@ -1,0 +1,14 @@
+---
+title: "Activity 2 - Relations and Keys"
+subtitle: "Schemas, keys, references, and checking uniqueness"
+description: "A Week 2 participation activity on relation schemas, keys, and foreign keys."
+toc: false
+---
+
+::: {.lesson-hero}
+# Use the participation worksheet
+
+Feel free to work in a group or as an individual. Please submit your worksheet on Canvas.
+
+[Download the participation worksheet](week-02-relational-model-practice-participation.docx){.btn .btn-primary}
+:::

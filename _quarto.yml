@@ -62,6 +62,9 @@ website:
             contents:
               - activities/week-01-tool-choice-discussion.qmd
               - activities/week-01-file-representation-lab.qmd
+          - section: Week 2
+            contents:
+              - activities/week-02-relations-and-keys.qmd
           - section: Week 3
             contents:
               - activities/week-03-query-reasoning-lab.qmd
