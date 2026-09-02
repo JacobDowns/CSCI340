@@ -13,7 +13,7 @@ Lecture pages provide the course narrative. Related practice and submissions app
 
 - [Why describe data as relations?](week-02-from-tables-to-relations.qmd) — Relational vocabulary, keys, relationships, and why formal data descriptions help before we discuss query languages.
 - [Activity 2 — Relations and keys](../activities/week-02-relations-and-keys.qmd) — Practice describing schemas, identifying keys, choosing primary keys, and locating foreign keys.
-- [Relational algebra and query meaning](week-02-relational-algebra.qmd) — Selection, projection, join, closure, and the idea that one query meaning can correspond to multiple execution strategies.
+- [Relational algebra and query meaning](week-02-relational-algebra.qmd) — Selection, projection, Cartesian product, join, closure, and the idea that one query meaning can correspond to multiple execution strategies.
 - [Assignment 1 — Implement relational operators](../assignments/assignment-01-relational-operators.qmd) — Implement and test selection, projection, and rename over a small in-memory relation.
 
 ## Week 3

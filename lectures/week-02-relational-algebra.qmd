@@ -1,7 +1,7 @@
 ---
 title: "Relational algebra and query meaning"
-subtitle: "Selection, projection, joins, and equivalent expressions before SQL"
-description: "A guided introduction to relational algebra as a formal language for expressing questions over relations and reasoning about equivalent query meanings."
+subtitle: "Selection, projection, Cartesian products, joins, and equivalent expressions before SQL"
+description: "A guided introduction to relational algebra as a formal language for expressing questions over relations, composing operators, and reasoning about equivalent query meanings."
 author: "CSCI 340"
 toc: true
 toc-depth: 3
@@ -44,14 +44,17 @@ Relational algebra gives names and symbols to those steps.
 
 ## 2. Read the operators as verbs first
 
-For now, treat each operator as a familiar transformation.
+For now, treat each operator as a familiar transformation. Let `r` and `s` stand for relations, and let `E` stand for any relational-algebra expression that produces a relation.
 
-| Intent | Relational operation | Common notation |
-|---|---|:---:|
-| Keep tuples satisfying a predicate | Selection | $\sigma$ |
-| Keep selected attributes | Projection | $\pi$ |
-| Give a result or attribute a useful name | Rename | $\rho$ |
-| Pair related tuples from two relations | Join | $\bowtie$ |
+| Intent | Relational operation | General form |
+|---|---|---|
+| Keep tuples satisfying a predicate | Selection | $\sigma_{p}(E)$ |
+| Keep selected attributes | Projection | $\pi_{A_1,\ldots,A_k}(E)$ |
+| Give a result a useful name | Rename | $\rho_x(E)$ |
+| Form every possible tuple pair | Cartesian product | $E_1 \times E_2$ |
+| Pair tuples satisfying a predicate | Theta join | $E_1 \bowtie_{\theta} E_2$ |
+
+The Chapter 2 treatment also includes union, set difference, and intersection. We will defer those set operations until a later lecture, when we can focus on their compatible-schema requirement. This lecture concentrates on the operators needed to filter, reshape, combine, and compose queries.
 
 The question above can be expressed as:
 
@@ -74,9 +77,37 @@ Read from the inside out:
 
 ## 3. The basic operators
 
+### Predicates state a condition
+
+A **predicate** is a condition evaluated for a tuple. In a selection, a tuple remains in the result exactly when its predicate is true.
+
+For this introduction, predicates are built from comparisons and Boolean connectors:
+
+| Form | Example | Meaning |
+|---|---|---|
+| Attribute compared with a value | `temperature_c >= 9` | Is this tuple's temperature at least 9? |
+| Attribute compared with another attribute | `quantity_on_hand < reorder_level` | Is this tuple's quantity below its own reorder level? |
+| Combined conditions | `A and B`, `A or B`, `not A` | Require, allow, or negate conditions; parentheses clarify grouping. |
+
+The comparison operators are `=`, `!=`, `<`, `<=`, `>`, and `>=`. We will write Boolean connectors as the words `and`, `or`, and `not` throughout this lecture. Compared values must come from compatible domains: comparing two quantities is meaningful, while comparing an item ID with a category is not. The two attributes in an attribute-to-attribute comparison come from the **same input tuple**. After a join, a predicate can also compare one attribute from each matched pair, such as `observation.site_id = site.site_id`.
+
+::: {.callout-note appearance="simple"}
+## Keep the scope narrow for now
+
+This is the core predicate vocabulary needed for basic relational algebra. Practical query languages later add other tests, including null checks, pattern matching, and functions.
+:::
+
 ### Selection filters tuples
 
 Selection keeps the tuples that satisfy a predicate.
+
+**General syntax**
+
+$$
+\sigma_p(E)
+$$
+
+`E` is a relation or expression that produces a relation, and `p` is a predicate over attributes available in `E`.
 
 $$
 \sigma_{\text{site\_id} = 101}(\text{observation})
@@ -84,9 +115,45 @@ $$
 
 Read: "from `observation`, keep only tuples whose `site_id` is 101."
 
+<details class="practice-example">
+<summary>Practice 1: write a selection predicate</summary>
+
+Consider `inventory_item(item_id, category, quantity_on_hand, reorder_level, discontinued)`.
+
+| item_id | category | quantity_on_hand | reorder_level | discontinued |
+|---|---|---:|---:|---|
+| I10 | Tea | 3 | 5 | false |
+| I11 | Tea | 8 | 5 | false |
+| I12 | Mug | 2 | 2 | false |
+| I13 | Mug | 0 | 4 | true |
+
+**Class prompt:** Write an expression that returns items that are still sold and whose quantity is below their own reorder level. Which comparisons use a value, and which compare two attributes in the same tuple?
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+$$
+\sigma_{\text{discontinued} = \text{false}\ \text{and}\ \text{quantity\_on\_hand} < \text{reorder\_level}}(\text{inventory\_item})
+$$
+
+- `discontinued = false` compares an attribute with a value.
+- `quantity_on_hand < reorder_level` compares two attributes of the same item tuple.
+- Only `I10` remains. `I13` is below its reorder level, but it is discontinued.
+
+</details>
+</details>
+
 ### Projection chooses attributes
 
 Projection keeps selected attributes in the result.
+
+**General syntax**
+
+$$
+\pi_{A_1,\ A_2,\ \ldots,\ A_k}(E)
+$$
+
+Each listed attribute must be available in `E`; attributes not listed are omitted from the result.
 
 $$
 \pi_{\text{observation\_id},\ \text{temperature\_c}}(\text{observation})
@@ -94,9 +161,43 @@ $$
 
 Read: "from `observation`, keep only `observation_id` and `temperature_c`."
 
+Because the result is again a relation, projection does not retain duplicate output tuples. For example, projecting only `category` from the inventory table above produces one `Tea` tuple and one `Mug` tuple, not two copies of each.
+
+<details class="practice-example">
+<summary>Practice 2: project a useful result</summary>
+
+Using `inventory_item` above, write an expression that returns the IDs and current quantities of the items that are still sold and below their reorder level.
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+$$
+\pi_{\text{item\_id},\ \text{quantity\_on\_hand}}
+\left(
+\sigma_{\text{discontinued} = \text{false}\ \text{and}\ \text{quantity\_on\_hand} < \text{reorder\_level}}(\text{inventory\_item})
+\right)
+$$
+
+Selection decides which item tuples remain; projection decides which attributes of those tuples appear in the final result.
+
+</details>
+</details>
+
 ### Rename helps us speak precisely
 
 Rename is useful when an intermediate result needs a clearer name, especially when the same relation plays multiple roles in a larger expression.
+
+**General syntax**
+
+$$
+\rho_x(E)
+$$
+
+This names the relation produced by `E` as `x`. A second form can rename its attributes too:
+
+$$
+\rho_{x(A_1,\ A_2,\ \ldots,\ A_n)}(E)
+$$
 
 $$
 \rho_{\text{warm\_observation}}
@@ -107,17 +208,118 @@ $$
 
 For now, the important point is simple: rename does not change which facts are present. It changes how we refer to the result.
 
+<details class="practice-example">
+<summary>Practice 3: name an intermediate result</summary>
+
+Let `low_stock` be the result of selecting currently sold items below their reorder level. Write a rename expression that gives the selection this relation name. What changes in the tuples themselves?
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+$$
+\rho_{\text{low\_stock}}
+\left(
+\sigma_{\text{discontinued} = \text{false}\ \text{and}\ \text{quantity\_on\_hand} < \text{reorder\_level}}(\text{inventory\_item})
+\right)
+$$
+
+The tuples and attributes are unchanged. The result simply has a useful name for a later step in a larger expression.
+
+</details>
+</details>
+
+### Cartesian product forms every possible pair
+
+The Cartesian product combines every tuple in one relation with every tuple in another. It is a useful building block, but it often contains many pairs that do not represent a meaningful real-world association.
+
+**General syntax**
+
+$$
+E_1 \times E_2
+$$
+
+The result has the attributes of both inputs. If `E_1` has $n$ tuples and `E_2` has $m$ tuples, the product has $n \times m$ tuples. When the inputs have an attribute with the same name, we qualify it with its relation name, such as `patron.patron_id` and `loan.patron_id`.
+
+<details class="practice-example">
+<summary>Practice 4: reason about a Cartesian product</summary>
+
+| day_code | day_name |
+|---|---|
+| M | Monday |
+| W | Wednesday |
+
+| shift_code | starts_at |
+|---|---|
+| AM | 09:00 |
+| PM | 13:00 |
+| EV | 18:00 |
+
+**Class prompt:** How many tuples are in `day × shift`? List the attributes of one tuple and explain when this product could be useful.
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+The product has $2 \times 3 = 6$ tuples. One tuple is `(M, Monday, PM, 13:00)`. This product is useful if the question asks for every possible day-and-shift combination, such as a blank scheduling grid. In many other cases, we will use a selection after the product to keep only meaningful pairs.
+
+</details>
+</details>
+
 ### Join combines related tuples
 
 Suppose we want the `observed_at`, `temperature_c`, and `watershed` for observations.
 
-We can combine `observation` with `site` on `site_id`:
+We can combine `observation` with `site` on `site_id`.
+
+**General syntax**
+
+$$
+E_1 \bowtie_\theta E_2 = \sigma_\theta(E_1 \times E_2)
+$$
+
+`\theta` is a predicate over attributes from the two inputs. A theta join is therefore a convenient single operator for a Cartesian product followed by a selection that retains only the matching pairs.
+
+::: {.callout-note appearance="simple"}
+## Join as two familiar steps
+
+A join is equivalent to first forming a Cartesian product and then selecting the tuple pairs that satisfy the join predicate. The join notation packages those two logical steps into one operation.
+:::
 
 $$
 \text{observation} \bowtie_{\text{observation.site\_id} = \text{site.site\_id}} \text{site}
 $$
 
 Conceptually, the join pairs tuples whose `site_id` values match so that information from both relations can appear in the same result.
+
+<details class="practice-example">
+<summary>Practice 5: join related tuples</summary>
+
+| patron_id | display_name |
+|---:|---|
+| 31 | Jordan Lee |
+| 32 | Sam Patel |
+
+| loan_id | patron_id | item_title |
+|---:|---:|---|
+| 700 | 31 | The Left Hand of Darkness |
+| 701 | 32 | Kindred |
+| 702 | 31 | Braiding Sweetgrass |
+
+**Class prompt:** Write an expression that returns each patron's `display_name` with the `item_title` they borrowed. Which attributes provide the join predicate, and which attributes should the final projection retain?
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+$$
+\pi_{\text{display\_name},\ \text{item\_title}}
+\left(
+\text{patron} \bowtie_{\text{patron.patron\_id} = \text{loan.patron\_id}} \text{loan}
+\right)
+$$
+
+The join predicate compares `patron_id` from a patron tuple with `patron_id` from a loan tuple. The projection keeps the two requested descriptive attributes.
+
+</details>
+</details>
 
 ## 4. Build expressions by composition
 
@@ -132,7 +334,7 @@ One relational-algebra expression is:
 $$
 \pi_{\text{observed\_at},\ \text{temperature\_c}}
 \left(
-\sigma_{\text{watershed} = \text{'Clark Fork'} \land \text{temperature\_c} \ge 20}
+\sigma_{\text{watershed} = \text{'Clark Fork'}\ \text{and}\ \text{temperature\_c} \ge 20}
 \left(
 \text{observation} \bowtie_{\text{observation.site\_id} = \text{site.site\_id}} \text{site}
 \right)
@@ -144,6 +346,41 @@ Read from the inside out:
 1. join `observation` with `site`;
 2. keep only tuples for the Clark Fork watershed with warm temperatures; and
 3. keep only the time and temperature attributes.
+
+<details class="practice-example">
+<summary>Practice 6: plan a chained query</summary>
+
+Suppose these relations describe course offerings and registrations:
+
+$$
+\text{section}(\text{section\_id},\ \text{course\_code},\ \text{instructor})
+$$
+
+$$
+\text{registration}(\text{student\_id},\ \text{section\_id})
+$$
+
+**Class prompt:** Write an expression for: "Return the student IDs and course codes for registrations in sections taught by Chen." Before writing symbols, state the operations in inside-out order.
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+1. Join `registration` with `section` on `section_id`.
+2. Select the joined tuples whose `instructor` is `Chen`.
+3. Project `student_id` and `course_code`.
+
+$$
+\pi_{\text{student\_id},\ \text{course\_code}}
+\left(
+\sigma_{\text{instructor} = \text{'Chen'}}
+\left(
+\text{registration} \bowtie_{\text{registration.section\_id} = \text{section.section\_id}} \text{section}
+\right)
+\right)
+$$
+
+</details>
+</details>
 
 ```{mermaid}
 flowchart LR
