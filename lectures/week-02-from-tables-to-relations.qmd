@@ -113,11 +113,12 @@ A **superkey** is one or more attributes whose values identify at most one tuple
 ::: {.callout-note appearance="simple"}
 ## Candidate key
 
-A **candidate key** is a minimal superkey: no attribute can be removed while preserving uniqueness.
+A **candidate key** is a minimal superkey: no proper subset of its attributes is a superkey.
 :::
 
 - `{student_id}`, `{netid}`, and `{university_email}` are candidate keys in this example.
 - `{student_id, display_name}` is not a candidate key because `student_id` alone already works.
+- Minimal means minimal **within that set of attributes**. It does not mean that no different superkey with fewer attributes exists: `{A, B}` and `{C}` could both be candidate keys if neither `{A}` nor `{B}` is a superkey.
 
 ::: {.callout-note appearance="simple"}
 ## Primary key
