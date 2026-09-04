@@ -44,7 +44,7 @@ Relational algebra gives names and symbols to those steps.
 
 ## 2. Read the operators as verbs first
 
-For now, treat each operator as a familiar transformation. Let `r` and `s` stand for relations, and let `E` stand for any relational-algebra expression that produces a relation.
+In the table, `E` stands for any relational-algebra expression that produces a relation. `E_1` and `E_2` are two such expressions.
 
 | Intent | Relational operation | General form |
 |---|---|---|
@@ -127,6 +127,8 @@ Consider `inventory_item(item_id, category, quantity_on_hand, reorder_level, dis
 | I12 | Mug | 2 | 2 | false |
 | I13 | Mug | 0 | 4 | true |
 
+: Relation: `inventory_item`
+
 **Class prompt:** Write an expression that returns items that are still sold and whose quantity is below their own reorder level. Which comparisons use a value, and which compare two attributes in the same tuple?
 
 <details class="practice-solution">
@@ -185,7 +187,7 @@ Selection decides which item tuples remain; projection decides which attributes 
 
 ### Rename helps us speak precisely
 
-Rename is useful when an intermediate result needs a clearer name, especially when the same relation plays multiple roles in a larger expression.
+Rename is useful when an expression needs a different relation or attribute name, especially when the same base relation plays multiple roles within one larger expression.
 
 **General syntax**
 
@@ -206,24 +208,63 @@ $$
 \right)
 $$
 
+For example, suppose `observation` has the attributes `observation_id`, `site_id`, `observed_at`, and `temperature_c`. The following expression gives the result a new relation name and new attribute names:
+
+$$
+\rho_{\text{station\_reading}(\text{reading\_id},\ \text{station\_id},\ \text{recorded\_at},\ \text{celsius})}
+(\text{observation})
+$$
+
+The names in the parentheses match the original attributes by position: `observation_id` becomes `reading_id`, `site_id` becomes `station_id`, and so on. The tuple values and number of tuples do not change.
+
 For now, the important point is simple: rename does not change which facts are present. It changes how we refer to the result.
 
-<details class="practice-example">
-<summary>Practice 3: name an intermediate result</summary>
+### Name an intermediate result across lines
 
-Let `low_stock` be the result of selecting currently sold items below their reorder level. Write a rename expression that gives the selection this relation name. What changes in the tuples themselves?
+A long calculation can be written as a short sequence using **assignment notation**. The name on the left is a temporary relation variable that can be used as the input to an expression on a later line.
+
+**General syntax**
+
+$$
+x \leftarrow E
+$$
+
+For example, first select the warm observations, then project just the time and temperature:
+
+$$
+\text{warm\_observation} \leftarrow
+\sigma_{\text{temperature\_c} \ge 9}(\text{observation})
+$$
+
+$$
+\pi_{\text{observed\_at},\ \text{temperature\_c}}(\text{warm\_observation})
+$$
+
+This has the same result as writing one nested expression. Assignment makes an intermediate result readable; it does not add expressive power to relational algebra.
+
+**Rename versus assignment**
+
+- Use $\rho$ when an expression needs another relation or attribute name within a larger expression.
+- Use $\leftarrow$ when you want to bind an intermediate result and reference it on a later line.
+
+<details class="practice-example">
+<summary>Practice 3: write a two-line calculation</summary>
+
+Use assignment notation to make `low_stock` the result of selecting currently sold items below their reorder level. On a second line, return only its `item_id` and `quantity_on_hand` attributes. How does this differ from one nested expression?
 
 <details class="practice-solution">
 <summary>Possible analysis</summary>
 
 $$
-\rho_{\text{low\_stock}}
-\left(
+\text{low\_stock} \leftarrow
 \sigma_{\text{discontinued} = \text{false}\ \text{and}\ \text{quantity\_on\_hand} < \text{reorder\_level}}(\text{inventory\_item})
-\right)
 $$
 
-The tuples and attributes are unchanged. The result simply has a useful name for a later step in a larger expression.
+$$
+\pi_{\text{item\_id},\ \text{quantity\_on\_hand}}(\text{low\_stock})
+$$
+
+The two-line version has the same logical result as a nested expression. `low_stock` is only a readable temporary name for the result of the first line.
 
 </details>
 </details>
@@ -248,11 +289,15 @@ The result has the attributes of both inputs. If `E_1` has $n$ tuples and `E_2` 
 | M | Monday |
 | W | Wednesday |
 
+: Relation: `day`
+
 | shift_code | starts_at |
 |---|---|
 | AM | 09:00 |
 | PM | 13:00 |
 | EV | 18:00 |
+
+: Relation: `shift`
 
 **Class prompt:** How many tuples are in `day × shift`? List the attributes of one tuple and explain when this product could be useful.
 
@@ -290,6 +335,20 @@ $$
 
 Conceptually, the join pairs tuples whose `site_id` values match so that information from both relations can appear in the same result.
 
+### Natural join uses shared attribute names
+
+A **natural join** pairs tuples that agree on every attribute name the two input relations have in common. Its result keeps one copy of each shared attribute.
+
+**General syntax**
+
+$$
+E_1 \bowtie E_2
+$$
+
+For example, `patron` and `loan` both have an attribute named `patron_id`, so $\text{patron} \bowtie \text{loan}$ automatically matches tuples with the same `patron_id` and includes just one `patron_id` attribute in the result.
+
+Use a natural join only when matching attribute names deliberately represent the same kind of information and have compatible domains. If the two input relations have no attribute names in common, a natural join is the same as a Cartesian product.
+
 <details class="practice-example">
 <summary>Practice 5: join related tuples</summary>
 
@@ -298,13 +357,17 @@ Conceptually, the join pairs tuples whose `site_id` values match so that informa
 | 31 | Jordan Lee |
 | 32 | Sam Patel |
 
+: Relation: `patron`
+
 | loan_id | patron_id | item_title |
 |---:|---:|---|
 | 700 | 31 | The Left Hand of Darkness |
 | 701 | 32 | Kindred |
 | 702 | 31 | Braiding Sweetgrass |
 
-**Class prompt:** Write an expression that returns each patron's `display_name` with the `item_title` they borrowed. Which attributes provide the join predicate, and which attributes should the final projection retain?
+: Relation: `loan`
+
+**Class prompt:** Write an expression that returns each patron's `display_name` with the `item_title` they borrowed. Which shared attribute does the natural join use, and which attributes should the final projection retain?
 
 <details class="practice-solution">
 <summary>Possible analysis</summary>
@@ -312,11 +375,60 @@ Conceptually, the join pairs tuples whose `site_id` values match so that informa
 $$
 \pi_{\text{display\_name},\ \text{item\_title}}
 \left(
-\text{patron} \bowtie_{\text{patron.patron\_id} = \text{loan.patron\_id}} \text{loan}
+\text{patron} \bowtie \text{loan}
 \right)
 $$
 
-The join predicate compares `patron_id` from a patron tuple with `patron_id` from a loan tuple. The projection keeps the two requested descriptive attributes.
+Because `patron_id` is the one shared attribute name, the natural join compares it automatically. The projection keeps the two requested descriptive attributes.
+
+</details>
+</details>
+
+<details class="practice-example">
+<summary>Practice 6: unpack a join</summary>
+
+| technician_id | technician_name |
+|---:|---|
+| 4 | Nia Brooks |
+| 7 | Omar Diaz |
+
+: Relation: `technician`
+
+| request_id | technician_id | issue |
+|---:|---:|---|
+| 81 | 7 | Printer jam |
+| 82 | 4 | Login reset |
+| 83 | 7 | VPN access |
+
+: Relation: `service_request`
+
+**Class prompt:** `technician × service_request` has six tuples. Which three survive the predicate `technician.technician_id = service_request.technician_id`? Write an expression that returns each technician's name with the issue they were assigned, first as a Cartesian product followed by selection and then using a natural join.
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+The matching pairs combine Nia Brooks with request 82 and Omar Diaz with requests 81 and 83. The product-and-selection form is:
+
+$$
+\pi_{\text{technician\_name},\ \text{issue}}
+\left(
+\sigma_{\text{technician.technician\_id} = \text{service\_request.technician\_id}}
+\left(
+\text{technician} \times \text{service\_request}
+\right)
+\right)
+$$
+
+The join form packages the inner product and selection together:
+
+$$
+\pi_{\text{technician\_name},\ \text{issue}}
+\left(
+\text{technician} \bowtie \text{service\_request}
+\right)
+$$
+
+This natural join is appropriate because `technician_id` is the one shared attribute name.
 
 </details>
 </details>
@@ -336,7 +448,7 @@ $$
 \left(
 \sigma_{\text{watershed} = \text{'Clark Fork'}\ \text{and}\ \text{temperature\_c} \ge 20}
 \left(
-\text{observation} \bowtie_{\text{observation.site\_id} = \text{site.site\_id}} \text{site}
+\text{observation} \bowtie \text{site}
 \right)
 \right)
 $$
@@ -348,7 +460,7 @@ Read from the inside out:
 3. keep only the time and temperature attributes.
 
 <details class="practice-example">
-<summary>Practice 6: plan a chained query</summary>
+<summary>Practice 7: plan a chained query</summary>
 
 Suppose these relations describe course offerings and registrations:
 
@@ -374,10 +486,49 @@ $$
 \left(
 \sigma_{\text{instructor} = \text{'Chen'}}
 \left(
-\text{registration} \bowtie_{\text{registration.section\_id} = \text{section.section\_id}} \text{section}
+\text{registration} \bowtie \text{section}
 \right)
 \right)
 $$
+
+The natural join uses the shared `section_id` attribute.
+
+</details>
+</details>
+
+<details class="practice-example">
+<summary>Practice 8: compare attributes from two relations</summary>
+
+Suppose these relations describe room reservations:
+
+$$
+\text{room}(\text{room\_id},\ \text{building},\ \text{capacity})
+$$
+
+$$
+\text{reservation}(\text{reservation\_id},\ \text{room\_id},\ \text{event\_name},\ \text{attendee\_count})
+$$
+
+**Class prompt:** Write an expression that returns the event name and building for reservations with at least 40 attendees whose attendee count does not exceed the room's capacity. State the operations in inside-out order.
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+1. Join `reservation` with `room` on `room_id`.
+2. Select joined tuples where `attendee_count` is at least 40 and no greater than `capacity`.
+3. Project `event_name` and `building`.
+
+$$
+\pi_{\text{event\_name},\ \text{building}}
+\left(
+\sigma_{\text{attendee\_count} \ge 40\ \text{and}\ \text{attendee\_count} \le \text{capacity}}
+\left(
+\text{reservation} \bowtie \text{room}
+\right)
+\right)
+$$
+
+The selection predicate compares `attendee_count` and `capacity` after the join makes both attributes available in the same result relation.
 
 </details>
 </details>

@@ -14,7 +14,7 @@ Due dates and submission instructions will appear in Canvas.
 
 ## What you will implement
 
-The starter provides a small immutable `Relation` class. It stores a relation name, its attribute names, and its tuples. You will complete:
+The starter provides a small `Relation` class. It stores a relation name, its attribute names, and its tuples; Python lists represent both attributes and relational tuples. You will complete:
 
 - `select(relation, predicate)`: retain tuples that satisfy a condition.
 - `project(relation, attributes)`: retain selected attributes and remove duplicate output tuples.
@@ -23,10 +23,27 @@ The starter provides a small immutable `Relation` class. It stores a relation na
 
 The supplied tests define the expected behavior. Your functions must return new relations rather than modifying their inputs.
 
+## Using generative AI as a tutor
+
+Generative AI may be used for this assignment with proper disclosure. Use it to help you reason, test, or debug - not to bypass the work of understanding the relation representation and each operator's behavior. You remain responsible for every line and every claim in your submission.
+
+These prompts are good starting points because they ask for help without asking the tool to complete the assignment for you:
+
+- “Do not write code. Explain what selection should preserve and what it should change in this `Relation` representation. Give me a small example to trace by hand.”
+- “I am implementing projection. Ask me questions that will help me reason about duplicate output tuples, but do not give me an implementation.”
+- “Here is my plan for `join`: [paste your plan]. Identify one logical gap or edge case I should consider. Do not rewrite the function.”
+- “Suggest normal and edge-case tests for this operator contract: [paste the docstring]. Explain what each test would reveal.”
+- “Trace this function on this input and point to the first step where its behavior differs from the expected result. Do not provide replacement code.”
+
+If a tool does generate code or an answer, treat it as something to inspect rather than something to paste. Explain it line by line, adapt it yourself, and verify it against the supplied and your own tests.
+
+Include a brief disclosure in your notebook when AI materially influenced your work. For example: “I used [tool] to explain projection duplicate removal and suggest edge cases. I wrote the submitted implementation, then verified it with the supplied tests and the two tests described below.”
+
 ## What to submit
 
 - Your completed starter notebook with all supplied tests passing.
 - Two additional tests of your own: one normal case and one edge case.
 - Brief written responses in the notebook explaining the composed query and how the operators differ in the data they inspect or construct.
+- If applicable, a brief disclosure describing the tool and how it materially influenced your work.
 
 The goal is not to build a production DBMS. The representation is deliberately small so that you can distinguish a relational operation's logical meaning from the Python algorithm used to compute it.
