@@ -21,6 +21,7 @@ website:
   reader-mode: true
   search: true
   navbar:
+    title: "CSCI 340"
     background: primary
     left:
       - text: Home
@@ -31,6 +32,8 @@ website:
         href: lectures/index.qmd
       - text: Labs
         href: activities/index.qmd
+      - text: Assignments
+        href: assignments/index.qmd
       - text: Project
         href: projects/capstone.qmd
   sidebar:

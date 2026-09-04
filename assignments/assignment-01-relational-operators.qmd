@@ -37,12 +37,12 @@ These prompts are good starting points because they ask for help without asking 
 
 If a tool does generate code or an answer, treat it as something to inspect rather than something to paste. Explain it line by line, adapt it yourself, and verify it against the supplied and your own tests.
 
-Include a brief disclosure in your notebook when AI materially influenced your work. For example: “I used [tool] to explain projection duplicate removal and suggest edge cases. I wrote the submitted implementation, then verified it with the supplied tests and the two tests described below.”
+Include a brief disclosure in your notebook when AI materially influenced your work. For example: “I used [tool] to explain projection duplicate removal and suggest edge cases. I wrote the submitted implementation, then verified it with the required tests.”
 
 ## What to submit
 
 - Your completed starter notebook with all supplied tests passing.
-- Two additional tests of your own: one normal case and one edge case.
+- The two required test cells completed and passing.
 - Brief written responses in the notebook explaining the composed query and how the operators differ in the data they inspect or construct.
 - If applicable, a brief disclosure describing the tool and how it materially influenced your work.
 
