@@ -1,0 +1,32 @@
+---
+title: "Answer key: What tool fits the job?"
+subtitle: "Representative choices and the reasoning behind them"
+toc: true
+toc-depth: 2
+---
+
+These are representative answers, not the only defensible choices. A different tool or mixed design can be reasonable when its tradeoffs are explained clearly.
+
+## Scenario A: Planning a department picnic
+
+**Best starting point: Spreadsheet.** A shared spreadsheet is simple, visible to the group, and adequate for a short-lived plan involving about 35 people. A form feeding a spreadsheet could make collection easier. The group should still agree on consistent choices for dietary preferences and carpool information.
+
+## Scenario B: Campus equipment checkout
+
+**Best starting point: Relational database.** The system must coordinate several staff members, prevent double bookings, track availability, and retain history. These are ongoing rules over related records, such as equipment, reservations, checkouts, and students.
+
+## Scenario C: Publishing a public dataset
+
+**Best starting point: Plain data file.** A CSV accompanied by a data dictionary is a practical publishing format when most users download, inspect, or analyze a yearly snapshot. The publisher may use a database internally, but recipients do not need direct access to it.
+
+## Scenario D: Estimating travel time across town
+
+**Best starting point: Program or computation environment.** The central work is fitting models, running simulations, and evaluating accuracy. Input observations can live in a file or database, but computation is the primary problem to solve.
+
+## Scenario E: Tracking a small bookstore
+
+**Best starting point: Relational database.** Customers, books, suppliers, purchases, inventory, returns, and employees are related records with important consistency rules and concurrent updates. A spreadsheet may be useful for an export or a small report, but it is a weak primary system for this workload.
+
+## Scenario F: Managing wildlife photos
+
+**Best starting point: Mixed design.** Store the image files in a file or object-storage system and store searchable metadata in a relational database. The database can connect each photo to its location, date, species identifications, and identifier while preserving a history of later corrections.

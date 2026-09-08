@@ -5,9 +5,10 @@ subtitle: "Practice that connects theory, evidence, and explanation"
 
 Assignments build on the week-by-week lecture material. Due dates and submission locations are posted in Canvas.
 
-## Week 2
+## Week 3
 
 - [Assignment 1 - Implement relational operators](assignment-01-relational-operators.qmd): implement and test selection, projection, rename, and join over a small in-memory relation.
+- [Assignment 2 - Relational algebra practice](assignment-02-relational-algebra-practice.qmd): enumerate natural-join and theta-join results, then write short relational-algebra queries.
 
 ## Semester-long
 

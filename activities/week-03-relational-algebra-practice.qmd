@@ -1,0 +1,14 @@
+---
+title: "Relational algebra practice moved to Assignment 2"
+subtitle: "The former participation worksheet is now a short individual assignment"
+description: "Use the Assignment 2 page for the current relational-algebra practice handout."
+toc: false
+---
+
+::: {.lesson-hero}
+# Use Assignment 2
+
+This practice is now a short individual assignment with points and feedback. Use the current handout and submission instructions on the Assignment 2 page.
+
+[Open Assignment 2](../assignments/assignment-02-relational-algebra-practice.qmd){.btn .btn-primary}
+:::

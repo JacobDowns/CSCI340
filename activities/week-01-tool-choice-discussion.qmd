@@ -18,6 +18,10 @@ The same information can be put in a spreadsheet, a file, a database, or a progr
 
 In groups of two or three, choose a tool for each scenario and consider the tradeoffs. 
 
+[View the student answer key](week-01-tool-choice-discussion-answer-key.qmd){.btn .btn-outline-primary}
+
+[Download the student answer key (DOCX)](week-01-tool-choice-discussion-answer-key.docx){.btn .btn-outline-primary download="week-01-tool-choice-discussion-answer-key.docx"}
+
 ## The choices
 
 For each scenario, choose a primary starting point. You may also propose a combination.

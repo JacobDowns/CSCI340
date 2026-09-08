@@ -1,0 +1,68 @@
+---
+title: "Answer key: Make the file fail on purpose"
+subtitle: "Representative analysis of the tutoring-center worksheet"
+toc: true
+toc-depth: 2
+---
+
+These answers model one reasonable interpretation of the worksheet. The spreadsheet is ambiguous in places, so credit should depend on a group's explanation and stated assumptions, not exact wording.
+
+## Part A: Repeated information and assumptions
+
+### A1. Repeated identifier
+
+Repeating `acb12` is useful because it identifies the student associated with each of three distinct tutoring sessions. Each occurrence says that the session on that row involved the same student; it does not claim that the sessions themselves are duplicates.
+
+### A2. Repeated descriptive information
+
+Two examples are Ava's name and the title of `CSCI127`. Tutor names are another valid example. Repeating descriptive information creates an update risk: a correction may be made in one row but not another, as the worksheet already suggests with `Ava Brooks` and `Ava Brookes`.
+
+### A3. Contradictions or near-contradictions
+
+- The same student ID, `acb12`, appears with both `Ava Brooks` and `Ava Brookes`. A report could display two apparent students or preserve the misspelling after it has been noticed.
+- `CSCI127` appears with both `Joy and Beauty of Data` and `Joy & Beauty of Data`. A program grouping by the title could split one course into two categories.
+
+### A4. Reasonable but unenforced assumptions
+
+- A student ID always identifies one student, whose name should be recorded consistently.
+- A course code always refers to one official course title.
+
+Other reasonable assumptions include that tutor IDs identify one tutor, that each row is one session, and that every session time and room are valid.
+
+## Part B: Object-oriented model
+
+### B1. Classes and properties
+
+One reasonable model has these classes:
+
+- `Student`: `student_id`, `student_name`
+- `Course`: `course_code`, `course_title`
+- `Tutor`: `tutor_id`, `tutor_name`
+- `TutoringSession`: `session_id`, `start_time`, `room`, `student`, `course`, `tutor`
+
+The last three properties of `TutoringSession` are references to objects rather than repeated descriptions.
+
+### B2. Instances for the displayed data
+
+The table calls for two student objects, two course objects, two tutor objects, and four session objects. For example, the sessions with IDs 1, 2, and 4 reference the `Student` object for `acb12`, the `Course` object for `CSCI127`, and the `Tutor` object for `tlopez`; their times and rooms differ. Before creating those objects, a real system would need to choose a canonical spelling for Ava's name and the CSCI127 title.
+
+### B3. References among objects
+
+Each `TutoringSession` references one `Student`, one `Course`, and one `Tutor`. This lets the system change a tutor's display name or a course title in one place while every related session still finds the updated information.
+
+This model assumes one student per session because that is what each displayed row suggests. If group tutoring were allowed, the design would need an additional way to associate several students with one session.
+
+## Part C: Questions the system should answer
+
+### C1. Example questions
+
+- Which tutoring sessions did Ava Brooks attend for CSCI127 during September 2026, and who was the tutor?
+- Which sessions is T. Lopez scheduled to lead in room SS 120, and when do they start?
+
+### C2. Details for the first question
+
+An answer could return the session date and time, tutor name, room, course code, and course title.
+
+### C3. Objects and combination
+
+Start with `TutoringSession` objects that reference Ava's `Student` object and the `CSCI127` `Course` object. Then follow each session's `tutor` reference to retrieve the tutor's name and use the session's own time and room properties.

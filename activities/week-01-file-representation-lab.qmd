@@ -11,4 +11,8 @@ toc: false
 Work with your group, record your reasoning on the worksheet, and submit it as directed in class.
 
 [Download the participation worksheet](week-01-make-the-file-fail-participation.docx){.btn .btn-primary}
+
+[View the student answer key](week-01-file-representation-lab-answer-key.qmd){.btn .btn-outline-primary}
+
+[Download the student answer key (DOCX)](week-01-file-representation-lab-answer-key.docx){.btn .btn-outline-primary download="week-01-file-representation-lab-answer-key.docx"}
 :::

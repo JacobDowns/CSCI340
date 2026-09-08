@@ -14,9 +14,14 @@ Lecture pages provide the course narrative. Related practice and submissions app
 - [Why describe data as relations?](week-02-from-tables-to-relations.qmd) — Relational vocabulary, keys, relationships, and why formal data descriptions help before we discuss query languages.
 - [Activity 2 — Relations and keys](../activities/week-02-relations-and-keys.qmd) — Practice describing schemas, identifying keys, choosing primary keys, and locating foreign keys.
 - [Relational algebra and query meaning](week-02-relational-algebra.qmd) — Selection, projection, Cartesian product, join, closure, and the idea that one query meaning can correspond to multiple execution strategies.
-- [Assignment 1 — Implement relational operators](../assignments/assignment-01-relational-operators.qmd) — Implement and test selection, projection, and rename over a small in-memory relation.
 
 ## Week 3
+
+- [Set operations on relations](week-03-relational-algebra-set-operations.qmd) — Union, intersection, difference, compatible inputs, and set operations within larger query expressions.
+- [Assignment 1 — Implement relational operators](../assignments/assignment-01-relational-operators.qmd) — Implement and test selection, projection, rename, and join over a small in-memory relation.
+- [Assignment 2 — Relational algebra practice](../assignments/assignment-02-relational-algebra-practice.qmd) — Enumerate join results, distinguish natural and theta joins, and write compact query expressions.
+
+## Week 4
 
 - [Defining tables with PostgreSQL](week-03-defining-relations-with-sql.qmd) — Translate relational schemas into PostgreSQL types, constraints, table definitions, and controlled changes to stored tuples.
 - [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd) — Use selection, projection, expressions, ordering, and nulls to retrieve the intended tuples and attributes.

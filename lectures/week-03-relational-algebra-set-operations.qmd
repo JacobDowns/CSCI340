@@ -1,0 +1,243 @@
+---
+title: "Set operations on relations"
+subtitle: "Union, intersection, difference, compatible inputs, and composition"
+description: "A short relational-algebra lesson on combining comparable relation results with union, intersection, and set difference."
+author: "CSCI 340"
+toc: true
+toc-depth: 2
+code-fold: false
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 3B · RELATIONAL ALGEBRA SET OPERATIONS
+:::
+
+# How can we compare two results with the same shape?
+
+Selection, projection, and join build a relation result. Set operations let us combine or compare two such results when their attributes describe the same kind of tuple.
+
+:::
+
+## 1. Comparable inputs come first
+
+Before using a set operation, check that the two inputs are **union-compatible**: they have the same number of attributes, and the corresponding attributes draw values from compatible domains. In this course, we will also keep the attribute names aligned so the resulting schema is easy to read.
+
+::: {.callout-note appearance="simple"}
+## Set operations preserve a shared schema
+
+Union, intersection, and difference all return a relation with the same attributes as their compatible inputs. They combine tuples, not columns.
+:::
+
+For example, these two unary relations are compatible because each represents an employee ID:
+
+| employee_id |
+|---:|
+| 17 |
+| 19 |
+| 23 |
+
+: Relation: `first_aid_certified`
+
+| employee_id |
+|---:|
+| 19 |
+| 23 |
+| 31 |
+
+: Relation: `forklift_authorized`
+
+If one relation used `employee_id` and the other used `employee_code`, do not assume they mean the same thing merely because their values look similar. First establish their meaning and domain; then use rename if they genuinely represent the same attribute.
+
+## 2. Union keeps tuples from either input
+
+::: {.callout-note appearance="simple"}
+## Union
+
+The union of two compatible relations contains every tuple that appears in the first relation, the second relation, or both.
+:::
+
+**General syntax**
+
+$$
+E_1 \cup E_2
+$$
+
+For the certification relations above:
+
+$$
+\text{first\_aid\_certified} \cup \text{forklift\_authorized}
+$$
+
+| employee_id |
+|---:|
+| 17 |
+| 19 |
+| 23 |
+| 31 |
+
+: Result relation
+
+Employee IDs 19 and 23 occur in both inputs, but each occurs only once in the union because relations are sets of tuples.
+
+<details class="practice-example">
+<summary>Practice 1: trace a union</summary>
+
+| student_id |
+|---:|
+| 102 |
+| 104 |
+| 105 |
+
+: Relation: `fall_tutoring_participant`
+
+| student_id |
+|---:|
+| 104 |
+| 106 |
+
+: Relation: `study_group_participant`
+
+**Class prompt:** List the tuples in `fall_tutoring_participant union study_group_participant`. How many tuples appear, and why does student 104 appear only once?
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+The result contains `{102}`, `{104}`, `{105}`, and `{106}`: four tuples. Student 104 occurs in both input relations, but union preserves the relation's set semantics rather than storing a duplicate tuple.
+
+</details>
+</details>
+
+## 3. Intersection and difference compare membership
+
+::: {.callout-note appearance="simple"}
+## Intersection
+
+The intersection of two compatible relations contains only tuples that appear in both inputs.
+:::
+
+$$
+E_1 \cap E_2
+$$
+
+::: {.callout-note appearance="simple"}
+## Set difference
+
+The difference $E_1 - E_2$ contains tuples in the first input that do not appear in the second input.
+:::
+
+$$
+E_1 - E_2
+$$
+
+Using the certification relations:
+
+| Expression | Resulting employee IDs | Plain-language reading |
+|---|---|---|
+| `first_aid_certified intersection forklift_authorized` | 19, 23 | Employees with both certifications. |
+| `first_aid_certified minus forklift_authorized` | 17 | Employees with first-aid certification but not forklift authorization. |
+| `forklift_authorized minus first_aid_certified` | 31 | Employees with forklift authorization but not first-aid certification. |
+
+Difference is not symmetric: changing the order changes the question.
+
+<details class="practice-example">
+<summary>Practice 2: choose the direction of difference</summary>
+
+Suppose `registered_student(student_id)` contains students registered for an event and `checked_in_student(student_id)` contains students who arrived.
+
+**Class prompt:** Which expression returns registered students who did not arrive? Which expression returns people who arrived but were not registered? Explain why the two expressions have different answers.
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+$$
+\text{registered\_student} - \text{checked\_in\_student}
+$$
+
+returns registered students who did not arrive. Reversing the order,
+
+$$
+\text{checked\_in\_student} - \text{registered\_student}
+$$
+
+returns people who arrived without appearing in the registration relation. Difference always starts with the tuples to keep as candidates.
+
+</details>
+</details>
+
+## 4. Build comparable results before combining them
+
+Set operations often appear at the end of a larger expression. First use selection, projection, join, or rename to construct two results with the same schema; then apply the set operation.
+
+Suppose:
+
+$$
+\text{student}(\text{student\_id},\ \text{major})
+$$
+
+To return the IDs of students majoring in CS or Math, construct two one-attribute results and union them:
+
+$$
+\text{cs\_student} \leftarrow
+\pi_{\text{student\_id}}
+\left(
+\sigma_{\text{major} = \text{'CS'}}(\text{student})
+\right)
+$$
+
+$$
+\text{math\_student} \leftarrow
+\pi_{\text{student\_id}}
+\left(
+\sigma_{\text{major} = \text{'Math'}}(\text{student})
+\right)
+$$
+
+$$
+\text{cs\_student} \cup \text{math\_student}
+$$
+
+The projection is important: it gives both intermediate relations the same single attribute, `student_id`, before union combines their tuples.
+
+<details class="practice-example">
+<summary>Practice 3: compose a set operation</summary>
+
+Suppose `student(student_id, major)` also contains Biology majors.
+
+**Class prompt:** Write an expression that returns the IDs of students who are neither CS nor Math majors. State the operations in inside-out order. Hint: first construct the IDs of all students and the IDs of CS-or-Math students.
+
+<details class="practice-solution">
+<summary>Possible analysis</summary>
+
+1. Project all student IDs.
+2. Construct the IDs of CS students and Math students, then union those results.
+3. Subtract the CS-or-Math result from all student IDs.
+
+$$
+\pi_{\text{student\_id}}(\text{student})
+-
+\left(
+\pi_{\text{student\_id}}\left(\sigma_{\text{major} = \text{'CS'}}(\text{student})\right)
+\cup
+\pi_{\text{student\_id}}\left(\sigma_{\text{major} = \text{'Math'}}(\text{student})\right)
+\right)
+$$
+
+</details>
+</details>
+
+## 5. Carry the question, not only the symbol
+
+Before writing a set operation, say the membership rule in plain English:
+
+- Union: "tuples in either result."
+- Intersection: "tuples in both results."
+- Difference: "tuples in the first result but not the second."
+
+Then check the input schemas. This prevents a common mistake: trying to union a relation of student IDs with a relation that contains student IDs and course codes. Those inputs do not represent the same kind of tuple.
+
+**Next:** [Activity 3 - Relational algebra practice](../activities/week-03-relational-algebra-practice.qmd)
+
+## Sources and further reading
+
+- Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapter 2.

@@ -10,7 +10,7 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 3B · SQL FOUNDATIONS AND QUERY TESTING
+WEEK 4B · SQL FOUNDATIONS AND QUERY TESTING
 :::
 
 # A query is a claim about the answer.

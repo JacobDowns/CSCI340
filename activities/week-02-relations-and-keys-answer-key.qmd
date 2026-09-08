@@ -1,0 +1,83 @@
+---
+title: "Answer key: Relations and keys"
+subtitle: "Schemas, keys, foreign keys, and checking uniqueness"
+toc: true
+toc-depth: 2
+---
+
+These answers use the rules stated in the worksheet. The current rows help illustrate those rules, but a key is ultimately a constraint on valid relation instances, not merely an observation about one small table.
+
+## Part A: Identify keys
+
+### A1. Museum relation
+
+| Attribute set | Superkey? | Candidate key? | Reason |
+|---|---|---|---|
+| `{accession_number}` | Yes | Yes | The museum assigns it uniquely, and it has no smaller nonempty subset. |
+| `{inventory_barcode}` | Yes | Yes | Each physical barcode is unique, and it has no smaller nonempty subset. |
+| `{accession_number, object_type}` | Yes | No | It contains the superkey `{accession_number}`, so `object_type` can be removed. |
+| `{object_type, collection}` | No | No | Several items can share both values. |
+
+### A2. Primary key
+
+`accession_number` is a good choice for the primary key because it is intended to stay with the item. `inventory_barcode` is also a candidate key, but the worksheet says a barcode label can be replaced.
+
+### A3. Composite candidate key
+
+`{airline_code, flight_number}` is a candidate key. `{airline_code, flight_number, destination}` is a superkey but not a candidate key because its `destination` attribute can be removed. The candidate key is composite because neither `airline_code` nor `flight_number` alone identifies a scheduled flight.
+
+## Part B: Schemas and foreign keys
+
+### B1. Relation schemas
+
+$$
+\text{recipe}(\text{recipe\_id},\ \text{recipe\_name},\ \text{servings})
+$$
+
+$$
+\text{ingredient}(\text{ingredient\_id},\ \text{ingredient\_name},\ \text{default\_unit})
+$$
+
+$$
+\text{recipe\_ingredient}(\text{recipe\_id},\ \text{ingredient\_id},\ \text{quantity})
+$$
+
+### B2. Primary keys
+
+- `recipe`: `{recipe_id}`
+- `ingredient`: `{ingredient_id}`
+- `recipe_ingredient`: `{recipe_id, ingredient_id}`
+
+`recipe_ingredient` uses the composite primary key because the same ingredient may occur in many recipes and a recipe may contain many ingredients, but an ingredient appears at most once within a particular recipe.
+
+### B3. Foreign keys
+
+- `recipe_ingredient.recipe_id` references `recipe.recipe_id`.
+- `recipe_ingredient.ingredient_id` references `ingredient.ingredient_id`.
+
+## Part C: Check a superkey in one instance
+
+### C1. Pseudocode
+
+```text
+function is_superkey(R, K):
+    seen = empty set
+
+    for each tuple t in R:
+        values = the values of t for every attribute in K, in a fixed order
+        if values is in seen:
+            return false
+        add values to seen
+
+    return true
+```
+
+`K` fails for the current instance as soon as two distinct tuples produce the same combination of values for every attribute in `K`.
+
+### C2. What a true result shows
+
+A `true` result shows that no duplicate `K` value combination appears in the rows currently stored. It does not show that `K` will remain unique after future inserts or updates, nor does it establish that the schema has a rule enforcing uniqueness.
+
+### C3. Check minimality
+
+After confirming that `K` is a superkey for this instance, test every proper subset of `K` with `is_superkey`. If any proper subset is also a superkey, then `K` is not minimal. Because `K` is already a superkey, it is sufficient to try removing each one attribute in turn: if a smaller superkey exists, removing an attribute outside that smaller set will still leave a superkey.

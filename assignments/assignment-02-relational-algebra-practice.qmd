@@ -1,0 +1,36 @@
+---
+title: "Assignment 2 - Relational algebra practice"
+subtitle: "Trace join results and write compact query expressions"
+description: "A short Week 3 written assignment on natural joins, theta joins, and relational-algebra query design."
+---
+
+## Purpose
+
+This short individual assignment makes the result of a query concrete before asking you to write an expression. You will enumerate tuples produced by a natural join and a theta join, then use relational algebra to express two small queries.
+
+[Download the assignment](assignment-02-relational-algebra-practice.docx){download="assignment-02-relational-algebra-practice.docx"}
+
+Due date and submission instructions will appear in Canvas.
+
+## What to submit
+
+Each student submits an individual completed worksheet. You may work through the questions with classmates, but list everyone you worked with in the `Group members` field. Show your intermediate results and use the relation and attribute names given in each question.
+
+For query expressions, use the relational-algebra notation below:
+
+`$\pi_A(r)$`: project relation `r` onto attributes `A`; `$\sigma_{\text{condition}}(r)$`: select tuples satisfying a condition; `$r \bowtie s$`: natural join; `$r \bowtie_{r.a = s.b} s$`: theta join; `$r \cup s$`: union; `$r - s$`: difference.
+
+Write nested expressions from the inside out. For example: `$\pi_{attribute}(\sigma_{\text{condition}}(r \bowtie s))$`.
+
+## Points
+
+| Question | What is assessed | Points |
+|---|---|---:|
+| A | Natural-join tuples, output schema, and explanation | 5 |
+| B | Theta-join tuples, output schema, and predicate | 5 |
+| C | Three composed relational-algebra queries | 10 |
+| **Total** |  | **20** |
+
+## Academic integrity and AI use
+
+You may use generative AI with proper disclosure, but first work each relation and query through yourself. If AI materially influenced your work, identify the tool and describe how you used it. Do not submit an answer you cannot explain.

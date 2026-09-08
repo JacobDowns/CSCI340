@@ -28,17 +28,17 @@ This schedule gives the approximate sequence of topics for Autumn 2026. Specific
 
 Introduce spreadsheets, files, and databases as different tools for different problems. Focus on repeated information, hidden assumptions, naive tabular representations, and why data integrity becomes hard to maintain.
 
-### Week 2 (August 31-September 4) - Relational foundations and query implementation
+### Week 2 (August 31-September 4) - Relational foundations and core operators
 
-Introduce the relational model, core terminology, keys, and the idea of data independence. Develop relational algebra as a formal language for query meaning, introduce Assignment 1, and use class time to implement basic relational operations in Python.
+Introduce the relational model, core terminology, keys, and the idea of data independence. Establish the precise language used to describe relation schemas, instances, and links among relations, then introduce relational-algebra selection, projection, rename, Cartesian product, and join.
 
-### Week 3 (September 7-11) - PostgreSQL table definitions and SQL foundations
+### Week 3 (September 7-11) - Relational algebra and query design
 
-Begin by defining and changing PostgreSQL tables, then use basic SQL to query them. Develop joins, grouping, aggregation, set versus bag behavior, and query decomposition as the unit continues. No class Monday, September 7, because of Labor Day.
+Complete relational algebra with joins, composed expressions, and set operations. Practice translating questions into logical query expressions, introduce Assignments 1 and 2, and provide in-class work time. No class Monday, September 7, because of Labor Day.
 
-### Week 4 (September 14-18) - Query reasoning, equivalence, and first DataFrames
+### Week 4 (September 14-18) - PostgreSQL table definitions and basic SQL
 
-Compare equivalent query forms, logical query plans, and the difference between query meaning and execution strategy. Introduce a first comparison between SQL-style transformations and DataFrame-style transformations.
+Define and change PostgreSQL tables using types and constraints, then begin writing basic SQL queries with `SELECT`, `FROM`, `WHERE`, expressions, ordering, duplicate handling, and `NULL`.
 
 ### Week 5 (September 21-25) - ER modeling foundations
 

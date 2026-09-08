@@ -10,7 +10,7 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 3A · POSTGRESQL TABLE DEFINITIONS
+WEEK 4A · POSTGRESQL TABLE DEFINITIONS
 :::
 
 # Before asking a question, decide what data can exist.

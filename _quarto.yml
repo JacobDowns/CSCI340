@@ -56,6 +56,9 @@ website:
               - lectures/week-02-relational-algebra.qmd
           - section: Week 3
             contents:
+              - lectures/week-03-relational-algebra-set-operations.qmd
+          - section: Week 4
+            contents:
               - lectures/week-03-defining-relations-with-sql.qmd
               - lectures/week-03-asking-questions-with-sql.qmd
       - section: Labs and activities
@@ -68,13 +71,14 @@ website:
           - section: Week 2
             contents:
               - activities/week-02-relations-and-keys.qmd
-          - section: Week 3
+          - section: Week 4
             contents:
               - activities/week-03-query-reasoning-lab.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd
           - assignments/assignment-01-relational-operators.qmd
+          - assignments/assignment-02-relational-algebra-practice.qmd
           - projects/capstone.qmd
   page-footer:
     left: "CSCI 340 | Database Systems and Data Management"

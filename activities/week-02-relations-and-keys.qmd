@@ -11,4 +11,8 @@ toc: false
 Feel free to work in a group or as an individual. Please submit your worksheet on Canvas.
 
 [Download the participation worksheet](week-02-relational-model-practice-participation.docx){.btn .btn-primary}
+
+[View the student answer key](week-02-relations-and-keys-answer-key.qmd){.btn .btn-outline-primary}
+
+[Download the student answer key (DOCX)](week-02-relations-and-keys-answer-key.docx){.btn .btn-outline-primary download="week-02-relations-and-keys-answer-key.docx"}
 :::
