@@ -1,0 +1,277 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.72in,headheight=22pt,footskip=28pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[table]{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{array,booktabs,tabularx}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{navy}{HTML}{173B4D}
+\definecolor{bluegray}{HTML}{EAF4F7}
+\definecolor{warmgray}{HTML}{F5F3EE}
+\definecolor{rulegray}{HTML}{C9CED1}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlist[enumerate]{leftmargin=1.55em,itemsep=4pt,topsep=3pt}
+\setlist[itemize]{leftmargin=1.45em,itemsep=2pt,topsep=3pt}
+\renewcommand{\arraystretch}{1.18}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small CSCI 340}
+\rhead{\small Assignment 2}
+\cfoot{\small Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rulegray}\leaders\hrule height \headrulewidth\hfill}}
+
+\newcommand{\sectionbar}[2]{%
+  \vspace{4pt}%
+  {\color{navy}\rule{\linewidth}{1.3pt}}\vspace{2pt}
+  {\Large\bfseries #1}\hfill{\large\bfseries #2}\par
+  {\color{navy}\rule{\linewidth}{0.5pt}}\vspace{3pt}
+}
+\newcommand{\question}[3]{%
+  \vspace{5pt}\noindent{\large\bfseries #1\quad #2}\hfill{\bfseries #3 points}\par\vspace{1pt}
+}
+\newcommand{\anspace}[1]{\par\vspace{#1}}
+\newcommand{\schema}[1]{\texttt{#1}}
+\newcommand{\student}{\mathsf{student}}
+\newcommand{\course}{\mathsf{course}}
+\newcommand{\enrollment}{\mathsf{enrollment}}
+
+\begin{document}
+
+{\small\bfseries CSCI 340 \quad DATABASE DESIGN}\par
+\vspace{4pt}
+{\fontsize{22}{25}\selectfont\bfseries Relational Algebra Practice}\par
+{\large Selection, projection, joins, and set operations}\par
+\vspace{9pt}
+
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}l X >{\bfseries}l X@{}}
+Name & \hrulefill & People consulted & \hrulefill \\
+\end{tabularx}
+
+\vspace{8pt}
+\textbf{Purpose.} Build fluency with relational algebra by reading expressions, tracing exact results, and writing expressions of increasing complexity. Every question uses the same small registration database.
+
+\textbf{Directions.} Submit your own completed worksheet. You may work with classmates, but list everyone you worked with above. Unless a question says otherwise, give only the requested attributes. When asked to trace an expression, write the output schema and every resulting tuple. Tuple order does not matter because a relation is an unordered set.
+
+
+\subsection*{Notation and assumptions}
+
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{1.15in} >{\centering\arraybackslash}p{1.25in} X@{}}
+\toprule
+Operation & Form & Effect \\
+\midrule
+Selection & $\sigma_p(E)$ & Keeps tuples of $E$ that satisfy predicate $p$. \\
+Projection & $\pi_{A_1,\ldots,A_k}(E)$ & Keeps the listed attributes and removes duplicate output tuples. \\
+Natural join & $E_1 \bowtie E_2$ & Matches on every shared attribute name and keeps one copy of each shared attribute. \\
+Theta join & $E_1 \bowtie_{\theta} E_2$ & Matches pairs satisfying $\theta$ and keeps attributes from both inputs. \\
+Set operations & $E_1\cup E_2$, $E_1\cap E_2$, $E_1-E_2$ & Combine union-compatible inputs as sets of tuples. \\
+\bottomrule
+\end{tabularx}
+
+Use qualified names such as $\student.\mathit{student\_id}$ when an expression could otherwise be ambiguous. You may use assignment notation, $x\leftarrow E$, to name an intermediate result. String values appear in quotation marks.
+
+\newpage
+\sectionbar{Shared registration database}{Reference for every section}
+
+The schema has three relations:
+
+\begin{align*}
+\student(&\mathit{student\_id},\ \mathit{student\_name},\ \mathit{major},\ \mathit{year})\\
+\course(&\mathit{course\_id},\ \mathit{course\_title},\ \mathit{department},\ \mathit{credits})\\
+\enrollment(&\mathit{student\_id},\ \mathit{course\_id},\ \mathit{grade})
+\end{align*}
+
+\begin{minipage}[t]{0.49\linewidth}
+\textbf{Relation: student}
+
+\rowcolors{2}{bluegray}{white}
+\small\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}rlll@{}}
+\rowcolor{navy}\color{white}\textbf{student\_id} & \color{white}\textbf{student\_name} & \color{white}\textbf{major} & \color{white}\textbf{year} \\
+101 & Ava & CS & junior \\
+102 & Jordan & Math & sophomore \\
+103 & Lin & Biology & senior \\
+104 & Sam & CS & sophomore \\
+105 & Noor & Math & junior \\
+106 & Mira & History & first-year \\
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\linewidth}
+\textbf{Relation: course}
+
+\rowcolors{2}{bluegray}{white}
+\small\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}rllr@{}}
+\rowcolor{navy}\color{white}\textbf{course\_id} & \color{white}\textbf{course\_title} & \color{white}\textbf{department} & \color{white}\textbf{credits} \\
+C10 & Databases & CS & 3 \\
+C20 & Discrete Math & Math & 3 \\
+C30 & Ecology & Biology & 4 \\
+C40 & Data Ethics & CS & 3 \\
+C50 & World History & History & 4 \\
+\end{tabular}
+\end{minipage}
+
+\vspace{12pt}
+\begin{minipage}[t]{0.49\linewidth}
+\textbf{Relation: enrollment}
+
+\rowcolors{2}{bluegray}{white}
+\begin{tabular}{@{}rrl@{}}
+\rowcolor{navy}\color{white}\textbf{student\_id} & \color{white}\textbf{course\_id} & \color{white}\textbf{grade} \\
+101 & C10 & A \\
+101 & C40 & B \\
+102 & C20 & A \\
+103 & C30 & B \\
+104 & C10 & B \\
+105 & C10 & A \\
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+\textbf{Facts worth noticing}
+
+\begin{itemize}
+  \item A student may have more than one enrollment.
+  \item A course may have more than one enrolled student.
+  \item A student's major need not match a course's department.
+  \item A student or course may have no matching enrollment.
+\end{itemize}
+\end{minipage}
+
+
+\newpage
+\sectionbar{Section A}{Selection and projection \quad 12 points}
+
+\question{A1}{Read expressions in plain English}{3}
+For each expression, state in plain English exactly what its result contains.
+
+\begin{enumerate}[label=\alph*.]
+  \item $\sigma_{\mathit{major}=\text{``CS''}}(\student)$
+  \item $\pi_{\mathit{student\_name},\mathit{year}}\bigl(\sigma_{\mathit{major}=\text{``Math''}}(\student)\bigr)$
+  \item $\pi_{\mathit{department}}(\course)$
+\end{enumerate}
+\anspace{1.05in}
+
+\question{A2}{Trace exact results}{5}
+Write the output schema and every tuple produced by each expression. Explicitly identify any duplicate tuple removed by projection.
+
+\begin{enumerate}[label=\alph*.]
+  \item $\pi_{\mathit{major}}(\student)$
+  \anspace{0.95in}
+  \item $\pi_{\mathit{student\_id},\mathit{student\_name}}\bigl(\sigma_{\mathit{year}=\text{``sophomore''}}(\student)\bigr)$
+  \anspace{0.95in}
+\end{enumerate}
+
+\question{A3}{Write expressions}{4}
+Write one relational-algebra expression for each request.
+
+\begin{enumerate}[label=\alph*.]
+  \item Return the title of every 4-credit course. \hfill (2)
+  \anspace{0.55in}
+  \item Return the name and major of every junior student. \hfill (2)
+  \anspace{0.55in}
+\end{enumerate}
+
+\newpage
+\sectionbar{Section B}{Natural join and theta join \quad 20 points}
+
+\question{B1}{Distinguish the joins}{3}
+Answer each question about the expression $\student\bowtie\enrollment$.
+
+\begin{enumerate}[label=\alph*.]
+  \item Which shared attribute is used automatically as the matching condition?
+  \item Why does that shared attribute appear only once in the result schema?
+  \item If the two relations had no shared attribute names, what would their natural join produce?
+\end{enumerate}
+\anspace{0.65in}
+
+\question{B2}{Trace a natural join}{6}
+Write the output schema and every tuple in $\student\bowtie\enrollment$. Then name the student who does not appear and explain why. Tuple order does not matter.
+\anspace{2.85in}
+
+\question{B3}{Read and trace a theta join}{7}
+Consider the expression
+\[
+\student\ \bowtie_{\student.\mathit{major}=\course.\mathit{department}}\ \course.
+\]
+
+\begin{enumerate}[label=\alph*.]
+  \item State what the expression means in plain English. \hfill (1)
+  \item State its output schema. \hfill (1)
+  \item Write every output tuple. Tuple order does not matter. \hfill (5)
+\end{enumerate}
+\anspace{3.1in}
+
+\newpage
+\question{B4}{Write composed join queries}{4}
+Write one relational-algebra expression for each request. Natural join is appropriate because the linked relations share deliberately matching attribute names.
+
+\begin{enumerate}[label=\alph*.]
+  \item Return the names of students enrolled in course C10. \hfill (2)
+  \anspace{0.9in}
+  \item Return the titles of courses taken by Math majors. \hfill (2)
+  \anspace{0.9in}
+\end{enumerate}
+
+\newpage
+\sectionbar{Section C}{Set operations and composition \quad 16 points}
+
+For C1--C3, use these named intermediate results:
+\begin{align*}
+\mathit{cs\_student} &\leftarrow
+\pi_{\mathit{student\_id}}\bigl(\sigma_{\mathit{major}=\text{``CS''}}(\student)\bigr)\\
+\mathit{sophomore} &\leftarrow
+\pi_{\mathit{student\_id}}\bigl(\sigma_{\mathit{year}=\text{``sophomore''}}(\student)\bigr)
+\end{align*}
+
+\question{C1}{Check compatibility}{3}
+Are $\mathit{cs\_student}$ and $\mathit{sophomore}$ union-compatible? State the schema of each result and explain briefly.
+\anspace{0.75in}
+
+\question{C2}{Read set expressions in plain English}{3}
+State what each expression means in plain English. Be precise about the direction of difference.
+
+\begin{enumerate}[label=\alph*.]
+  \item $\mathit{cs\_student}\cup\mathit{sophomore}$
+  \item $\mathit{cs\_student}\cap\mathit{sophomore}$
+  \item $\mathit{cs\_student}-\mathit{sophomore}$
+\end{enumerate}
+\anspace{0.85in}
+
+\question{C3}{Trace set results}{4}
+First write every tuple in $\mathit{cs\_student}$ and $\mathit{sophomore}$. Then write every tuple in the union, intersection, and difference from C2. Explain why a student ID appearing in both inputs occurs only once in the union.
+\anspace{1.8in}
+
+\newpage
+\sectionbar{Section C continued}{Composition with joins}
+
+\question{C4}{Compose set operations with joins}{6}
+First define the IDs of students enrolled in a CS-department course:
+\[
+\mathit{takes\_cs}\leftarrow
+\pi_{\mathit{student\_id}}
+\left(
+\enrollment\bowtie\sigma_{\mathit{department}=\text{``CS''}}(\course)
+\right).
+\]
+Using $\mathit{cs\_student}$ and $\mathit{takes\_cs}$, write an expression for each request. You do not need to enumerate the results.
+
+\begin{enumerate}[label=\alph*.]
+  \item IDs of students who major in CS or take a CS course. \hfill 
+  \anspace{0.5in}
+  \item IDs of students who major in CS and take a CS course. \hfill
+  \anspace{0.5in}
+  \item IDs of students who take a CS course but do not major in CS. \hfill 
+  \anspace{0.5in}
+\end{enumerate}
+
+\end{document}

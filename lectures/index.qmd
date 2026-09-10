@@ -19,7 +19,7 @@ Lecture pages provide the course narrative. Related practice and submissions app
 
 - [Set operations on relations](week-03-relational-algebra-set-operations.qmd) — Union, intersection, difference, compatible inputs, and set operations within larger query expressions.
 - [Assignment 1 — Implement relational operators](../assignments/assignment-01-relational-operators.qmd) — Implement and test selection, projection, rename, and join over a small in-memory relation.
-- [Assignment 2 — Relational algebra practice](../assignments/assignment-02-relational-algebra-practice.qmd) — Enumerate join results, distinguish natural and theta joins, and write compact query expressions.
+- [Assignment 2 — Relational algebra practice](../assignments/assignment-02-relational-algebra-practice.qmd) — Build from selection and projection to joins and set operations using one shared registration database.
 
 ## Week 4
 
