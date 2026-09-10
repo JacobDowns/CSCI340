@@ -182,7 +182,7 @@ Write one relational-algebra expression for each request.
 \end{enumerate}
 
 \newpage
-\sectionbar{Section B}{Natural join and theta join \quad 20 points}
+\sectionbar{Section B}{Natural join and theta join \quad 17 points}
 
 \question{B1}{Distinguish the joins}{3}
 Answer each question about the expression $\student\bowtie\enrollment$.
@@ -198,7 +198,7 @@ Answer each question about the expression $\student\bowtie\enrollment$.
 Write the output schema and every tuple in $\student\bowtie\enrollment$. Then name the student who does not appear and explain why. Tuple order does not matter.
 \anspace{2.85in}
 
-\question{B3}{Read and trace a theta join}{7}
+\question{B3}{Analyze a theta join}{4}
 Consider the expression
 \[
 \student\ \bowtie_{\student.\mathit{major}=\course.\mathit{department}}\ \course.
@@ -207,9 +207,9 @@ Consider the expression
 \begin{enumerate}[label=\alph*.]
   \item State what the expression means in plain English. \hfill (1)
   \item State its output schema. \hfill (1)
-  \item Write every output tuple. Tuple order does not matter. \hfill (5)
+  \item How many output tuples are there? Briefly justify your count; do not list every tuple. \hfill (2)
 \end{enumerate}
-\anspace{3.1in}
+\anspace{1.25in}
 
 \newpage
 \question{B4}{Write composed join queries}{4}
