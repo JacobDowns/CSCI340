@@ -1,0 +1,20 @@
+[course]
+label = "CSCI 340"
+term = "Autumn 2026"
+
+[database]
+host = "db.example.edu"
+port = 5432
+name = "replace-me"
+sslmode = "require"
+
+[accounts]
+username_prefix = "csci340_"
+login_group = "csci340_students"
+password_length = 24
+create_personal_schema = true
+connection_limit = 5
+password_valid_until = "2026-12-31 23:59:59-07:00"
+
+[instructions]
+support_email = ""
