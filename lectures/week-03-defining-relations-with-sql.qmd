@@ -1,10 +1,10 @@
 ---
 title: "Defining tables with PostgreSQL"
-subtitle: "Types, constraints, table definitions, and changes to stored data"
-description: "An introduction to defining PostgreSQL tables, choosing basic types, and adding, changing, or removing tuples."
+subtitle: "From data requirements to types, constraints, and table definitions"
+description: "An introduction to PostgreSQL, its place among database systems, and the design decisions encoded by CREATE TABLE."
 author: "CSCI 340"
 toc: true
-toc-depth: 2
+toc-depth: 3
 code-fold: false
 ---
 
@@ -15,29 +15,122 @@ WEEK 4A · POSTGRESQL TABLE DEFINITIONS
 
 # Before asking a question, decide what data can exist.
 
-In Week 2, a relation schema gave us a careful description of attributes, keys, and constraints. PostgreSQL lets us put that description into a database. We first define the table and the values it permits; only then do we add tuples and ask questions about them.
+In Week 2, a relation schema gave us a careful description of attributes, keys, and constraints. PostgreSQL lets us turn that description into an enforceable database design. We first decide what a valid row means; only then do we write `CREATE TABLE`.
 
 :::
 
-## 1. From relation schema to table definition
+::: {.opening-prompt}
+## Opening scenario: a small video game service
 
-Consider the relation schema below:
+Suppose we are building a small service with a game catalog, player accounts, personal game libraries, save data, and play sessions. A launcher, a web storefront, and administrative tools will all use the same data. What should the database—not just one screen or application—guarantee about every stored game, player, and session?
+
+Keep that question in mind. A table definition is an executable answer to it.
+:::
+
+## 1. Meet PostgreSQL
+
+**PostgreSQL**, often shortened to **Postgres**, is an open-source relational database management system (DBMS). Its history begins with the POSTGRES research project at the University of California, Berkeley, in 1986. Today it is developed by a global community and can be used, modified, and distributed under the permissive [PostgreSQL License](https://www.postgresql.org/about/licence/).
+
+The words in that description name different things:
+
+| Term | What it is | Example |
+|---|---|---|
+| **SQL** | A standardized language family for defining, querying, and changing relational data | `CREATE TABLE`, `SELECT` |
+| **PostgreSQL** | A particular DBMS that implements SQL and adds its own features | The server that checks a constraint and stores the row |
+| **Database** | A named collection of schemas, tables, and other objects managed by a DBMS | A university registration database |
+| **`psql`** | One client program that can send SQL to a PostgreSQL server | An interactive terminal session |
+
+SQL is not PostgreSQL in the same way that a programming language is not one particular compiler. MySQL, SQLite, SQL Server, Oracle Database, and DuckDB also understand SQL, but their dialects, features, and deployment models differ.
+
+### PostgreSQL is usually a client/server system
+
+PostgreSQL runs as a server process. A command-line client, application, notebook, or administration tool connects to it and sends requests. The server coordinates access to the data and applies the same rules no matter which client made the request.
+
+```{mermaid}
+flowchart LR
+    A["Game launcher or<br/>web storefront"] --> D["PostgreSQL server"]
+    B["psql or an<br/>administration tool"] --> D
+    C["Reporting or<br/>analytics program"] --> D
+    D --> E["Tables, indexes,<br/>and transaction log"]
+
+    classDef client fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
+    classDef server fill:#173b4d,stroke:#173b4d,color:#ffffff;
+    classDef storage fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    class A,B,C client;
+    class D server;
+    class E storage;
+```
+
+That central position is why table definitions matter. If `capacity > 0` exists only in one application's form validation, another client can bypass it. If it is a database constraint, PostgreSQL applies it to every attempted insert or update.
+
+### Why PostgreSQL is used
+
+PostgreSQL is a general-purpose choice for applications that need shared, durable data and concurrent access. Its feature set includes:
+
+- **integrity and transactions:** primary keys, foreign keys, checks, and transactions that group changes into all-or-nothing units;
+- **concurrency:** multi-version concurrency control (MVCC), which helps readers and writers work with consistent versions of data;
+- **rich data and queries:** dates and times, exact numerics, UUIDs, arrays, ranges, JSON/JSONB, full-text search, and complex SQL queries;
+- **extensibility:** user-defined types, functions, operators, and index methods, plus extensions such as PostGIS for spatial data; and
+- **operations and security:** write-ahead logging, backup and recovery, replication, roles, privileges, and row-level security.
+
+Those capabilities let PostgreSQL serve as the system of record behind web applications, organizational information systems, data services, and geospatial applications. They also make it useful for this course: the rules we discuss in the relational model become visible, testable database behavior, and the same system can carry us from basic SQL to transactions, query plans, and PostGIS.
+
+As one imperfect but useful indicator of professional exposure, 49% of respondents to the [2024 Stack Overflow Developer Survey](https://survey.stackoverflow.co/2024/technology#most-popular-technologies-database) reported extensive PostgreSQL work during the preceding year; it was the survey's most selected database for the second year in a row. That survey is not a census or a market-share measurement, but it does show that PostgreSQL experience transfers well beyond this course.
+
+### PostgreSQL is not the answer to every storage problem
+
+Database choices reflect workload, deployment, existing expertise, cost, and compatibility. A few important alternatives are:
+
+| Alternative | A reason it might be a better fit |
+|---|---|
+| **MySQL or MariaDB** | A general-purpose client/server relational system already supported by an organization's application stack or hosting ecosystem |
+| **SQLite** | Local storage inside an application or device, especially when simplicity and a single database file matter more than many concurrent network clients |
+| **SQL Server or Oracle Database** | An organization depends on that vendor's tooling, support, administration, or application ecosystem |
+| **DuckDB** | In-process analytical queries over files and data frames, rather than a shared transactional application database |
+| **Document, key-value, graph, or distributed databases** | The primary data model, access pattern, or distribution requirement does not fit a conventional relational server |
+
+These categories overlap. A production system may use PostgreSQL for durable transactional facts, Redis for a cache, and DuckDB for local analysis. The engineering question is not “Which database wins?” but “Which trade-offs fit this part of the system?”
+
+::: {.callout-note appearance="simple"}
+## Our scope today
+
+PostgreSQL can do far more than this lecture covers. Today we will use a deliberately small subset: table names, column names, common data types, and constraints. The goal is to learn how design decisions become executable rules.
+:::
+
+## 2. From relation schema to table definition
+
+Begin with the service's game catalog:
 
 $$
-\text{student}(\text{student\_id},\ \text{university\_email},\ \text{display\_name},\ \text{admitted\_on},\ \text{is\_active})
+\text{video\_game}(\text{game\_id},\ \text{title},\ \text{studio\_name},\ \text{released\_on},\ \text{is\_available})
 $$
 
 In PostgreSQL, `CREATE TABLE` names the relation's attributes, assigns a type to each one, and states constraints the database should enforce.
 
 ```sql
-CREATE TABLE student (
-    student_id integer PRIMARY KEY,
-    university_email text NOT NULL UNIQUE,
-    display_name text NOT NULL,
-    admitted_on date NOT NULL,
-    is_active boolean NOT NULL DEFAULT true
+CREATE TABLE video_game (
+    game_id integer PRIMARY KEY,
+    title text NOT NULL,
+    studio_name text NOT NULL,
+    released_on date,
+    is_available boolean NOT NULL DEFAULT true
 );
 ```
+
+Read the outer structure first:
+
+```sql
+CREATE TABLE table_name (
+    column_name data_type column_constraints,
+    column_name data_type column_constraints,
+    table_constraints
+);
+```
+
+- `CREATE TABLE video_game` names the new table.
+- Parentheses contain comma-separated column definitions and, when needed, table-level constraints.
+- A semicolon ends the SQL statement.
+- Whitespace and line breaks make the statement readable but do not determine its meaning.
 
 ::: {.callout-note appearance="simple"}
 ## Schema and instance
@@ -47,153 +140,441 @@ The `CREATE TABLE` statement defines the **schema**: the attributes, their allow
 
 The constraints above express several decisions:
 
-- `student_id integer PRIMARY KEY` requires a distinct, non-null integer identifier for every tuple.
-- `NOT NULL` says an attribute must have a value when a tuple is inserted or updated.
-- `UNIQUE` prevents two tuples from sharing the same non-null email address.
-- `DEFAULT true` supplies a value when an insertion omits `is_active`.
+- `game_id integer PRIMARY KEY` requires a distinct, non-null integer identifier for every row.
+- `title` and `studio_name` are required, while `released_on` may be unknown or absent for an unreleased game.
+- `DEFAULT true` supplies a value when an insertion omits `is_available`.
 
-## 2. Use `CHECK` to describe valid values
+## 3. Choose types for values, not for their appearance
 
-`CHECK` attaches a condition to an attribute or table. PostgreSQL rejects an insertion or update when the condition is false. It is useful for ranges and for an attribute whose permitted values are known in advance.
-
-```sql
-CREATE TABLE course_section (
-    section_id integer PRIMARY KEY,
-    capacity integer NOT NULL
-        CHECK (capacity BETWEEN 1 AND 400),
-    grading_basis text NOT NULL
-        CHECK (grading_basis IN ('letter', 'pass_fail'))
-);
-```
-
-The first `CHECK` prevents impossible capacities such as `0` or `500`. The second expresses a controlled set of values: `grading_basis` can be either `'letter'` or `'pass_fail'`, but not a misspelling or an unrecognized label.
-
-::: {.callout-note appearance="simple"}
-## Pair an allowed set with `NOT NULL` when a value is required
-
-A `CHECK` condition does not reject `NULL` by itself because the condition's result is unknown rather than false. Add `NOT NULL` when every tuple must choose one of the permitted values.
-:::
-
-For a small, stable list, `CHECK (... IN (...))` is clear and direct. If the list itself needs descriptions, dates, or frequent changes, we will later model it as its own relation and use a foreign key instead.
-
-## 3. Choose types for the values, not for their appearance
-
-A type says what kind of value an attribute can hold. It also determines which operations make sense. For example, dates can be compared chronologically, while a `text` value is not automatically a date just because it looks like one.
+A type says what kind of value an attribute can hold. It also determines which operations make sense. Dates can be compared chronologically, while a `text` value is not automatically a date just because it looks like one.
 
 | PostgreSQL type | Useful for | Example value |
 |---|---|---|
-| `integer` | whole-number quantities and identifiers | `340` |
-| `numeric(p, s)` | exact decimal quantities | `numeric(6, 2)` for `1234.50` |
-| `text` | variable-length text | `'Ava Nguyen'` |
-| `boolean` | true-or-false conditions | `true` |
-| `date` | calendar dates without a time of day | `DATE '2026-09-08'` |
-| `timestamp with time zone` | a moment in time | `TIMESTAMPTZ '2026-09-08 09:00-06'` |
+| `smallint`, `integer`, `bigint` | Whole-number quantities and sometimes identifiers | `340` |
+| `numeric(p, s)` | Exact decimal quantities, where precision matters | `numeric(8, 2)` for `123456.78` |
+| `real`, `double precision` | Approximate measurements and scientific calculation | `8.4371` |
+| `text` | Variable-length text with no declared maximum length | `'Starfall Cartographers'` |
+| `varchar(n)`, `character varying(n)` | Variable-length text limited to at most *n* characters | `varchar(30)` for `'player_one'` |
+| `boolean` | True-or-false conditions | `true` |
+| `date` | Calendar dates without a time of day | `DATE '2026-09-08'` |
+| `timestamp with time zone` | A moment in time | `TIMESTAMPTZ '2026-09-08 09:00-06'` |
 
 ::: {.callout-warning appearance="simple"}
 ## An identifier is often text
 
-Choose a type based on the meaning of the attribute, not only its visible characters. A course code such as `CSCI 340`, a postal code, or an ID with leading zeroes is usually `text`, even if it contains digits.
+Choose a type based on the meaning of the attribute, not only its visible characters. A course code such as `CSCI 340`, a postal code, or an ID with leading zeroes is usually `text`, even if it contains digits. We add and average quantities; we compare identifiers for equality.
 :::
 
-## 4. Insert tuples into the table
+### `text` or `varchar`?
 
-`INSERT` changes the current instance by adding new tuples. Naming the target attributes makes the correspondence between values and attributes explicit.
+PostgreSQL supports both `text` and `varchar`, which is the shorthand spelling of `character varying`.
+
+- `varchar(30)` rejects a value longer than 30 characters.
+- `varchar` without a number accepts a string of any length, much like `text`.
+- PostgreSQL does not give `varchar(n)` a performance advantage over `text`; the limit is useful only when it represents a real requirement.
+
+For example, use `varchar(12)` if the service's platform-code specification truly permits at most 12 characters. Use `text` when the maximum would be an arbitrary implementation guess. If the requirement is “nonblank” rather than “short,” a `CHECK` constraint expresses that rule more directly.
+
+### Let PostgreSQL generate an identifier when appropriate
+
+If an identifier has no meaning outside the database, PostgreSQL can generate it:
 
 ```sql
-INSERT INTO student (
-    student_id,
-    university_email,
-    display_name,
-    admitted_on
-)
-VALUES
-    (101, 'ava.nguyen@university.edu', 'Ava Nguyen', DATE '2026-08-20'),
-    (102, 'jordan.lee@university.edu', 'Jordan Lee', DATE '2026-08-20');
+save_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 ```
 
-Because `is_active` has a default, each inserted tuple receives `true`. If the `student_id` or email repeated an existing value, PostgreSQL would reject the insertion rather than quietly admit an invalid instance.
+An identity column saves the application from inventing the next number. It does not eliminate the need to identify and constrain meaningful real-world identifiers when they exist.
+
+::: {.callout-note appearance="simple"}
+## `timestamp with time zone` stores a moment, not a displayed zone
+
+PostgreSQL normalizes the value internally and displays it using the session's time zone. Store a separate zone name only when the original civil-time zone is itself part of the requirement, such as the zone in which a future event was scheduled.
+:::
+
+## 4. Constraints describe valid rows
+
+A type provides a broad domain. Constraints narrow it to values and combinations that make sense for this table.
+
+| Constraint | Rule it expresses |
+|---|---|
+| `PRIMARY KEY` | This column or column combination identifies a row; values are unique and not null |
+| `NOT NULL` | Every row must contain a value for this column |
+| `UNIQUE` | Repeated non-null values are not allowed in the constrained column or combination |
+| `CHECK (condition)` | A row is accepted only when the condition is not false |
+| `REFERENCES other_table(column)` | A value must identify an existing row in the referenced table |
+| `DEFAULT expression` | Use this expression when an insert omits the column; this is not a validation rule |
+
+### Use `CHECK` for row-level rules
+
+```sql
+CREATE TABLE player_account (
+    player_id integer PRIMARY KEY,
+    username text NOT NULL UNIQUE,
+    account_status text NOT NULL
+        CHECK (account_status IN ('active', 'suspended', 'closed'))
+);
+```
+
+`UNIQUE` prevents two player accounts from using the same non-null username. The `CHECK` expresses a controlled set of account states. For a small, stable list, `CHECK (... IN (...))` is clear. If the list needs descriptions, permissions, or frequent changes, we might later model it as its own table and reference it with a foreign key.
+
+### Common `CHECK` patterns
+
+The expression inside `CHECK` is evaluated for each proposed row. These patterns cover many ordinary data rules:
+
+| Requirement | Example constraint | Boundary or design note |
+|---|---|---|
+| A value cannot be negative | `CHECK (price >= 0)` | Decide whether zero is valid. |
+| A value lies in a closed range | `CHECK (rating BETWEEN 1 AND 5)` | `BETWEEN` includes both endpoints. |
+| A value comes from a small allowed set | `CHECK (difficulty IN ('easy', 'normal', 'hard'))` | Pair with `NOT NULL` if a choice is required. |
+| Text cannot be empty or only whitespace | `CHECK (btrim(username) <> '')` | This still permits `NULL` unless `NOT NULL` is added. |
+| A later time follows an earlier time | `CHECK (ended_at IS NULL OR ended_at > started_at)` | Explicitly permits an unknown end time. |
+| A value is required in one state | `CHECK (status <> 'released' OR released_on IS NOT NULL)` | Read as an implication: released games need a date. |
+| At least one contact method is present | `CHECK (email IS NOT NULL OR phone IS NOT NULL)` | Both may be present; use a different rule if exactly one is required. |
+
+Constraint names make errors and later schema changes easier to understand:
+
+```sql
+CONSTRAINT video_game_price_nonnegative
+    CHECK (price >= 0)
+```
+
+The name does not change the rule, but PostgreSQL can include it when reporting which constraint a row violated.
+
+::: {.callout-note appearance="simple"}
+## Pair an allowed set with `NOT NULL` when a value is required
+
+A `CHECK` condition does not reject `NULL` by itself because the condition's result is unknown rather than false. Add `NOT NULL` when every row must choose one of the permitted values.
+:::
+
+::: {.activity-checkpoint}
+**Checkpoint:** For each requirement in the `video_game` example, point to the exact part of the table definition that enforces it. Which decisions are merely names or types, and which are constraints?
+:::
+
+## 5. Design studio: requirements before syntax
+
+Each scenario begins with data and rules rather than SQL. Keep the solution collapsed while the class decides:
+
+1. What does one row represent?
+2. Which columns are needed, and what does each mean?
+3. What identifies a row?
+4. Which values are required, optional, unique, generated, or restricted?
+5. Which rules can PostgreSQL enforce in the table definition?
+
+<details class="practice-example">
+<summary>Practice 1: define a game platform</summary>
+
+One row will represent one platform supported by the service.
+
+| Example value | Meaning |
+|---|---|
+| `PC-WIN` | Stable platform code used by the service |
+| `Windows PC` | Name shown to players |
+| `8` | Maximum local players supported by the platform |
+| `true` | Whether new games may currently target the platform |
+
+Requirements:
+
+- Every platform has a unique, stable code that may contain letters and punctuation.
+- Display name and maximum local players are required.
+- The maximum must be between 1 and 16.
+- New platforms are supported unless stated otherwise.
+
+**Class prompt:** Propose column names, types, a primary key, nullability, a check, and a default. Which part of your definition enforces each requirement?
+
+<details class="practice-solution">
+<summary>Possible table definition</summary>
+
+```sql
+CREATE TABLE game_platform (
+    platform_code text PRIMARY KEY,
+    display_name text NOT NULL,
+    max_local_players integer NOT NULL
+        CHECK (max_local_players BETWEEN 1 AND 16),
+    is_supported boolean NOT NULL DEFAULT true
+);
+```
+
+`platform_code` is `text` because it is an identifier rather than a quantity. The primary key supplies both uniqueness and non-nullness. The default applies only when an insert omits `is_supported`; an explicit `NULL` would still violate `NOT NULL`.
+
+</details>
+</details>
+
+<details class="practice-example">
+<summary>Practice 2: define a save file</summary>
+
+One row will represent one saved game belonging to a player.
+
+| Example value | Meaning |
+|---|---|
+| generated by the database | Internal save identifier |
+| `27` | Player who owns the save |
+| `1042` | Game the save belongs to |
+| `2026-09-15 20:42-06` | Exact moment the save was created |
+| `37.50` | Completion percentage, if the game reports one |
+| `Before the final dungeon` | Optional player-visible label |
+
+Requirements:
+
+- The database should generate the save identifier.
+- Player, game, and save time are required.
+- Completion percentage may be absent, but a known value must be between 0 and 100.
+- The label may be absent.
+
+**Class prompt:** Where should `NULL` be permitted? What advantage does exact `numeric` have for a displayed percentage, and how could we require the player and game to exist?
+
+<details class="practice-solution">
+<summary>Possible table definition</summary>
+
+```sql
+CREATE TABLE save_file (
+    save_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_id integer NOT NULL
+        REFERENCES player_account(player_id),
+    game_id integer NOT NULL
+        REFERENCES video_game(game_id),
+    saved_at timestamp with time zone NOT NULL,
+    completion_percent numeric(5, 2)
+        CHECK (completion_percent BETWEEN 0 AND 100),
+    slot_label text
+);
+```
+
+`numeric(5, 2)` records a two-decimal percentage exactly and can represent `100.00`. `completion_percent` intentionally lacks `NOT NULL`; because a PostgreSQL `CHECK` rejects false rather than unknown, `NULL` is still permitted. The foreign keys change the two identifiers from unchecked integers into references to an existing player and game.
+
+</details>
+</details>
+
+<details class="practice-example">
+<summary>Practice 3: define a play session</summary>
+
+One row will represent one player's session in one game.
+
+| Example value | Meaning |
+|---|---|
+| generated by the database | Internal session identifier |
+| `27` | Player |
+| `1042` | Game |
+| `2026-09-16 19:00-06` | Start moment |
+| `2026-09-16 20:35-06` | End moment, or absent while playing |
+| `completed` | Session status |
+
+Requirements:
+
+- The database generates the identifier.
+- Player, game, start time, and status are required.
+- Status is one of `in_progress`, `completed`, or `abandoned`.
+- An in-progress session has no end time; a completed or abandoned session must have one.
+- When present, the end must be later than the start.
+
+**Class prompt:** Which rules involve more than one column? Can a table-level check express them? Does this definition prevent one player from having two in-progress sessions?
+
+<details class="practice-solution">
+<summary>Possible table definition</summary>
+
+```sql
+CREATE TABLE play_session (
+    session_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_id integer NOT NULL
+        REFERENCES player_account(player_id),
+    game_id integer NOT NULL
+        REFERENCES video_game(game_id),
+    started_at timestamp with time zone NOT NULL,
+    ended_at timestamp with time zone,
+    status text NOT NULL
+        CHECK (status IN ('in_progress', 'completed', 'abandoned')),
+    CONSTRAINT session_time_order
+        CHECK (ended_at IS NULL OR ended_at > started_at),
+    CONSTRAINT session_status_matches_end
+        CHECK (
+            (status = 'in_progress' AND ended_at IS NULL)
+            OR
+            (status IN ('completed', 'abandoned') AND ended_at IS NOT NULL)
+        )
+);
+```
+
+The named table constraints can refer to several columns in the proposed row. Together they keep the timestamp and status stories consistent. This definition does **not** compare the row with other sessions, so it does not prevent two simultaneous in-progress sessions for one player. Recognizing what a definition does not guarantee is part of good design.
+
+</details>
+</details>
+
+<details class="practice-example">
+<summary>Practice 4: define a player's game library</summary>
+
+Assume `player_account(player_id)` and `video_game(game_id)` already exist. One library row should state that one existing player has access to one existing game.
+
+Requirements:
+
+- Every library entry refers to an existing player and an existing game.
+- A player may have many games, and a game may belong to many players' libraries.
+- The same player-game pair may appear at most once.
+- Acquisition date is required.
+- Acquisition type is one of `purchase`, `gift`, or `subscription`.
+
+**Class prompt:** Why is neither identifier a primary key by itself? Which columns are foreign keys, and which combination should be the primary key?
+
+<details class="practice-solution">
+<summary>Possible table definition</summary>
+
+```sql
+CREATE TABLE player_game_library (
+    player_id integer NOT NULL
+        REFERENCES player_account(player_id),
+    game_id integer NOT NULL
+        REFERENCES video_game(game_id),
+    acquired_on date NOT NULL,
+    acquisition_type text NOT NULL
+        CHECK (acquisition_type IN ('purchase', 'gift', 'subscription')),
+    PRIMARY KEY (player_id, game_id)
+);
+```
+
+The composite primary key prevents a duplicate player-game pair. Each component can repeat on its own, which is necessary for a many-to-many relationship. The foreign keys prevent a library entry from pointing to a player or game that does not exist.
+
+PostgreSQL must be able to find both referenced tables when this statement runs, so definitions have an order: create `player_account` and `video_game` before `player_game_library`.
+
+</details>
+</details>
+
+::: {.callout-important appearance="simple"}
+## There can be several defensible definitions
+
+A table definition is judged against requirements, not against one magical answer. Two designs can use different names or identifier strategies and both be sound. The important work is stating assumptions and tracing every requirement to an enforceable rule—or explicitly identifying a rule that the current table cannot enforce.
+:::
+
+## 6. Insert rows into the table
+
+`INSERT` changes the current instance by adding new rows. Naming the target columns makes the correspondence between values and columns explicit.
+
+```sql
+INSERT INTO video_game (
+    game_id,
+    title,
+    studio_name,
+    released_on
+)
+VALUES
+    (1042, 'Starfall Cartographers', 'Northline Studio', DATE '2024-10-04'),
+    (1043, 'Mosslight', 'Juniper Byte', NULL);
+```
+
+Because `is_available` has a default, each inserted row receives `true`. The second game's release date is unknown or not yet set, which the table permits. If `game_id` repeated an existing value, PostgreSQL would reject the insertion rather than quietly admit an invalid instance.
 
 ::: {.callout-question appearance="simple"}
 ## Predict the outcome
 
-What should PostgreSQL do if we try to insert a third tuple with `student_id` `101` but a different name and email? Which part of the table definition supports your prediction?
+What should PostgreSQL do if we try to insert a different title with `game_id` `1042`? Which part of the table definition supports your prediction?
 :::
 
-## 5. Change or remove stored tuples deliberately
+### Defaults do not replace required input
 
-`UPDATE` changes values in tuples that already exist. A `WHERE` condition identifies which tuples should change.
+These two inserts are not equivalent:
 
 ```sql
-UPDATE student
-SET display_name = 'Jordan A. Lee'
-WHERE student_id = 102;
+-- is_available is omitted, so the default supplies true
+INSERT INTO video_game (game_id, title, studio_name, released_on)
+VALUES (1044, 'Circuit Garden', 'Northline Studio', DATE '2026-02-12');
+
+-- is_available is explicitly NULL, so NOT NULL rejects the row
+INSERT INTO video_game
+VALUES (1045, 'Sky Harbor', 'Copper Finch', DATE '2026-06-19', NULL);
 ```
 
-`DELETE` removes matching tuples from the current instance.
+The database evaluates types, defaults, and constraints whenever data changes. A failed statement is evidence that the definition is doing work.
+
+## 7. Change or remove stored rows deliberately
+
+`UPDATE` changes values in rows that already exist. A `WHERE` condition identifies which rows should change.
 
 ```sql
-DELETE FROM student
-WHERE student_id = 102;
+UPDATE video_game
+SET is_available = false
+WHERE game_id = 1042;
+```
+
+`DELETE` removes matching rows from the current instance.
+
+```sql
+DELETE FROM video_game
+WHERE game_id = 1043;
 ```
 
 ::: {.callout-warning appearance="simple"}
 ## `WHERE` is the safeguard
 
-Without a `WHERE` clause, `UPDATE` changes every tuple in the table and `DELETE` removes every tuple. Before running either statement, state in plain English which tuples should be affected and check that the condition captures exactly those tuples.
+Without a `WHERE` clause, `UPDATE` changes every row in the table and `DELETE` removes every row. Before running either statement, state in plain English which rows should be affected and check that the condition captures exactly those rows.
 :::
 
-These commands change data, not the table's definition. The `student` schema remains the same after an insertion, update, or deletion.
+These commands change data, not the table's definition. The `video_game` schema remains the same after an insertion, update, or deletion.
 
-## 6. Change the table definition with `ALTER TABLE`
+## 8. Change the definition with `ALTER TABLE`
 
-Sometimes the schema itself must evolve. `ALTER TABLE` changes an existing table definition rather than its current tuples.
-
-```sql
-ALTER TABLE student
-ADD COLUMN graduation_year integer;
-```
-
-Existing tuples now have a `graduation_year` attribute whose value is initially `NULL`. We can also add a rule after the table exists:
+Sometimes the schema itself must evolve. `ALTER TABLE` changes an existing table definition rather than merely changing its current rows.
 
 ```sql
-ALTER TABLE student
-ADD CONSTRAINT student_graduation_year_range
-CHECK (graduation_year BETWEEN 2020 AND 2040);
+ALTER TABLE video_game
+ADD COLUMN content_rating text;
 ```
 
-The database verifies the rule for existing tuples and for future inserts or updates. A schema change is therefore not merely a new column on a spreadsheet: it can change the set of tuples the database considers valid.
-
-## 7. A short connection to keys and links
-
-We can use the same syntax to represent a relation that connects students to course sections.
+Existing rows now have a `content_rating` value of `NULL`. We can add a rule after the table exists:
 
 ```sql
-CREATE TABLE enrollment (
-    student_id integer REFERENCES student(student_id),
-    section_id integer NOT NULL,
-    enrolled_on date NOT NULL,
-    PRIMARY KEY (student_id, section_id)
-);
+ALTER TABLE video_game
+ADD CONSTRAINT video_game_content_rating_allowed
+CHECK (content_rating IN ('E', 'E10+', 'T', 'M'));
 ```
 
-Here, the pair `(student_id, section_id)` is a composite primary key: a student can appear in many sections, and a section can contain many students, but the same student-section pair cannot appear twice. `REFERENCES student(student_id)` is a foreign-key constraint that requires each stored `student_id` to identify a row in `student`.
+PostgreSQL verifies the rule for existing rows and future inserts or updates. A schema change can therefore fail when existing data violates the proposed rule.
 
 ::: {.callout-note appearance="simple"}
 ## Keep the two kinds of change separate
 
 - `CREATE TABLE` and `ALTER TABLE` define or change a schema.
-- `INSERT`, `UPDATE`, and `DELETE` change a relation's current instance.
+- `INSERT`, `UPDATE`, and `DELETE` change a table's current instance.
 
 This distinction lets us reason separately about the structure of data and the data currently stored within that structure.
 :::
 
+## 9. A table-definition review routine
+
+Before executing `CREATE TABLE`, read it once in each direction:
+
+```{mermaid}
+flowchart LR
+    A["Requirements<br/>in plain language"] --> B["Rows and<br/>columns"]
+    B --> C["Types, keys,<br/>and constraints"]
+    C --> D["Candidate<br/>CREATE TABLE"]
+    D --> E["Valid, boundary,<br/>and invalid rows"]
+    E --> A
+
+    classDef thought fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
+    classDef design fill:#eaf4f7,stroke:#247487,color:#173b4d;
+    classDef evidence fill:#173b4d,stroke:#173b4d,color:#ffffff;
+    class A thought;
+    class B,C,D design;
+    class E evidence;
+```
+
+- **Forward:** Can every requirement be located in the proposed definition?
+- **Backward:** Can every type, default, and constraint be justified by a requirement?
+- **At the boundary:** What is the smallest, largest, missing, repeated, or nonexistent referenced value the design should accept or reject?
+
+::: {.takeaway-panel}
+## The main claim
+
+`CREATE TABLE` is not clerical setup. It turns decisions about identity, meaning, missingness, and validity into rules shared by every client of the database.
+:::
+
 ## Looking ahead
 
-The next lecture uses `SELECT`, `FROM`, and `WHERE` to ask questions of tables whose structure and values we can now describe precisely.
+The next lecture uses `SELECT`, `FROM`, and `WHERE` to ask questions of tables whose structure and valid values we can now describe precisely.
 
 **Next:** [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd)
 
-## Sources
+## Sources and further reading
 
-- PostgreSQL Global Development Group. [Chapter 8: Data Types](https://www.postgresql.org/docs/current/datatype.html).
-- PostgreSQL Global Development Group. [`CREATE TABLE`](https://www.postgresql.org/docs/current/sql-createtable.html), [`INSERT`](https://www.postgresql.org/docs/current/sql-insert.html), [`DELETE`](https://www.postgresql.org/docs/current/sql-delete.html), and [`ALTER TABLE`](https://www.postgresql.org/docs/current/sql-altertable.html).
+- PostgreSQL Global Development Group. [About PostgreSQL](https://www.postgresql.org/about/) and [What Is PostgreSQL?](https://www.postgresql.org/docs/current/intro-whatis.html).
+- PostgreSQL Global Development Group. [Data Types](https://www.postgresql.org/docs/current/datatype.html), [Constraints](https://www.postgresql.org/docs/current/ddl-constraints.html), [`CREATE TABLE`](https://www.postgresql.org/docs/current/sql-createtable.html), and [`ALTER TABLE`](https://www.postgresql.org/docs/current/sql-altertable.html).
+- Stack Overflow. [2024 Developer Survey: Databases](https://survey.stackoverflow.co/2024/technology#most-popular-technologies-database).
+- SQLite. [Appropriate Uses for SQLite](https://www.sqlite.org/whentouse.html).
+- DuckDB. [Why DuckDB](https://duckdb.org/why_duckdb).
