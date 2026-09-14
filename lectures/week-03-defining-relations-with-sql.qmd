@@ -349,6 +349,8 @@ A `CHECK` does **not** have to be attached to a single attribute definition:
 - **Column-level:** written within a column definition, as with the `account_status` check above.
 - **Table-level:** written as a separate, comma-separated item inside `CREATE TABLE`. It can refer to one or several columns in the same row.
 
+PostgreSQL also allows a **column-level `CHECK` to reference other columns**. For clarity and portability, use column-level checks for one field and table-level checks for relationships among fields.
+
 For example, this excerpt from the later `play_session` definition relates two fields:
 
 ```sql
@@ -360,10 +362,26 @@ CONSTRAINT session_time_order
 ```
 
 - The comma after `ended_at` ends that column's definition; the check is a separate table-level item.
-- `CONSTRAINT session_time_order` gives the check an optional name for error messages and later changes. An unnamed `CHECK (...)` also works.
 - **Table-level still means one row at a time:** this check compares that session's timestamps, not different sessions.
 
 The later `session_status_matches_end` check uses the same form to relate `status` and `ended_at`.
+
+### Why name a constraint?
+
+`CONSTRAINT session_time_order` assigns a readable name. It does **not** change which rows pass the check.
+
+- **Identify failures:** an error naming `session_time_order` points to the timestamp rule.
+- **Change the schema:** commands such as `ALTER TABLE ... DROP CONSTRAINT session_time_order` identify the rule by name.
+- **If omitted:** PostgreSQL generates a name. The rule is still enforced, but you may need to look up that name later.
+- **Either placement:** both column-level and table-level checks can have explicit names.
+
+For example, a named column-level check looks like this inside a table definition:
+
+```sql
+max_local_players integer NOT NULL
+    CONSTRAINT platform_player_limit
+    CHECK (max_local_players BETWEEN 1 AND 16)
+```
 
 ### Common `CHECK` patterns
 
