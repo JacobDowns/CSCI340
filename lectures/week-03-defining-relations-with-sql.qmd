@@ -1,7 +1,7 @@
 ---
 title: "Defining tables with PostgreSQL"
-subtitle: "From data requirements to types, constraints, and table definitions"
-description: "An introduction to PostgreSQL, its place among database systems, and the design decisions encoded by CREATE TABLE."
+subtitle: "Defining a schema with CREATE TABLE, constraints, and ALTER TABLE"
+description: "Define and change PostgreSQL schemas using data types, generated keys, constraints, foreign-key deletion policies, CREATE TABLE, and ALTER TABLE."
 author: "CSCI 340"
 toc: true
 toc-depth: 3
@@ -114,7 +114,7 @@ One system may combine PostgreSQL for transactions, Redis for caching, and DuckD
 ::: {.callout-note appearance="simple"}
 ## Our scope today
 
-Today we focus on table and column names, common data types, and constraints: the pieces that turn design decisions into executable rules.
+Today we define and change **schemas** with `CREATE TABLE` and `ALTER TABLE`. A few inserts demonstrate constraint enforcement; the [next lecture](week-04-changing-table-data.qmd) develops `INSERT`, `UPDATE`, and `DELETE`.
 :::
 
 ## 2. From relation schema to table definition
@@ -312,7 +312,7 @@ For example, `price >= 0 AND price <= 100` requires a price from 0 through 100.
 
 - `CHECK (price >= 0)` rejects negative prices but accepts `NULL`: unknown passes a check.
 - Add `NOT NULL` when every row must supply a price.
-- In the next lecture, `WHERE` keeps only rows whose condition is **true**; false and unknown are excluded.
+- When selecting rows for a query or change, `WHERE` keeps only **true** conditions; false and unknown are excluded.
 :::
 
 ### Use `CHECK` for row-level rules
@@ -341,6 +341,24 @@ CREATE TABLE player_account (
 - `UNIQUE` prevents duplicate usernames.
 - `CHECK (... IN (...))` limits account status to a small, stable set.
 - If statuses need descriptions, permissions, or frequent changes, consider a separate table with a foreign key.
+
+### See a constraint enforce a rule
+
+Run these statements separately after creating `player_account`:
+
+```sql
+-- Accepted: the status is allowed.
+INSERT INTO player_account (username, account_status)
+VALUES ('schema_demo_player', 'active');
+```
+
+```sql
+-- Expected error: 'paused' is not an allowed status.
+INSERT INTO player_account (username, account_status)
+VALUES ('schema_demo_invalid', 'paused');
+```
+
+The second row is rejected. The table definition stays the same; its rules govern which rows can enter the instance.
 
 ### Column-level and table-level checks
 
@@ -400,6 +418,29 @@ The expression inside `CHECK` is evaluated for each proposed row. In the text ex
 ::: {.activity-checkpoint}
 **Checkpoint:** For each requirement in the `video_game` example, point to the exact part of the table definition that enforces it. Which decisions are merely names or types, and which are constraints?
 :::
+
+### Foreign keys also define what happens on deletion
+
+A foreign key connects a **child** row to a referenced **parent** row. For example, a library entry refers to a player account. Decide what should happen when that parent is deleted:
+
+| Foreign-key option | Effect on referencing rows |
+|---|---|
+| `ON DELETE NO ACTION` (default) | With the immediate checks used here, reject a parent deletion that would leave dangling references. |
+| `ON DELETE CASCADE` | Automatically delete matching child rows. |
+| `ON DELETE SET NULL` | Keep child rows but clear the reference; the affected columns must allow `NULL`. |
+
+Example column definition inside the library table:
+
+```sql
+player_id bigint NOT NULL
+    REFERENCES player_account(player_id) ON DELETE CASCADE
+```
+
+- The deletion flows **from player to library entries**. Deleting a library entry does not delete its player or game.
+- Choose cascading deletion when those child records should disappear with the parent.
+- Each relationship has its own policy. Other references, such as saved games, can still block deleting a player.
+
+This is a rule declared in the schema. The [instance lecture](week-04-changing-table-data.qmd#deleting-a-parent-can-delete-child-rows) demonstrates its effect on rows.
 
 ## 5. Design studio: requirements before syntax
 
@@ -591,6 +632,7 @@ Requirements:
 - Every library entry refers to an existing player and an existing game.
 - A player may have many games, and a game may belong to many players' libraries.
 - The same player-game pair may appear at most once.
+- Deleting a player removes their library entries; deleting a game with library entries is blocked.
 - Acquisition date is required.
 - Acquisition type is one of `purchase`, `gift`, or `subscription`.
 
@@ -603,9 +645,9 @@ Requirements:
 CREATE TABLE player_game_library (
     library_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     player_id bigint NOT NULL
-        REFERENCES player_account(player_id),
+        REFERENCES player_account(player_id) ON DELETE CASCADE,
     game_id bigint NOT NULL
-        REFERENCES video_game(game_id),
+        REFERENCES video_game(game_id) ON DELETE NO ACTION,
     acquired_on date NOT NULL,
     acquisition_type text NOT NULL
         CHECK (acquisition_type IN ('purchase', 'gift', 'subscription')),
@@ -617,6 +659,8 @@ CREATE TABLE player_game_library (
 - `UNIQUE (player_id, game_id)` prevents duplicate pairs; the generated key alone would allow them.
 - Each player or game ID can repeat, supporting a many-to-many relationship.
 - Foreign keys require existing players and games.
+- `ON DELETE CASCADE` removes this player's library entries when the player is deleted.
+- `ON DELETE NO ACTION` protects games still referenced by library entries; omitting the clause has the same effect.
 
 Create `player_account` and `video_game` first so PostgreSQL can find the referenced tables.
 
@@ -633,94 +677,23 @@ Different names or identifier strategies can produce sound designs. For each des
 - Identify requirements the table cannot enforce.
 :::
 
-## 6. Insert rows into the table
+## 6. Change the definition with `ALTER TABLE`
 
-`INSERT` changes the current instance by adding new rows. Naming the target columns makes the correspondence between values and columns explicit.
+`ALTER TABLE` changes an existing table's structure or rules. These examples continue with `video_game`; run them in order if following along.
 
-```sql
-INSERT INTO video_game (
-    title,
-    studio_name,
-    released_on
-)
-VALUES
-    ('Starfall Cartographers', 'Northline Studio', DATE '2024-10-04'),
-    ('Mosslight', 'Juniper Byte', NULL)
-RETURNING game_id, title;
-```
-
-- Omitting `game_id` generates each primary key.
-- `RETURNING` shows the IDs and titles for use in later changes or related rows.
-- Omitting `is_available` supplies its default, `true`.
-- Mosslight's release date is `NULL`, which the table permits.
-
-On a fresh table with no prior inserts, the IDs are `1` and `2`. Use your actual returned IDs: generated values can have gaps.
-
-::: {.callout-question appearance="simple"}
-## Predict the outcome
-
-- An ordinary `INSERT` supplies `game_id = 1042`. What happens, and which clause explains it?
-- If we omit `game_id`, which constraint guarantees a unique ID?
-:::
-
-### Defaults do not replace required input
-
-These two inserts are not equivalent:
-
-```sql
--- is_available is omitted, so the default supplies true
-INSERT INTO video_game (title, studio_name, released_on)
-VALUES ('Circuit Garden', 'Northline Studio', DATE '2026-02-12')
-RETURNING game_id, title;
-
--- is_available is explicitly NULL, so NOT NULL rejects the row
-INSERT INTO video_game (title, studio_name, released_on, is_available)
-VALUES ('Sky Harbor', 'Copper Finch', DATE '2026-06-19', NULL);
-```
-
-The database evaluates types, defaults, and constraints whenever data changes. A failed statement is evidence that the definition is doing work.
-
-## 7. Change or remove stored rows deliberately
-
-`UPDATE` changes existing rows; `WHERE` selects which rows to change. These examples assume:
-
-- Starfall Cartographers received ID `1`.
-- Mosslight received ID `2`.
-
-Substitute your actual returned IDs if they differ.
-
-```sql
-UPDATE video_game
-SET is_available = false
-WHERE game_id = 1;
-```
-
-`DELETE` removes matching rows from the current instance.
-
-```sql
-DELETE FROM video_game
-WHERE game_id = 2;
-```
-
-::: {.callout-warning appearance="simple"}
-## `WHERE` is the safeguard
-
-- Without `WHERE`, `UPDATE` changes every row and `DELETE` removes every row.
-- Before running either statement, name the intended rows and check that the condition selects exactly those rows.
-:::
-
-These commands change data, not the table's definition. The `video_game` schema remains the same after an insertion, update, or deletion.
-
-## 8. Change the definition with `ALTER TABLE`
-
-Sometimes the schema itself must evolve. `ALTER TABLE` changes an existing table definition rather than merely changing its current rows.
+### Add a column
 
 ```sql
 ALTER TABLE video_game
 ADD COLUMN content_rating text;
 ```
 
-Existing rows now have a `content_rating` value of `NULL`. We can add a rule after the table exists:
+- Existing rows receive `NULL` because no default is supplied.
+- A column definition here can also include a default or constraints.
+
+### Add or remove a constraint
+
+Limit the stored rating codes:
 
 ```sql
 ALTER TABLE video_game
@@ -728,7 +701,96 @@ ADD CONSTRAINT video_game_content_rating_allowed
 CHECK (content_rating IN ('E', 'E10+', 'T', 'M'));
 ```
 
-PostgreSQL verifies the rule for existing rows and future inserts or updates. A schema change can therefore fail when existing data violates the proposed rule.
+- Existing rows must satisfy the new rule; this check still permits `NULL`.
+- Future inserts and updates must also satisfy it.
+
+If the service stops restricting ratings to that list, remove the rule by name:
+
+```sql
+ALTER TABLE video_game
+DROP CONSTRAINT video_game_content_rating_allowed;
+```
+
+The column and its stored values remain.
+
+### Change or remove a default
+
+Suppose newly added games should start unavailable:
+
+```sql
+ALTER TABLE video_game
+ALTER COLUMN is_available SET DEFAULT false;
+```
+
+- Future inserts that omit `is_available` receive `false`.
+- Existing rows keep their current values; changing those requires `UPDATE`.
+
+To require an explicit availability value on each insert:
+
+```sql
+ALTER TABLE video_game
+ALTER COLUMN is_available DROP DEFAULT;
+```
+
+Because `is_available` still has `NOT NULL`, an insert that omits it now fails.
+
+### Allow or prohibit missing values
+
+Make the studio name optional:
+
+```sql
+ALTER TABLE video_game
+ALTER COLUMN studio_name DROP NOT NULL;
+```
+
+To make it required again:
+
+```sql
+ALTER TABLE video_game
+ALTER COLUMN studio_name SET NOT NULL;
+```
+
+`SET NOT NULL` fails if any existing studio name is `NULL`. Supply the missing information before adding the requirement.
+
+### Rename a column
+
+Make the studio's role more explicit:
+
+```sql
+ALTER TABLE video_game
+RENAME COLUMN studio_name TO developer_name;
+```
+
+Values remain intact. Subsequent SQL must use `developer_name`.
+
+### Change a column's type
+
+Suppose rating codes must be at most five characters:
+
+```sql
+ALTER TABLE video_game
+ALTER COLUMN content_rating TYPE varchar(5);
+```
+
+- Existing values must fit the new type; longer codes cause this change to fail.
+- Some type changes require a `USING` expression to specify the conversion.
+
+### Drop a column
+
+If the service stops recording ratings:
+
+```sql
+ALTER TABLE video_game
+DROP COLUMN content_rating;
+```
+
+- The column and all its stored values are removed; the game rows remain.
+- Re-adding the column does not restore its former values.
+- Dependencies outside the table, such as a view using the column, can block the drop. `DROP ... CASCADE` removes dependent schema objects; it is different from a foreign key's `ON DELETE CASCADE`, which removes rows.
+
+::: {.activity-checkpoint}
+**Checkpoint:** How do `DROP COLUMN` and `DROP CONSTRAINT` differ in what they remove? Which change discards stored values?
+:::
 
 ::: {.callout-note appearance="simple"}
 ## Keep the two kinds of change separate
@@ -737,7 +799,7 @@ PostgreSQL verifies the rule for existing rows and future inserts or updates. A 
 - `INSERT`, `UPDATE`, and `DELETE` change a table's current instance.
 :::
 
-## 9. A table-definition review routine
+## 7. A table-definition review routine
 
 Before executing `CREATE TABLE`, read it once in each direction:
 
@@ -769,14 +831,14 @@ flowchart LR
 
 ## Looking ahead
 
-Next, we use `SELECT`, `FROM`, and `WHERE` to query these tables.
+Next, we change a table's **instance** with `INSERT`, `UPDATE`, and `DELETE`, and inspect the results with simple queries.
 
-**Next:** [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd)
+**Next:** [Changing table data with SQL](week-04-changing-table-data.qmd)
 
 ## Sources and further reading
 
 - PostgreSQL Global Development Group. [About PostgreSQL](https://www.postgresql.org/about/) and [What Is PostgreSQL?](https://www.postgresql.org/docs/current/intro-whatis.html).
-- PostgreSQL Global Development Group. [Data Types](https://www.postgresql.org/docs/current/datatype.html), [Numeric Types](https://www.postgresql.org/docs/current/datatype-numeric.html), [Constraints](https://www.postgresql.org/docs/current/ddl-constraints.html), [Identity Columns](https://www.postgresql.org/docs/current/ddl-identity-columns.html), [`CREATE TABLE`](https://www.postgresql.org/docs/current/sql-createtable.html), and [`ALTER TABLE`](https://www.postgresql.org/docs/current/sql-altertable.html).
+- PostgreSQL Global Development Group. [Data Types](https://www.postgresql.org/docs/current/datatype.html), [Numeric Types](https://www.postgresql.org/docs/current/datatype-numeric.html), [Constraints](https://www.postgresql.org/docs/current/ddl-constraints.html), [Identity Columns](https://www.postgresql.org/docs/current/ddl-identity-columns.html), [`CREATE TABLE`](https://www.postgresql.org/docs/current/sql-createtable.html), [`ALTER TABLE`](https://www.postgresql.org/docs/current/sql-altertable.html), and [Modifying Tables](https://www.postgresql.org/docs/current/ddl-alter.html).
 - PostgreSQL Global Development Group. [Comparison Functions and Operators](https://www.postgresql.org/docs/current/functions-comparison.html) and [Logical Operators](https://www.postgresql.org/docs/current/functions-logical.html).
 - Stack Overflow. [2024 Developer Survey: Databases](https://survey.stackoverflow.co/2024/technology#most-popular-technologies-database).
 - SQLite. [Appropriate Uses for SQLite](https://www.sqlite.org/whentouse.html).

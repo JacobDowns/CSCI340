@@ -1,0 +1,325 @@
+---
+title: "Changing table data with SQL"
+subtitle: "Changing an instance with INSERT, UPDATE, and DELETE"
+description: "Add, change, and remove rows while respecting generated keys, defaults, constraints, and foreign-key deletion policies."
+author: "CSCI 340"
+toc: true
+toc-depth: 3
+code-fold: false
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 4B · CHANGING A TABLE'S INSTANCE
+:::
+
+# The schema sets the rules. Each statement changes the rows.
+
+We have defined what valid games, players, and library entries look like. Now we will add and change those records, predict which changes are allowed, and inspect the results.
+:::
+
+**Previous:** [Defining tables with PostgreSQL](week-03-defining-relations-with-sql.qmd)
+
+::: {.opening-prompt}
+## Opening scenario: a player's library changes
+
+A player joins the service, acquires games, and later deletes their account.
+
+- Which statements add or change the records?
+- Which records should disappear with the account?
+- Which constraints determine whether each change succeeds?
+:::
+
+## 1. Keep the schema and instance separate
+
+| Statement | What changes? |
+|---|---|
+| `CREATE TABLE`, `ALTER TABLE` | The schema: columns, types, and rules |
+| `INSERT` | Adds rows to the instance |
+| `UPDATE` | Changes values in existing rows |
+| `DELETE` | Removes rows from the instance |
+| `SELECT` | Reads rows without changing them |
+
+### Start with fresh practice tables
+
+Open a fresh database connection and run the setup below once. It creates **temporary tables** with the three definitions from the schema lecture.
+
+- They begin empty and last only for this connection.
+- During this connection, these names refer to the temporary versions, even if you have permanent tables with the same names.
+- Keep the connection open and work through the examples in order. Reconnect and rerun the setup to start over.
+- Blocks marked **expected error** deliberately test a constraint; run them separately.
+
+<details class="practice-example">
+<summary>Practice setup: game catalog, player accounts, and library entries</summary>
+
+```sql
+CREATE TEMP TABLE video_game (
+    game_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title text NOT NULL,
+    studio_name text NOT NULL,
+    released_on date,
+    is_available boolean NOT NULL DEFAULT true
+);
+
+CREATE TEMP TABLE player_account (
+    player_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    username text NOT NULL UNIQUE,
+    account_status text NOT NULL
+        CHECK (account_status IN ('active', 'suspended', 'closed'))
+);
+
+CREATE TEMP TABLE player_game_library (
+    library_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_id bigint NOT NULL
+        REFERENCES player_account(player_id) ON DELETE CASCADE,
+    game_id bigint NOT NULL
+        REFERENCES video_game(game_id) ON DELETE NO ACTION,
+    acquired_on date NOT NULL,
+    acquisition_type text NOT NULL
+        CHECK (acquisition_type IN ('purchase', 'gift', 'subscription')),
+    UNIQUE (player_id, game_id)
+);
+```
+
+</details>
+
+### Inspect the current instance
+
+```sql
+SELECT * FROM video_game;
+```
+
+- `SELECT *` displays all columns; `FROM` names the table.
+- At this point, there are no rows.
+- Add `ORDER BY game_id` when you want a predictable display order.
+
+We use small queries to check our work today. The [next lecture](week-03-asking-questions-with-sql.qmd) develops query writing in detail.
+
+## 2. Add rows with `INSERT`
+
+Name the target columns, then provide values in the same order:
+
+```sql
+INSERT INTO video_game (title, studio_name, released_on)
+VALUES
+    ('Starfall Cartographers', 'Northline Studio', DATE '2024-10-04'),
+    ('Mosslight', 'Juniper Byte', NULL)
+RETURNING game_id, title;
+```
+
+- Omitting `game_id` lets PostgreSQL generate each primary key.
+- Omitting `is_available` supplies its default, `true`.
+- `NULL` records that Mosslight's release date is unknown or not yet set.
+- `RETURNING` shows the inserted IDs and titles for later use.
+
+On these fresh tables, the games receive IDs `1` and `2`. Always use your actual returned IDs if they differ; generated values can have gaps.
+
+```sql
+SELECT * FROM video_game
+ORDER BY game_id;
+```
+
+::: {.callout-question appearance="simple"}
+## Predict the outcome
+
+- Which clause rejects an ordinary insert that supplies its own `game_id`?
+- Does a generated ID prevent two games from having the same title?
+:::
+
+### Omitted values and explicit `NULL` differ
+
+This insert receives the default availability value:
+
+```sql
+INSERT INTO video_game (title, studio_name, released_on)
+VALUES ('Circuit Garden', 'Northline Studio', DATE '2026-02-12')
+RETURNING game_id, is_available;
+```
+
+The returned ID is `3` in this walkthrough. Compare that with:
+
+```sql
+-- Expected error: explicit NULL violates NOT NULL.
+INSERT INTO video_game (title, studio_name, released_on, is_available)
+VALUES ('Sky Harbor', 'Copper Finch', DATE '2026-06-19', NULL);
+```
+
+A default supplies omitted input; it does not replace an explicit `NULL`. The failed insert adds no row, but it can still consume a generated ID.
+
+## 3. Change existing rows with `UPDATE`
+
+First inspect the row you intend to change:
+
+```sql
+SELECT * FROM video_game
+WHERE game_id = 1;
+```
+
+Then make Starfall Cartographers unavailable:
+
+```sql
+UPDATE video_game
+SET is_available = false
+WHERE game_id = 1
+RETURNING game_id, title, is_available;
+```
+
+- `SET` lists the new values.
+- `WHERE` selects the affected rows; only a **true** condition matches.
+- `RETURNING` shows the updated values.
+- The row and its primary key remain in the table.
+
+Constraints also apply to updates:
+
+```sql
+-- Expected error: the title is required.
+UPDATE video_game
+SET title = NULL
+WHERE game_id = 1;
+```
+
+The rejected update leaves the original title intact.
+
+## 4. Remove rows with `DELETE`
+
+Preview the target, then remove Mosslight from the catalog:
+
+```sql
+SELECT * FROM video_game
+WHERE game_id = 2;
+```
+
+```sql
+DELETE FROM video_game
+WHERE game_id = 2
+RETURNING game_id, title;
+```
+
+- `RETURNING` shows the row that was removed.
+- The table and its columns still exist.
+- No match means zero rows are deleted.
+
+```sql
+SELECT game_id, title, is_available
+FROM video_game
+ORDER BY game_id;
+```
+
+Expected result after the successful changes above:
+
+| game_id | title | is_available |
+|---:|---|---|
+| 1 | Starfall Cartographers | `false` |
+| 3 | Circuit Garden | `true` |
+
+::: {.callout-warning appearance="simple"}
+## Check `WHERE` before changing rows
+
+- Without `WHERE`, `UPDATE` changes every row and `DELETE` removes every row.
+- Preview the target with a `SELECT` using the same condition.
+- Use `RETURNING` to inspect the change; it does not ask for confirmation or undo anything.
+:::
+
+## 5. Change related rows
+
+### Insert the parent before the child
+
+Add a player account:
+
+```sql
+INSERT INTO player_account (username, account_status)
+VALUES ('river_fox', 'active')
+RETURNING player_id, username;
+```
+
+In this fresh setup, the returned player ID is `1`. Use it to create two library entries for the remaining games:
+
+```sql
+INSERT INTO player_game_library
+    (player_id, game_id, acquired_on, acquisition_type)
+VALUES
+    (1, 1, DATE '2026-09-16', 'purchase'),
+    (1, 3, DATE '2026-09-16', 'gift')
+RETURNING library_id, player_id, game_id;
+```
+
+- Each `library_id` is generated independently.
+- The foreign keys use existing player and game IDs.
+- `UNIQUE (player_id, game_id)` rejects a second entry for the same pair.
+
+### A foreign key can block deletion
+
+The library's game reference uses `ON DELETE NO ACTION`. With the immediate checks in this definition, this attempt fails:
+
+```sql
+-- Expected error: a library entry still references this game.
+DELETE FROM video_game
+WHERE game_id = 1;
+```
+
+The game and library entry remain. Setting a game to unavailable, as we did earlier, keeps its identity and existing references intact.
+
+### Deleting a parent can delete child rows
+
+The library's player reference was defined with `ON DELETE CASCADE`:
+
+```sql
+DELETE FROM player_account
+WHERE player_id = 1
+RETURNING player_id, username;
+```
+
+- The player is removed, along with both of that player's library entries.
+- Both games remain in the catalog.
+- `RETURNING` here reports the deleted player; inspect the library separately to see the cascade.
+
+```sql
+SELECT * FROM player_game_library;
+SELECT game_id, title FROM video_game ORDER BY game_id;
+```
+
+The library is empty; games `1` and `3` remain. Deleting a library entry alone would not delete its player or game.
+
+::: {.callout-note appearance="simple"}
+## The schema chooses the deletion policy
+
+`ON DELETE CASCADE` belongs in the foreign-key definition. You execute an ordinary `DELETE` on the parent; there is no `DELETE ... CASCADE` clause to add here.
+
+This example uses only the three practice tables. In a larger schema, other foreign keys may still block deleting the same parent.
+:::
+
+## 6. Predict the next instance
+
+Using the final state above, discuss these changes independently:
+
+1. Insert a game while omitting its ID and availability. Which values come from the schema?
+2. Update game `3` to have a `NULL` release date. Does the row remain valid?
+3. Delete game `1` now that the library is empty. Will the foreign key still block it?
+4. Delete every game row. How does this differ from dropping the table?
+
+<details class="practice-solution">
+<summary>Check your reasoning</summary>
+
+- The ID is generated and availability defaults to `true`; required fields still need values.
+- A `NULL` release date is allowed, so the update succeeds.
+- No library entry references game `1`, so its deletion succeeds in this practice setup.
+- Deleting all rows leaves an empty table with its schema intact. Dropping the table removes the table itself.
+
+</details>
+
+::: {.takeaway-panel}
+## The main claim
+
+Every change has a target and a consequence. Predict the affected rows, check the constraints, execute the statement, and inspect the resulting instance.
+:::
+
+## Looking ahead
+
+In Week 5, we develop `SELECT`, filtering, expressions, ordering, and query tests.
+
+**Next:** [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd)
+
+## Sources and further reading
+
+- PostgreSQL Global Development Group. [Inserting Data](https://www.postgresql.org/docs/current/dml-insert.html), [Updating Data](https://www.postgresql.org/docs/current/dml-update.html), and [Deleting Data](https://www.postgresql.org/docs/current/dml-delete.html).
+- PostgreSQL Global Development Group. [Returning Data from Modified Rows](https://www.postgresql.org/docs/current/dml-returning.html), [Foreign Keys](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-FK), and [Temporary Tables](https://www.postgresql.org/docs/current/sql-createtable.html).

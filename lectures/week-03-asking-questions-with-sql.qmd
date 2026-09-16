@@ -10,7 +10,7 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 4B · SQL FOUNDATIONS AND QUERY TESTING
+WEEK 5A · SQL FOUNDATIONS AND QUERY TESTING
 :::
 
 # A query is a claim about the answer.
@@ -18,6 +18,8 @@ WEEK 4B · SQL FOUNDATIONS AND QUERY TESTING
 A SQL query can be syntactically valid and still answer the wrong question. Writing the query is therefore only part of the work. We must also predict its result and construct cases that distinguish the intended meaning from plausible mistakes. The relational-algebra ideas from Week 2 now become practical: SQL is the language we write, but the meaning still comes from the logical operations the query expresses.
 
 :::
+
+**Previous:** [Changing table data with SQL](week-04-changing-table-data.qmd)
 
 ## 1. Our relation for today
 

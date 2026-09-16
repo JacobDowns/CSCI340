@@ -1,3 +1,4 @@
+import csv
 import importlib.util
 import os
 import sys
@@ -100,6 +101,29 @@ class StudentAccountProvisioningTests(unittest.TestCase):
         self.assertIn('GRANT "csci340_students" TO "csci340_abc123456";', sql)
         self.assertTrue(sql.rstrip().endswith("COMMIT;"))
 
+    def test_name_collisions_preserve_each_students_handout_and_manifest(self):
+        names = ["Able, Ada", "able, ada", "Able, Ada (2)", "A/B", "A:B", "CON", "..."]
+        students = [
+            MODULE.Student(name, str(i), f"login{i}", f"csci340_login{i}")
+            for i, name in enumerate(names)
+        ]
+        with tempfile.TemporaryDirectory() as directory_name:
+            output = Path(directory_name) / "output"
+            MODULE.write_outputs(output, students, 0, self.config())
+            with (output / "credential-manifest.csv").open(newline="") as stream:
+                rows = list(csv.DictReader(stream))
+            self.assertEqual(len(list((output / "credential-handouts").iterdir())), len(students))
+            self.assertEqual(len({row["Handout Filename"].casefold() for row in rows}), len(students))
+            for student, row in zip(students, rows):
+                filename = row["Handout Filename"]
+                self.assertNotRegex(filename, r'[<>:"/\\|?*]')
+                handout = output / "credential-handouts" / filename
+                text = handout.read_text()
+                self.assertIn(f"Student: {student.display_name}\n", text)
+                self.assertIn(f"Username: {student.database_username}\n", text)
+                self.assertIn(f"Password: {row['Password']}\n", text)
+                self.assertEqual(os.stat(handout).st_mode & 0o777, 0o600)
+
     def test_outputs_are_private_and_refuse_overwrite(self):
         student = MODULE.Student("Able, Ada", "101", "abc123456", "csci340_abc123456")
         with tempfile.TemporaryDirectory() as directory_name:
@@ -107,7 +131,7 @@ class StudentAccountProvisioningTests(unittest.TestCase):
             MODULE.write_outputs(output, [student], 1, self.config())
             self.assertTrue((output / "provision-accounts.sql").exists())
             self.assertTrue((output / "credential-manifest.csv").exists())
-            self.assertTrue((output / "credential-handouts" / "csci340_abc123456.txt").exists())
+            self.assertTrue((output / "credential-handouts" / "Able, Ada.txt").exists())
             self.assertEqual(os.stat(output).st_mode & 0o777, 0o700)
             self.assertEqual(os.stat(output / "credential-manifest.csv").st_mode & 0o777, 0o600)
             with self.assertRaises(MODULE.ProvisioningError):

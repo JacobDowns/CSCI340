@@ -17,6 +17,7 @@ import secrets
 import shlex
 import sys
 import tomllib
+import unicodedata
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -368,7 +369,11 @@ def build_handout(student: Student, password: str, config: Config) -> str:
                 "CREATE TABLE connection_check (message text);",
                 "INSERT INTO connection_check VALUES ('connected');",
                 "SELECT * FROM connection_check;",
-                "DROP TABLE connection_check;",
+                "",
+                "Leave connection_check and its connected row in your personal schema; do not drop the table or delete the row.",
+                "Your instructor will check them to verify your connection and award credit in Canvas.",
+                "See Canvas for the point value and deadline.",
+                "If you already completed this check, run only SELECT * FROM connection_check; to confirm the row is still there.",
             ]
         )
     lines.extend(
@@ -381,6 +386,28 @@ def build_handout(student: Student, password: str, config: Config) -> str:
         lines.append(f"If the connection fails, contact {config.support_email} privately.")
     lines.append("")
     return "\n".join(lines)
+
+
+def build_handout_filenames(students: Iterable[Student]) -> dict[str, str]:
+    """Use roster names, with safe characters and distinct filenames on Windows."""
+    filenames = {}
+    used = set()
+    for student in students:
+        stem = unicodedata.normalize("NFC", student.display_name)
+        stem = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "-", stem)
+        stem = re.sub(r"\s+", " ", stem).strip(" .")
+        stem = stem.encode("utf-8")[:180].decode("utf-8", errors="ignore").rstrip(" .")
+        stem = stem or "Student"
+        if re.fullmatch(r"CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]", stem.split(".")[0], re.I):
+            stem = f"Student - {stem}"
+        filename = f"{stem}.txt"
+        suffix = 2
+        while filename.casefold() in used:
+            filename = f"{stem} ({suffix}).txt"
+            suffix += 1
+        used.add(filename.casefold())
+        filenames[student.database_username] = filename
+    return filenames
 
 
 def _write_private_text(path: Path, content: str) -> None:
@@ -404,6 +431,7 @@ def write_outputs(
     handout_dir = output_dir / "credential-handouts"
     handout_dir.mkdir(mode=0o700)
 
+    filenames = build_handout_filenames(students)
     passwords = {
         student.database_username: generate_password(config.password_length)
         for student in students
@@ -428,7 +456,7 @@ def write_outputs(
             ]
         )
         for student in students:
-            filename = f"{student.database_username}.txt"
+            filename = filenames[student.database_username]
             writer.writerow(
                 [
                     student.display_name,

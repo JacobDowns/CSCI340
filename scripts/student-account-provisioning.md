@@ -14,7 +14,7 @@ instructor-solutions/student-account-provisioning.toml
 
 Edit the database host and database name. Review the username prefix, login group, password expiration, personal-schema setting, and connection limit. Add a support email only if it should appear in every student's handout.
 
-With `create_personal_schema = true`, each role receives `USAGE` and `CREATE` privileges on an identically named schema, and its search path starts there. The administrator who runs the provisioning file owns the schemas, so the workflow does not require that administrator to assume each student role. This lets the login exercise test both connection access and a simple create/insert/select/drop sequence without letting students write to one another's schemas.
+With `create_personal_schema = true`, each role receives `USAGE` and `CREATE` privileges on an identically named schema, and its search path starts there. The administrator who runs the provisioning file owns the schemas, so the workflow does not require that administrator to assume each student role. This lets the login exercise test both connection access and a create/insert/select sequence that leaves a table for instructor verification without letting students write to one another's schemas.
 
 ## 2. Validate without creating secrets
 
@@ -44,8 +44,10 @@ The output contains:
 
 - `provision-accounts.sql`: one transaction that creates every login, grants database access, and optionally creates personal schemas;
 - `credential-manifest.csv`: the private mapping among Canvas identity, database username, password, and handout filename;
-- `credential-handouts/`: one text file per student for individual Canvas attachment;
+- `credential-handouts/`: one text file per student, named from the roster name (for example, `Able, Ada.txt`) for easy Canvas attachment;
 - `generation-summary.txt`: a count and configuration check without individual credentials.
+
+Handout filenames preserve the roster's name order, replace characters unsafe in filenames, and add a numbered suffix for duplicate names. The manifest records the exact filename for each student.
 
 The script refuses to write into a nonempty directory. This prevents an accidental second run from silently replacing passwords while older handouts still exist.
 
@@ -76,3 +78,15 @@ Reload the PostgreSQL configuration after checking the parsed records in `pg_hba
 Test one account from the manifest in a private terminal before posting the Canvas assignment. Each handout includes the server fields, username, password, a password-prompting `psql` command, and a short connection check.
 
 Upload only the matching text file to each student's private Canvas submission or comment. Never attach the manifest or SQL file to Canvas. After the distribution period, retain only the restricted copy you need for support and delete obsolete password-bearing exports according to your course or institutional retention practice.
+
+## 6. Verify the graded connection check
+
+Students leave `connection_check` in their personal schemas with a row whose `message` is `connected`.
+
+- Set the point value and deadline in Canvas.
+- Using an administrator account that can read student tables, check each student's schema for the table and its `connected` row.
+- Record credit in Canvas after verifying both; students should keep the table and row until instructed otherwise.
+- Students who already dropped the table should repeat the create/insert/select steps in the updated handout.
+- Students whose table still exists should run only the `SELECT` to recheck it.
+
+Update already-posted Canvas instructions to remove the old `DROP TABLE` step. Local handout edits do not update previously distributed copies.

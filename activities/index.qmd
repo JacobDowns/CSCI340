@@ -14,7 +14,7 @@ Labs and activities are short small-group exercises that make the course ideas c
 
 - [Activity 2 — Relations and keys](week-02-relations-and-keys.qmd): write relation schemas, identify superkeys and candidate keys, choose primary keys, locate foreign keys, and reason about checking uniqueness in a relation instance. [Answer key](week-02-relations-and-keys-answer-key.qmd).
 
-## Week 4
+## Week 5
 
 - [Lab 2 — Ask it, write it, break it](week-03-query-reasoning-lab.qmd): translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.
 
