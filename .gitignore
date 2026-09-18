@@ -45,3 +45,8 @@ Desktop.ini
 *.log
 *.tmp
 *.bak
+
+# Working/scratch and generated output directories
+/tmp/
+/output/
+/.codex-finalizer/

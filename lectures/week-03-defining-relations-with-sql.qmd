@@ -829,6 +829,10 @@ flowchart LR
 `CREATE TABLE` turns decisions about identity, meaning, missingness, and validity into rules shared by every client.
 :::
 
+## Practice before moving on
+
+Apply these ideas in [Activity 3 — Design an escape-room database](../activities/week-04-escape-room-schema.qmd). Create and alter tables individually or in a group, then compare your schema with classmates and note any changes prompted by the discussion.
+
 ## Looking ahead
 
 Next, we change a table's **instance** with `INSERT`, `UPDATE`, and `DELETE`, and inspect the results with simple queries.

@@ -39,6 +39,7 @@ Complete relational algebra with joins, composed expressions, and set operations
 ### Week 4 (September 14-18) - PostgreSQL schemas and changing data
 
 - **Schema:** define and alter PostgreSQL tables, including types, constraints, and foreign-key deletion policies.
+- **Practice:** [Design an escape-room database](activities/week-04-escape-room-schema.qmd), practice `ALTER TABLE`, and compare designs with classmates.
 - **Instance:** insert, update, and delete rows; inspect changes and follow cascading deletions.
 
 ### Week 5 (September 21-25) - SQL queries and ER modeling foundations
