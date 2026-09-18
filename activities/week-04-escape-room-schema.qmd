@@ -18,7 +18,7 @@ An escape-room business is opening three experiences: *The Missing Professor*, *
 
 Work individually or in a group of two or three. Draft your schema, make a change with `ALTER TABLE`, then compare and discuss your design with classmates.
 
-**Reference:** [Defining tables with PostgreSQL](../lectures/week-03-defining-relations-with-sql.qmd).
+**References:** [Defining tables with PostgreSQL](../lectures/week-03-defining-relations-with-sql.qmd) and the [CREATE TABLE and ALTER TABLE cheat sheet](../lectures/sql-table-syntax-cheat-sheet.qmd).
 
 ## What to submit
 

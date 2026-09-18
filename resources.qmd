@@ -3,6 +3,10 @@ title: "Resources"
 subtitle: "Primary references for the course toolchain and curriculum"
 ---
 
+## Course quick references
+
+- [CREATE TABLE and ALTER TABLE cheat sheet](lectures/sql-table-syntax-cheat-sheet.qmd) — PostgreSQL syntax for table definitions, keys, constraints, and schema changes.
+
 ## Curriculum and foundations
 
 - [ACM/IEEE-CS CS2023 Data Management knowledge area](https://csed.acm.org/data-management/) - a curriculum reference spanning information management concepts, database systems, modeling, querying, design, transactions, and newer data-management contexts.

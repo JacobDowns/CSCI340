@@ -1,0 +1,76 @@
+---
+title: "CREATE TABLE and ALTER TABLE cheat sheet"
+subtitle: "A quick PostgreSQL syntax reference"
+description: "Syntax patterns for defining tables, keys, constraints, and foreign keys, and for changing columns, defaults, and constraints."
+toc: true
+toc-depth: 2
+code-fold: false
+---
+
+**Lecture:** [Defining tables with PostgreSQL](week-03-defining-relations-with-sql.qmd).
+
+These are syntax patterns to adapt, not a script to run in order. Replace names such as `table_name` and `column_name` with your own names.
+
+## Create a table
+
+```sql
+CREATE TABLE table_name (
+    column_name data_type,
+    another_column data_type
+);
+```
+
+Separate definitions with commas; do not put a comma after the last one. Add column rules after the type, and table-level rules as separate items inside the parentheses.
+
+| Purpose | Definition inside `CREATE TABLE` |
+|---|---|
+| Generated primary key | `id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY` |
+| Required value | `title text NOT NULL` |
+| Required, unique value | `username text NOT NULL UNIQUE` |
+| Default value | `is_available boolean NOT NULL DEFAULT true` |
+| Allowed range | `rating integer CHECK (rating BETWEEN 1 AND 5)` |
+| Allowed text values | `status text NOT NULL CHECK (status IN ('active', 'closed'))` |
+| Nonblank text | `title text NOT NULL CHECK (btrim(title) <> '')` |
+| Foreign key | `player_id bigint NOT NULL REFERENCES player_account(player_id)` |
+| Unique combination | `UNIQUE (player_id, game_id)` |
+| Named table-level check | `CONSTRAINT session_time_order CHECK (ended_at IS NULL OR ended_at > started_at)` |
+
+For a foreign key, append a deletion policy after `REFERENCES other_table(id)`:
+
+- `ON DELETE NO ACTION`: rejects a deletion that leaves a broken reference in our examples; this is the default.
+- `ON DELETE CASCADE`: also deletes the rows that reference the deleted parent.
+- `ON DELETE SET NULL`: clears the reference; the referencing column must allow `NULL`.
+
+## Alter an existing table
+
+Use `ALTER TABLE table_name` followed by one of these actions and a semicolon:
+
+```sql
+ALTER TABLE table_name
+ADD COLUMN column_name text;
+```
+
+| Change | Action after `ALTER TABLE table_name` |
+|---|---|
+| Add a column | `ADD COLUMN column_name data_type` |
+| Drop a column and its values | `DROP COLUMN column_name` |
+| Add a named check | `ADD CONSTRAINT constraint_name CHECK (condition)` |
+| Drop a named constraint | `DROP CONSTRAINT constraint_name` |
+| Set a default | `ALTER COLUMN column_name SET DEFAULT value` |
+| Remove a default | `ALTER COLUMN column_name DROP DEFAULT` |
+| Require a value | `ALTER COLUMN column_name SET NOT NULL` |
+| Allow missing values | `ALTER COLUMN column_name DROP NOT NULL` |
+| Rename a column | `RENAME COLUMN old_name TO new_name` |
+| Change a column's type | `ALTER COLUMN column_name TYPE new_type` |
+
+**Remember:**
+
+- A default supplies an omitted value; it does not reject an explicit `NULL`. Use `NOT NULL` when a value is required.
+- A `CHECK` rejects false, so a check alone may allow `NULL`.
+- New constraints and type changes must work with existing data. Some type changes need a `USING` expression.
+- Changing a default does not rewrite existing rows. Dropping a constraint keeps the column's data; dropping a column removes it.
+
+## PostgreSQL references
+
+- [`CREATE TABLE`](https://www.postgresql.org/docs/current/sql-createtable.html) and [constraints](https://www.postgresql.org/docs/current/ddl-constraints.html).
+- [`ALTER TABLE`](https://www.postgresql.org/docs/current/sql-altertable.html) and [modifying tables](https://www.postgresql.org/docs/current/ddl-alter.html).

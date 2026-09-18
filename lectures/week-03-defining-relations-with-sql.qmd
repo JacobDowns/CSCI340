@@ -839,6 +839,10 @@ Next, we change a table's **instance** with `INSERT`, `UPDATE`, and `DELETE`, an
 
 **Next:** [Changing table data with SQL](week-04-changing-table-data.qmd)
 
+## Syntax cheat sheet {#syntax-cheat-sheet-create-table-and-alter-table}
+
+Use the [standalone CREATE TABLE and ALTER TABLE cheat sheet](sql-table-syntax-cheat-sheet.qmd) for a quick syntax reference.
+
 ## Sources and further reading
 
 - PostgreSQL Global Development Group. [About PostgreSQL](https://www.postgresql.org/about/) and [What Is PostgreSQL?](https://www.postgresql.org/docs/current/intro-whatis.html).

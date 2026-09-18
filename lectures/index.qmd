@@ -24,6 +24,7 @@ Lecture pages provide the course narrative. Related practice and submissions app
 ## Week 4
 
 - [Defining tables with PostgreSQL](week-03-defining-relations-with-sql.qmd) — Define and alter schemas using types, generated keys, constraints, and foreign-key deletion policies.
+- [CREATE TABLE and ALTER TABLE cheat sheet](sql-table-syntax-cheat-sheet.qmd) — A quick reference for table definitions and schema changes.
 - [Activity 3 — Design an escape-room database](../activities/week-04-escape-room-schema.qmd) — Create and alter tables individually or in groups, then compare and discuss your designs.
 
 ## Week 5
