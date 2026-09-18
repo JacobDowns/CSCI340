@@ -10,7 +10,7 @@ code-fold: false
 
 ::: {.lesson-hero}
 ::: {.lesson-kicker}
-WEEK 4B · CHANGING A TABLE'S INSTANCE
+WEEK 5A · CHANGING A TABLE'S INSTANCE
 :::
 
 # The schema sets the rules. Each statement changes the rows.
@@ -315,7 +315,7 @@ Every change has a target and a consequence. Predict the affected rows, check th
 
 ## Looking ahead
 
-In Week 5, we develop `SELECT`, filtering, expressions, ordering, and query tests.
+In the next lecture, we develop `SELECT`, filtering, expressions, ordering, and query tests.
 
 **Next:** [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd)
 

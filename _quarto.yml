@@ -60,9 +60,9 @@ website:
           - section: Week 4
             contents:
               - lectures/week-03-defining-relations-with-sql.qmd
-              - lectures/week-04-changing-table-data.qmd
           - section: Week 5
             contents:
+              - lectures/week-04-changing-table-data.qmd
               - lectures/week-03-asking-questions-with-sql.qmd
       - section: Labs and activities
         contents:

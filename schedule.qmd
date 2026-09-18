@@ -36,14 +36,14 @@ Introduce the relational model, core terminology, keys, and the idea of data ind
 
 Complete relational algebra with joins, composed expressions, and set operations. Practice translating questions into logical query expressions, introduce Assignments 1 and 2, and provide in-class work time. No class Monday, September 7, because of Labor Day.
 
-### Week 4 (September 14-18) - PostgreSQL schemas and changing data
+### Week 4 (September 14-18) - PostgreSQL schemas
 
 - **Schema:** define and alter PostgreSQL tables, including types, constraints, and foreign-key deletion policies.
 - **Practice:** [Design an escape-room database](activities/week-04-escape-room-schema.qmd), practice `ALTER TABLE`, and compare designs with classmates.
-- **Instance:** insert, update, and delete rows; inspect changes and follow cascading deletions.
 
-### Week 5 (September 21-25) - SQL queries and ER modeling foundations
+### Week 5 (September 21-25) - SQL data changes, queries, and ER foundations
 
+- **Instance:** [Changing table data with SQL](lectures/week-04-changing-table-data.qmd) covers inserting, updating, and deleting rows, inspecting changes, and following cascading deletions.
 - **Queries:** [Asking precise questions with SQL](lectures/week-03-asking-questions-with-sql.qmd) covers `SELECT`, `FROM`, `WHERE`, expressions, ordering, duplicate handling, and `NULL`.
 - **Lab 2:** [Ask it, write it, break it](activities/week-03-query-reasoning-lab.qmd) practices query writing, prediction, and boundary cases.
 - **ER foundations:** begin entities, attributes, identifiers, relationships, cardinality, participation, and the role of assumptions in conceptual modeling.

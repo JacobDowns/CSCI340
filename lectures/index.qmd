@@ -25,9 +25,9 @@ Lecture pages provide the course narrative. Related practice and submissions app
 
 - [Defining tables with PostgreSQL](week-03-defining-relations-with-sql.qmd) — Define and alter schemas using types, generated keys, constraints, and foreign-key deletion policies.
 - [Activity 3 — Design an escape-room database](../activities/week-04-escape-room-schema.qmd) — Create and alter tables individually or in groups, then compare and discuss your designs.
-- [Changing table data with SQL](week-04-changing-table-data.qmd) — Insert, update, and delete rows; inspect results and trace cascading deletions.
 
 ## Week 5
 
+- [Changing table data with SQL](week-04-changing-table-data.qmd) — Insert, update, and delete rows; inspect results and trace cascading deletions.
 - [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd) — Use selection, projection, expressions, ordering, and nulls to retrieve the intended tuples and attributes.
 - [Lab 2 — Ask it, write it, break it](../activities/week-03-query-reasoning-lab.qmd) — Translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.
