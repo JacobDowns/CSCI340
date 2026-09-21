@@ -1,7 +1,7 @@
 ---
 title: "Changing table data with SQL"
 subtitle: "Changing an instance with INSERT, UPDATE, and DELETE"
-description: "Add, change, and remove rows while respecting generated keys, defaults, constraints, and foreign-key deletion policies."
+description: "Use psql to connect and run scripts, then add, change, and remove rows while respecting generated keys, defaults, constraints, and foreign-key deletion policies."
 author: "CSCI 340"
 toc: true
 toc-depth: 3
@@ -28,6 +28,87 @@ A player joins the service, acquires games, and later deletes their account.
 - Which statements add or change the records?
 - Which records should disappear with the account?
 - Which constraints determine whether each change succeeds?
+:::
+
+## `psql` field guide
+
+`psql` is a terminal client for PostgreSQL. It sends SQL to a server and also provides its own **meta-commands** for inspecting the connection, describing database objects, and running files. Meta-commands begin with a backslash and do not end with a semicolon.
+
+### Connect to the course server
+
+A PostgreSQL connection URI has this general form:
+
+```text
+postgresql://USER@HOST:PORT/DATABASE?sslmode=require
+```
+
+For example, connect by passing the URI to `psql`:
+
+```bash
+psql "postgresql://student_name@db.example.edu:5432/course_db?sslmode=require"
+```
+
+The same connection can use keyword/value form:
+
+```bash
+psql "host=db.example.edu port=5432 user=student_name dbname=course_db sslmode=require"
+```
+
+- A server may prompt for a password when the connection does not provide one.
+- Keep passwords out of shared notes, screenshots, recorded terminals, and shell history.
+- After connecting, run `\conninfo` before changing data to confirm the database, user, host, port, and connection security.
+
+### Keep these meta-commands nearby
+
+| Command | Purpose |
+|---|---|
+| `\conninfo` | Show the current connection |
+| `\l` | List databases |
+| `\dn` | List schemas |
+| `\dt` | List visible tables |
+| `\d table_name` | Describe a table's columns, types, indexes, and constraints |
+| `\c database_name` | Connect to another database |
+| `\x auto` | Use expanded display when a result is too wide |
+| `\timing on` | Show how long each statement takes |
+| `\h INSERT` | Show SQL help for a command; substitute another SQL command as needed |
+| `\?` | List and explain `psql` meta-commands |
+| `\q` | Leave `psql` |
+
+Use the Up and Down arrow keys to revisit command history. Press Ctrl+C to cancel a running statement or clear an unfinished input buffer.
+
+### Read the prompt
+
+SQL statements end with a semicolon:
+
+```sql
+SELECT current_database(), current_user;
+```
+
+If the prompt changes to a continuation prompt such as `->`, `psql` is waiting for the rest of the statement. Check for a missing semicolon, closing quote, or closing parenthesis. Ctrl+C clears the unfinished statement without closing the connection.
+
+### Run a SQL file
+
+From an interactive `psql` session:
+
+```text
+\set ON_ERROR_STOP on
+\i path/to/setup.sql
+```
+
+From the operating-system shell:
+
+```bash
+psql "postgresql://student_name@db.example.edu:5432/course_db?sslmode=require" \
+  -v ON_ERROR_STOP=1 \
+  --file path/to/setup.sql
+```
+
+`ON_ERROR_STOP` makes `psql` stop at the first error instead of continuing through the rest of the file. The SQL file path belongs to the computer where `psql` is running. If you run `psql` after signing in to a remote server, the file must exist on that server. If you run `psql` on your laptop and connect across the network, the file stays on your laptop.
+
+::: {.callout-tip appearance="simple"}
+## A quick orientation check
+
+At the start of a work session, run `\conninfo`, `\dt`, and `SELECT current_schema();`. These answer three different questions: where you connected, which tables are visible, and where PostgreSQL will look first for unqualified object names.
 :::
 
 ## 1. Keep the schema and instance separate
@@ -321,5 +402,6 @@ In the next lecture, we develop `SELECT`, filtering, expressions, ordering, and 
 
 ## Sources and further reading
 
+- PostgreSQL Global Development Group. [`psql`](https://www.postgresql.org/docs/current/app-psql.html) and [Database Connection Strings](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING).
 - PostgreSQL Global Development Group. [Inserting Data](https://www.postgresql.org/docs/current/dml-insert.html), [Updating Data](https://www.postgresql.org/docs/current/dml-update.html), and [Deleting Data](https://www.postgresql.org/docs/current/dml-delete.html).
 - PostgreSQL Global Development Group. [Returning Data from Modified Rows](https://www.postgresql.org/docs/current/dml-returning.html), [Foreign Keys](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-FK), and [Temporary Tables](https://www.postgresql.org/docs/current/sql-createtable.html).
