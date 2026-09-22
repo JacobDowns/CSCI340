@@ -3,6 +3,7 @@ project:
   output-dir: _site
   resources:
     - "notebooks/assignment-01-relational-operators-starter.ipynb"
+    - "assignments/week-05-escape-room-data-changes.docx"
   render:
     - "index.qmd"
     - "schedule.qmd"
@@ -86,6 +87,7 @@ website:
           - assignments/index.qmd
           - assignments/assignment-01-relational-operators.qmd
           - assignments/assignment-02-relational-algebra-practice.qmd
+          - assignments/assignment-03-escape-room-data-changes.qmd
           - projects/capstone.qmd
   page-footer:
     left: "CSCI 340 | Database Systems and Data Management"

@@ -10,6 +10,10 @@ Assignments build on the week-by-week lecture material. Due dates and submission
 - [Assignment 1 - Implement relational operators](assignment-01-relational-operators.qmd): implement and test selection, projection, rename, and join over a small in-memory relation.
 - [Assignment 2 - Relational algebra practice](assignment-02-relational-algebra-practice.qmd): read, trace, and write expressions using selection, projection, joins, and set operations.
 
+## Week 5
+
+- [Assignment 3 - Escape room database changes](assignment-03-escape-room-data-changes.qmd): insert, update, and delete data in your Activity 3 tables, test constraints, and explain the results.
+
 ## Semester-long
 
 - [Semester project](../projects/capstone.qmd): develop a defensible data architecture around an authentic dataset and workload.
