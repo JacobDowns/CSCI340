@@ -4,7 +4,7 @@ subtitle: "Insert, update, delete, and test your constraints"
 description: "A Week 5 assignment using the Activity 3 escape-room database to practice SQL data changes and test schema requirements."
 ---
 
-Complete your tables from [Activity 3](../activities/week-04-escape-room-schema.qmd), then insert, update, and delete data to test your schema. Submit your SQL, requested output or error messages, and short explanations. The assignment is worth **60 points**, including instructor checks of your tables.
+Complete your tables from [Activity 3](../activities/week-04-escape-room-schema.qmd), then insert, update, and delete data to test your schema. Submit your SQL, requested output or error messages, and short explanations. The assignment is worth **56 points**, including instructor checks of your tables.
 
 [Download the assignment Word document](week-05-escape-room-data-changes.docx){download="week-05-escape-room-data-changes.docx" .btn .btn-primary}
 
