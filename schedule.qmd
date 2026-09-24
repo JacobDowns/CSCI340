@@ -46,12 +46,13 @@ Complete relational algebra with joins, composed expressions, and set operations
 - **Instance:** [Changing table data with SQL](lectures/week-04-changing-table-data.qmd) covers inserting, updating, and deleting rows, inspecting changes, and following cascading deletions.
 - **Assignment 3:** [Escape room database changes](assignments/assignment-03-escape-room-data-changes.qmd) practices data changes and constraint testing using your Activity 3 tables.
 - **Queries:** [Asking precise questions with SQL](lectures/week-03-asking-questions-with-sql.qmd) covers `SELECT`, `FROM`, `WHERE`, expressions, ordering, duplicate handling, and `NULL`.
-- **Lab 2:** [Ask it, write it, break it](activities/week-03-query-reasoning-lab.qmd) practices query writing, prediction, and boundary cases.
 - **ER foundations:** begin entities, attributes, identifiers, relationships, cardinality, participation, and the role of assumptions in conceptual modeling.
 
 ### Week 6 (September 28-October 2) - ER modeling in depth
 
 Extend ER modeling to weak and associative entities, recursive relationships, specialization/generalization, temporal requirements, and multivalued information.
+
+- **Lab 2:** [Ask it, write it, break it](activities/week-03-query-reasoning-lab.qmd) practices query writing, prediction, and boundary cases.
 
 ### Week 7 (October 5-9) - From ER diagrams to relational schemas
 

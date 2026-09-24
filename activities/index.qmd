@@ -18,7 +18,7 @@ Labs and activities are short small-group exercises that make the course ideas c
 
 - [Activity 3 — Design an escape-room database](week-04-escape-room-schema.qmd): write three related tables, practice `ALTER TABLE`, then compare and discuss your schema with classmates.
 
-## Week 5
+## Week 6
 
 - [Lab 2 — Ask it, write it, break it](week-03-query-reasoning-lab.qmd): translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.
 

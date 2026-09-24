@@ -32,4 +32,7 @@ Lecture pages provide the course narrative. Related practice and submissions app
 - [Changing table data with SQL](week-04-changing-table-data.qmd) — Insert, update, and delete rows; inspect results and trace cascading deletions.
 - [Assignment 3 — Escape room database changes](../assignments/assignment-03-escape-room-data-changes.qmd) — Practice data changes and test constraints using your Activity 3 tables.
 - [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd) — Use selection, projection, expressions, ordering, and nulls to retrieve the intended tuples and attributes.
+
+## Week 6
+
 - [Lab 2 — Ask it, write it, break it](../activities/week-03-query-reasoning-lab.qmd) — Translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.

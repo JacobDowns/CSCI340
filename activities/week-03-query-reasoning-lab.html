@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="A small-group Week 5 SQL lab centered on result contracts, boundary cases, nulls, and concise query explanations.">
+<meta name="description" content="A small-group Week 6 SQL lab centered on result contracts, boundary cases, nulls, and concise query explanations.">
 
 <title>Lab 2 — Ask it, write it, break it – CSCI 340 | Database Systems and Data Management</title>
 <style>
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
 <link href="../assignments/index.html" rel="next">
-<link href="../activities/week-02-relations-and-keys.html" rel="prev">
+<link href="../activities/week-04-escape-room-schema.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -286,7 +286,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../activities/index.html">Labs and activities</a></li><li class="breadcrumb-item"><a href="../activities/week-03-query-reasoning-lab.html">Week 5</a></li><li class="breadcrumb-item"><a href="../activities/week-03-query-reasoning-lab.html">Lab 2 — Ask it, write it, break it</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../activities/index.html">Labs and activities</a></li><li class="breadcrumb-item"><a href="../activities/week-03-query-reasoning-lab.html">Week 6</a></li><li class="breadcrumb-item"><a href="../activities/week-03-query-reasoning-lab.html">Lab 2 — Ask it, write it, break it</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -418,8 +418,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../lectures/week-04-changing-table-data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Changing table data with SQL</span></a>
+  <a href="../lectures/sql-table-syntax-cheat-sheet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CREATE TABLE and ALTER TABLE cheat sheet</span></a>
   </div>
 </li>
       </ul>
@@ -433,6 +433,12 @@ window.Quarto = {
           </a> 
       </div>
       <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="../lectures/week-04-changing-table-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Changing table data with SQL</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../lectures/week-03-asking-questions-with-sql.html" class="sidebar-item-text sidebar-link">
@@ -500,13 +506,30 @@ window.Quarto = {
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true">
- <span class="menu-text">Week 5</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
+ <span class="menu-text">Week 4</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 show">  
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 ">
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="../activities/week-04-escape-room-schema.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Activity 3 — Design an escape-room database</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="true">
+ <span class="menu-text">Week 6</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a>
+      </div>
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth2 show">
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../activities/week-03-query-reasoning-lab.html" class="sidebar-item-text sidebar-link active">
@@ -519,13 +542,13 @@ window.Quarto = {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="true">
  <span class="menu-text">Assignments</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth1 show">
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../assignments/index.html" class="sidebar-item-text sidebar-link">
@@ -542,6 +565,12 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="../assignments/assignment-02-relational-algebra-practice.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Assignment 2 - Relational algebra practice</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="../assignments/assignment-03-escape-room-data-changes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Assignment 3 - Escape room database changes</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -578,7 +607,7 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../activities/index.html">Labs and activities</a></li><li class="breadcrumb-item"><a href="../activities/week-03-query-reasoning-lab.html">Week 5</a></li><li class="breadcrumb-item"><a href="../activities/week-03-query-reasoning-lab.html">Lab 2 — Ask it, write it, break it</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../activities/index.html">Labs and activities</a></li><li class="breadcrumb-item"><a href="../activities/week-03-query-reasoning-lab.html">Week 6</a></li><li class="breadcrumb-item"><a href="../activities/week-03-query-reasoning-lab.html">Lab 2 — Ask it, write it, break it</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Lab 2 — Ask it, write it, break it</h1>
 <p class="subtitle lead">Translate questions into SQL and test what the query actually means</p>
@@ -586,7 +615,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    A small-group Week 5 SQL lab centered on result contracts, boundary cases, nulls, and concise query explanations.
+    A small-group Week 6 SQL lab centered on result contracts, boundary cases, nulls, and concise query explanations.
   </div>
 </div>
 
@@ -605,7 +634,7 @@ window.Quarto = {
 
 <div class="lesson-hero">
 <div class="lesson-kicker">
-<p>WEEK 5 LAB · SQL, PREDICTION, AND COUNTEREXAMPLES</p>
+<p>WEEK 6 LAB · SQL, PREDICTION, AND COUNTEREXAMPLES</p>
 </div>
 <section id="can-you-make-the-wrong-query-look-right" class="level1">
 <h1>Can you make the wrong query look right?</h1>
@@ -1625,8 +1654,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../activities/week-02-relations-and-keys.html" class="pagination-link" aria-label="Activity 2 - Relations and Keys">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Activity 2 - Relations and Keys</span>
+      <a href="../activities/week-04-escape-room-schema.html" class="pagination-link" aria-label="Activity 3 — Design an escape-room database">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Activity 3 — Design an escape-room database</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

@@ -1,7 +1,7 @@
 ---
 title: "Asking precise questions with SQL"
 subtitle: "Selection, projection, expressions, ordering, nulls, and query tests"
-description: "A first SQL lesson that connects SELECT-FROM-WHERE to relational operations and treats testing as part of query writing."
+description: "Use the video game platform database to connect SELECT-FROM-WHERE to relational operations, calculate derived fields, and test query meaning."
 author: "CSCI 340"
 toc: true
 toc-depth: 3
@@ -23,28 +23,87 @@ A SQL query can be syntactically valid and still answer the wrong question. Writ
 
 ## 1. Our relation for today
 
-We will begin with one relation so that each new clause has a visible purpose. Joins and aggregation come after we are comfortable reasoning about one relation.
+We will use the **video game platform database** from [Defining tables with PostgreSQL](week-03-defining-relations-with-sql.qmd). Its `player_account` and `video_game` tables describe players and games; today we query the `save_file` relation from that lecture's save-file practice.
+
+**One row represents one saved game belonging to a player.** A player can have several saves, including several for the same game. We begin with one relation so each clause has a visible purpose; joins and aggregation come later.
 
 $$
-\text{observation}(\text{observation\_id},\ \text{site\_id},\ \text{sensor\_id},\ \text{observed\_at},\ \text{temperature\_c},\ \text{quality\_note})
+\text{save\_file}(\text{save\_id},\ \text{player\_id},\ \text{game\_id},\ \text{saved\_at},\ \text{completion\_percent},\ \text{slot\_label})
 $$
 
-| observation_id | site_id | sensor_id | observed_at | temperature_c | quality_note |
+| save_id | player_id | game_id | saved_at | completion_percent | slot_label |
 |---:|---:|---:|---|---:|---|
-| 1 | 101 | 501 | 2026-05-01 09:00 | 8.4 | `NULL` |
-| 2 | 101 | 501 | 2026-05-01 10:00 | 9.1 | `NULL` |
-| 3 | 102 | 501 | 2026-05-01 09:00 | 7.8 | suspected ice |
-| 4 | 101 | 501 | 2026-05-01 11:00 | 9.7 | `NULL` |
-| 5 | 103 | 502 | 2026-05-01 09:00 | 20.0 | `NULL` |
-| 6 | 103 | 502 | 2026-05-01 10:00 | 20.1 | reviewed |
-| 7 | 102 | 503 | 2026-05-01 10:00 | `NULL` | sensor offline |
+| 1 | 1 | 1 | 2026-09-24 09:00-06 | 25.00 | `NULL` |
+| 2 | 1 | 1 | 2026-09-24 10:00-06 | 50.00 | `NULL` |
+| 3 | 2 | 1 | 2026-09-24 09:00-06 | 49.99 | favorite |
+| 4 | 1 | 1 | 2026-09-24 11:00-06 | 75.00 | `NULL` |
+| 5 | 3 | 2 | 2026-09-24 09:00-06 | 80.00 | `NULL` |
+| 6 | 3 | 2 | 2026-09-24 10:00-06 | 100.00 | favorite |
+| 7 | 2 | 3 | 2026-09-24 10:00-06 | `NULL` | new run |
 
-Assume that `temperature_c` records degrees Celsius and may be unknown when an instrument fails to produce a reading.
+`completion_percent` is `numeric(5, 2)`: `50.00` means 50% complete, and `NULL` means the game has not reported progress. It does **not** mean zero. Known values range from 0 through 100. A missing `slot_label` means the save is unnamed. Timestamps here include a UTC offset of −06; your database client may display the same instants in another time zone.
+
+<details class="practice-example">
+<summary>Runnable PostgreSQL setup: a fresh instance of our game database</summary>
+
+Open a fresh connection and run this block once. These temporary tables use the definitions from the schema lecture and last only for this connection. They take precedence over permanent tables with the same names. Keep this connection open for all examples; reconnect and rerun the setup to start over.
+
+```sql
+CREATE TEMP TABLE video_game (
+    game_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title text NOT NULL,
+    studio_name text NOT NULL,
+    released_on date,
+    is_available boolean NOT NULL DEFAULT true
+);
+
+CREATE TEMP TABLE player_account (
+    player_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    username text NOT NULL UNIQUE,
+    account_status text NOT NULL
+        CHECK (account_status IN ('active', 'suspended', 'closed'))
+);
+
+CREATE TEMP TABLE save_file (
+    save_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_id bigint NOT NULL REFERENCES player_account(player_id),
+    game_id bigint NOT NULL REFERENCES video_game(game_id),
+    saved_at timestamp with time zone NOT NULL,
+    completion_percent numeric(5, 2)
+        CHECK (completion_percent BETWEEN 0 AND 100),
+    slot_label text
+);
+
+INSERT INTO video_game (title, studio_name, released_on)
+VALUES
+    ('Starfall Cartographers', 'Northline Studio', DATE '2024-10-04'),
+    ('Mosslight', 'Juniper Byte', NULL),
+    ('Circuit Garden', 'Northline Studio', DATE '2026-02-12');
+
+INSERT INTO player_account (username, account_status)
+VALUES ('pixel_fox', 'active'), ('moss_runner', 'active'), ('star_mapper', 'active');
+
+-- In this fresh setup, generated player and game IDs are 1, 2, and 3.
+INSERT INTO save_file
+    (player_id, game_id, saved_at, completion_percent, slot_label)
+VALUES
+    (1, 1, '2026-09-24 09:00-06', 25.00, NULL),
+    (1, 1, '2026-09-24 10:00-06', 50.00, NULL),
+    (2, 1, '2026-09-24 09:00-06', 49.99, 'favorite'),
+    (1, 1, '2026-09-24 11:00-06', 75.00, NULL),
+    (3, 2, '2026-09-24 09:00-06', 80.00, NULL),
+    (3, 2, '2026-09-24 10:00-06', 100.00, 'favorite'),
+    (2, 3, '2026-09-24 10:00-06', NULL, 'new run');
+```
+
+The remaining queries only read these rows, so their predictions stay consistent throughout the lecture.
+
+</details>
 
 ::: {.callout-question appearance="simple"}
 ## Predict before querying
 
-How many observations have a known temperature at least 9°C? Which observation tests whether “at least” was translated correctly?
+How many saves report at least 50% completion? Which save tests whether “at least” was translated correctly?
 :::
 
 ## 2. The basic query shape
@@ -52,24 +111,24 @@ How many observations have a known temperature at least 9°C? Which observation 
 A small SQL query often has three central clauses:
 
 ```sql
-SELECT observed_at, temperature_c
-FROM observation
-WHERE temperature_c >= 9;
+SELECT saved_at, completion_percent
+FROM save_file
+WHERE completion_percent >= 50;
 ```
 
 Read the clauses as answers to three questions:
 
 | Clause | Question it answers | Relational connection |
 |---|---|---|
-| `FROM observation` | Which relation supplies the tuples? | Input relation |
-| `WHERE temperature_c >= 9` | Which tuples qualify? | Selection, $\sigma$ |
-| `SELECT observed_at, temperature_c` | Which expressions appear in the result? | Projection, $\pi$ |
+| `FROM save_file` | Which relation supplies the tuples? | Input relation |
+| `WHERE completion_percent >= 50` | Which tuples qualify? | Selection, $\sigma$ |
+| `SELECT saved_at, completion_percent` | Which expressions appear in the result? | Projection, $\pi$ |
 
 SQL writes `SELECT` first, but a useful conceptual reading is:
 
 ```{mermaid}
 flowchart LR
-    A["FROM<br/>begin with observation"] --> B["WHERE<br/>keep qualifying tuples"]
+    A["FROM<br/>begin with save_file"] --> B["WHERE<br/>keep qualifying tuples"]
     B --> C["SELECT<br/>form result attributes"]
     C --> D["ORDER BY<br/>arrange the display, if requested"]
 
@@ -85,12 +144,12 @@ This is a learning model, not a complete specification of SQL's logical-processi
 
 ### The predicted result
 
-| observed_at | temperature_c |
+| saved_at | completion_percent |
 |---|---:|
-| 2026-05-01 10:00 | 9.1 |
-| 2026-05-01 11:00 | 9.7 |
-| 2026-05-01 09:00 | 20.0 |
-| 2026-05-01 10:00 | 20.1 |
+| 2026-09-24 10:00-06 | 50.00 |
+| 2026-09-24 11:00-06 | 75.00 |
+| 2026-09-24 09:00-06 | 80.00 |
+| 2026-09-24 10:00-06 | 100.00 |
 
 The table shows the qualifying values, but its row order is not guaranteed because the query did not request one.
 
@@ -100,8 +159,8 @@ The `WHERE` clause evaluates a predicate for each candidate tuple. A tuple remai
 
 ```sql
 SELECT *
-FROM observation
-WHERE site_id = 101;
+FROM save_file
+WHERE player_id = 1;
 ```
 
 The asterisk asks for all available attributes. It can be useful during exploration, but named attributes usually communicate a result contract more clearly.
@@ -117,24 +176,24 @@ The asterisk asks for all available attributes. It can be useful during explorat
 | `BETWEEN a AND b` | within an inclusive range |
 
 ```sql
-SELECT observation_id, temperature_c
-FROM observation
-WHERE temperature_c BETWEEN 8 AND 10;
+SELECT save_id, completion_percent
+FROM save_file
+WHERE completion_percent BETWEEN 25 AND 75;
 ```
 
-`BETWEEN 8 AND 10` includes both 8 and 10. Boundary values are therefore particularly valuable tests.
+`BETWEEN 25 AND 75` includes both 25 and 75. Boundary values are therefore particularly valuable tests.
 
 ::: {.activity-checkpoint}
-**Checkpoint:** How would the result differ if the requirement said “warmer than 20°C” rather than “at least 20°C”? Which sample row makes the two predicates distinguishable?
+**Checkpoint:** How would the result differ if the requirement said “more than 80% complete” rather than “at least 80% complete”? Which sample row makes the two predicates distinguishable?
 :::
 
 ### Combining predicates
 
 ```sql
-SELECT observation_id, observed_at, temperature_c
-FROM observation
-WHERE site_id = 101
-  AND temperature_c >= 9;
+SELECT save_id, saved_at, completion_percent
+FROM save_file
+WHERE player_id = 1
+  AND completion_percent >= 50;
 ```
 
 The logical connectives are:
@@ -146,16 +205,16 @@ The logical connectives are:
 Parentheses make intended grouping explicit:
 
 ```sql
-SELECT observation_id, site_id, temperature_c, quality_note
-FROM observation
-WHERE site_id = 103
-  AND (temperature_c >= 20 OR quality_note = 'reviewed');
+SELECT save_id, player_id, completion_percent, slot_label
+FROM save_file
+WHERE player_id = 3
+  AND (completion_percent >= 80 OR slot_label = 'favorite');
 ```
 
 ::: {.callout-warning appearance="simple"}
 ## English “and” and “or” can hide ambiguity
 
-“Find reviewed or warm observations at site 103” could mean `(reviewed OR warm) AND site 103`, but a hurried translation can produce `reviewed OR (warm AND site 103)`. Parentheses document the interpretation.
+“Find favorite or nearly complete saves for player 3” needs a definition of “nearly complete”: here, at least 80% complete. We mean `player 3 AND (favorite OR nearly complete)`. Without parentheses, `player 3 AND favorite OR nearly complete` also admits nearly complete saves from other players. Add an 80%-complete save for player 2 to expose the difference.
 :::
 
 ## 4. Projection shapes the result
@@ -163,80 +222,148 @@ WHERE site_id = 103
 Projection is not merely hiding columns from a display. It defines which expressions and attribute names belong to the query result.
 
 ```sql
-SELECT observation_id, temperature_c
-FROM observation;
+SELECT save_id, completion_percent
+FROM save_file;
 ```
 
 ### Expressions create derived values
 
-SQL expressions can calculate a result without altering the stored relation.
+SQL expressions can calculate a result without altering the stored relation. How much progress remains for each save?
 
 ```sql
 SELECT
-    observation_id,
-    temperature_c,
-    temperature_c * 9.0 / 5.0 + 32 AS temperature_f
-FROM observation;
+    save_id,
+    completion_percent,
+    100 - completion_percent AS remaining_percent,
+    completion_percent / 100.0 AS completion_fraction
+FROM save_file;
 ```
 
-`temperature_f` is an alias for a derived result attribute. The query does not add a Fahrenheit column to `observation`.
+`remaining_percent` and `completion_fraction` are **aliases** for derived result attributes. No columns are added to `save_file`, and no stored values change. At 75% completion, 25 percentage points remain; the completed fraction is 0.75.
 
-::: {.callout-note appearance="simple"}
-## A result is itself tabular
+| save_id | completion_percent | remaining_percent | completion_fraction |
+|---:|---:|---:|---:|
+| 1 | 25.00 | 75.00 | 0.25 |
+| 2 | 50.00 | 50.00 | 0.50 |
+| 3 | 49.99 | 50.01 | 0.4999 |
+| 4 | 75.00 | 25.00 | 0.75 |
+| 5 | 80.00 | 20.00 | 0.80 |
+| 6 | 100.00 | 0.00 | 1.00 |
+| 7 | `NULL` | `NULL` | `NULL` |
 
-SQL queries return relations in the practical SQL sense: named columns and rows that can be displayed, consumed by an application, nested inside another query, or used to define a view.
+Trailing zeros may differ in your client's display. The values above are exact. Arithmetic with unreported progress also produces `NULL`.
+
+### Math can appear in selection, too
+
+**Question:** Which saves have at most 20 percentage points remaining? Return the save ID and remaining progress, with the smallest remainder first.
+
+```sql
+SELECT save_id, 100 - completion_percent AS remaining_percent
+FROM save_file
+WHERE 100 - completion_percent <= 20
+ORDER BY remaining_percent ASC, save_id ASC;
+```
+
+| save_id | remaining_percent |
+|---:|---:|
+| 6 | 0.00 |
+| 5 | 20.00 |
+
+The expression in `WHERE` determines **which rows qualify** (selection). The expression in `SELECT` determines **what values we return** (projection with a calculation). The predicate could also be written `completion_percent >= 80`.
+
+::: {.callout-warning appearance="simple"}
+## A SELECT alias is not available in the same query's WHERE
+
+Writing `WHERE remaining_percent <= 20` in the query above would fail in PostgreSQL: `remaining_percent` is an output name, not a column of `save_file`. Repeat the expression in `WHERE`. An output alias **can** be used in `ORDER BY`, as shown above.
+:::
+
+<details class="practice-example">
+<summary>Preview: name a derived field before filtering it</summary>
+
+A nested query can expose the derived field as an input column for an outer query:
+
+```sql
+SELECT save_id, remaining_percent
+FROM (
+    SELECT save_id, 100 - completion_percent AS remaining_percent
+    FROM save_file
+) AS progress
+WHERE remaining_percent <= 20
+ORDER BY remaining_percent ASC, save_id ASC;
+```
+
+The inner query forms a table named `progress` for this query. The outer query can filter its `remaining_percent` column. It returns the same two rows as the previous query; we will develop nested queries later.
+
+</details>
+
+### Parentheses and numeric types affect the question
+
+To return the **fraction remaining**, subtract first, then divide:
+
+```sql
+SELECT save_id,
+       (100 - completion_percent) / 100.0 AS remaining_fraction
+FROM save_file
+WHERE (100 - completion_percent) / 100.0 <= 0.20;
+```
+
+For save 5, `(100 - 80.00) / 100.0` is `0.20`. Without parentheses, `100 - 80.00 / 100.0` is `99.20`: division occurs before subtraction. The query above returns saves 5 and 6, with fractions 0.20 and 0.00, in unspecified order.
+
+PostgreSQL also distinguishes integer division from decimal division:
+
+```sql
+SELECT 1 / 2 AS integer_result,
+       1 / 2.0 AS decimal_result;
+```
+
+The results are `0` and `0.5`. Our `completion_percent` column is already `numeric`; using `100.0` also makes the intended decimal calculation clear.
+
+::: {.activity-checkpoint}
+**Checkpoint:** Predict the remaining progress for saves 3, 5, 6, and 7. Which save distinguishes `< 20` from `<= 20`? Why does save 7 fail to qualify even though its remaining progress is not known to exceed 20?
 :::
 
 ### Names are part of the interface
 
-Compare:
+`SELECT 100 - completion_percent FROM save_file;` calculates the same remaining values as the aliased expression. Adding `AS remaining_percent` gives people and downstream programs a meaningful column name and communicates the unit.
 
-```sql
-SELECT temperature_c * 9.0 / 5.0 + 32
-FROM observation;
-```
+::: {.callout-note appearance="simple"}
+## A result is itself tabular
 
-with:
-
-```sql
-SELECT temperature_c * 9.0 / 5.0 + 32 AS temperature_f
-FROM observation;
-```
-
-Both calculate the same values. The alias makes the result easier for people and downstream programs to interpret.
+SQL queries return named columns and rows that can be displayed, consumed by an application, nested inside another query, or used to define a view.
+:::
 
 ## 5. Duplicates: `SELECT` is not automatically set projection
 
-Which sites appear in `observation`?
+Which players have saves in `save_file`?
 
 ```sql
-SELECT site_id
-FROM observation;
+SELECT player_id
+FROM save_file;
 ```
 
 The result contains seven rows because SQL normally preserves duplicates:
 
 ```text
-101
-101
-102
-101
-103
-103
-102
+1
+1
+2
+1
+3
+3
+2
 ```
 
-If the question asks for each represented site once, say so:
+If the question asks for each represented player once, say so:
 
 ```sql
-SELECT DISTINCT site_id
-FROM observation;
+SELECT DISTINCT player_id
+FROM save_file;
 ```
 
 ```text
-101
-102
-103
+1
+2
+3
 ```
 
 ::: {.callout-important appearance="simple"}
@@ -249,16 +376,16 @@ This is one important difference between classical relational algebra and SQL: m
 
 ## 6. Ordering is requested, not inherited
 
-To request warm observations from highest to lowest temperature:
+To request saves at least 50% complete, from highest to lowest completion:
 
 ```sql
-SELECT observation_id, temperature_c
-FROM observation
-WHERE temperature_c >= 9
-ORDER BY temperature_c DESC, observation_id ASC;
+SELECT save_id, completion_percent
+FROM save_file
+WHERE completion_percent >= 50
+ORDER BY completion_percent DESC, save_id ASC;
 ```
 
-The second ordering expression breaks ties. Without it, rows with equal temperatures could appear in either order.
+The second ordering expression breaks ties. Without it, rows with equal completion percentages could appear in either order.
 
 | Keyword | Direction |
 |---|---|
@@ -268,37 +395,37 @@ The second ordering expression breaks ties. Without it, rows with equal temperat
 `ORDER BY` controls the presentation of the query result. It is not part of classical relational algebra because a mathematical relation is unordered.
 
 ::: {.activity-checkpoint}
-**Checkpoint:** If `observation_id` increases over time in today's data, is `ORDER BY observation_id` a reliable substitute for `ORDER BY observed_at`? What unstated assumption would that make?
+**Checkpoint:** Is `ORDER BY save_id` a reliable substitute for `ORDER BY saved_at`? Use saves 2 and 3 to test the assumption that a larger ID always means a later save time.
 :::
 
 ## 7. `NULL` is not an ordinary value
 
-Observation 7 has no recorded temperature. SQL uses `NULL` to represent missing or inapplicable information, but `NULL` does not behave like a normal number or string.
+Save 7 has no reported completion percentage. SQL uses `NULL` to represent missing or inapplicable information, but `NULL` does not behave like a normal number or string.
 
 This predicate does **not** find it:
 
 ```sql
-WHERE temperature_c = NULL
+WHERE completion_percent = NULL
 ```
 
 Use the dedicated predicate:
 
 ```sql
-SELECT observation_id, quality_note
-FROM observation
-WHERE temperature_c IS NULL;
+SELECT save_id, slot_label
+FROM save_file
+WHERE completion_percent IS NULL;
 ```
 
 ### Why equality fails
 
-If `NULL` represents an unknown temperature, then the truth of “unknown temperature equals 20” is itself unknown. The same is true of “unknown temperature does not equal 20.”
+If `NULL` represents unknown progress, then the truth of “unknown progress equals 80” is itself unknown. The same is true of “unknown progress does not equal 80.”
 
 | Predicate | Result |
 |---|---|
-| `20 = 20` | `TRUE` |
-| `20 = 9` | `FALSE` |
-| `NULL = 20` | `UNKNOWN` |
-| `NULL <> 20` | `UNKNOWN` |
+| `80 = 80` | `TRUE` |
+| `80 = 50` | `FALSE` |
+| `NULL = 80` | `UNKNOWN` |
+| `NULL <> 80` | `UNKNOWN` |
 | `NULL IS NULL` | `TRUE` |
 
 A `WHERE` clause retains only tuples for which its predicate is `TRUE`. Tuples producing `FALSE` or `UNKNOWN` are filtered out.
@@ -306,43 +433,43 @@ A `WHERE` clause retains only tuples for which its predicate is `TRUE`. Tuples p
 ::: {.callout-caution appearance="simple"}
 ## `NULL` does not explain why a value is absent
 
-A missing value might mean unknown, not yet measured, not applicable, withheld, or sensor failure. If the distinction matters, represent the reason explicitly rather than asking one marker to carry several meanings.
+A missing completion value might mean progress is not yet reported or the game does not track it. If the distinction matters, represent the reason explicitly rather than asking one marker to carry several meanings.
 :::
 
-### Include warm or missing readings
+### Include nearly complete saves or unreported progress
 
 ```sql
-SELECT observation_id, temperature_c, quality_note
-FROM observation
-WHERE temperature_c >= 20
-   OR temperature_c IS NULL;
+SELECT save_id, completion_percent, slot_label
+FROM save_file
+WHERE completion_percent >= 80
+   OR completion_percent IS NULL;
 ```
 
 This query makes the two qualifying cases explicit.
 
 ## 8. One question in SQL and algebra
 
-Return the identifiers and temperatures of observations at least 20°C.
+Return the identifiers and completion percentages of saves at least 80% complete.
 
 ```sql
-SELECT observation_id, temperature_c
-FROM observation
-WHERE temperature_c >= 20;
+SELECT save_id, completion_percent
+FROM save_file
+WHERE completion_percent >= 80;
 ```
 
 One relational-algebra expression for the same intention is:
 
 $$
-\pi_{\text{observation\_id},\ \text{temperature\_c}}
+\pi_{\text{save\_id},\ \text{completion\_percent}}
 \left(
-\sigma_{\text{temperature\_c} \ge 20}(\text{observation})
+\sigma_{\text{completion\_percent} \ge 80}(\text{save\_file})
 \right)
 $$
 
 ```{mermaid}
 flowchart LR
-    A["observation<br/>6 attributes · 7 tuples"] --> B["σ temperature_c ≥ 20<br/>keep qualifying tuples"]
-    B --> C["π observation_id, temperature_c<br/>keep requested attributes"]
+    A["save_file<br/>6 attributes · 7 tuples"] --> B["σ completion_percent ≥ 80<br/>keep qualifying tuples"]
+    B --> C["π save_id, completion_percent<br/>keep requested attributes"]
     C --> D["result<br/>2 attributes · 2 tuples"]
 
     classDef relation fill:#eaf4f7,stroke:#247487,color:#173b4d;
@@ -357,37 +484,39 @@ The algebra makes the composition visible. The SQL is the practical language we 
 
 Suppose the requirement is:
 
-> List each site represented by an observation at or above 20°C, once per site.
+> List each player with a save at least 80% complete, once per player.
 
 A disciplined process is:
 
 ### Step 1: State the result contract
 
-- one output attribute: `site_id`;
-- one row per represented site, not per observation;
-- include a reading exactly equal to 20;
-- exclude unknown temperatures.
+- one output attribute: `player_id`;
+- one row per qualifying player, not per save;
+- include a save exactly 80% complete;
+- exclude unreported progress.
 
 ### Step 2: Write a candidate
 
 ```sql
-SELECT DISTINCT site_id
-FROM observation
-WHERE temperature_c >= 20;
+SELECT DISTINCT player_id
+FROM save_file
+WHERE completion_percent >= 80;
 ```
 
 ### Step 3: Construct distinguishing cases
 
 | Test row or condition | Mistake it can expose |
 |---|---|
-| A reading exactly equal to 20.0 | `>` used instead of `>=` |
-| Two qualifying readings at the same site | missing `DISTINCT` |
-| A row with `temperature_c IS NULL` | incorrect assumptions about missing values |
-| A warm reading at a second site | query accidentally hard-codes one site |
+| A player's only qualifying save is exactly 80% complete | `>` used instead of `>=` |
+| Two qualifying saves for the same player | missing `DISTINCT` |
+| A row with `completion_percent IS NULL` | incorrect assumptions about missing values |
+| A qualifying save for a second player | query accidentally hard-codes one player |
 
 ### Step 4: Predict before executing
 
-For the supplied instance, the expected result is one row containing `103`.
+For the supplied instance, the expected result is one row containing `3`: saves 5 and 6 qualify, but both belong to player 3. Add a qualifying save for player 2 to test the final case above.
+
+**A boundary can be hidden by another row.** Changing `>= 80` to `> 80` still returns player 3 because save 6 is 100% complete. To expose that mistake in this player-level result, give player 2 a save exactly 80% complete and no save above 80%. The correct query then returns players 2 and 3; the incorrect query returns only player 3.
 
 ### Step 5: Compare evidence with the contract
 
@@ -425,11 +554,12 @@ The phrase **define one result row** is especially important. It prevents many l
 `SELECT`, `FROM`, and `WHERE` are compact, but the real skill is translating a question into a precise result contract and then testing whether the query satisfies it.
 :::
 
-## Continue to Lab 2
+## Continue to Lab 2 in Week 6
 
-Apply this process in [Lab 2 — Ask it, write it, break it](../activities/week-03-query-reasoning-lab.qmd). Your group will translate questions into SQL, predict results, and design counterexamples for plausible incorrect queries.
+Apply this process in [Lab 2 — Ask it, write it, break it](../activities/week-03-query-reasoning-lab.qmd). The lab transfers the same reasoning to stream-temperature observations. Your group will translate questions into SQL, predict results, and design counterexamples for plausible incorrect queries.
 
 ## Sources and further reading
 
 - Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapters 2-3.
 - PostgreSQL documentation, [Queries](https://www.postgresql.org/docs/current/queries.html) and [Comparison Functions and Operators](https://www.postgresql.org/docs/current/functions-comparison.html).
+- PostgreSQL documentation, [`SELECT` output names](https://www.postgresql.org/docs/current/sql-select.html) and [Mathematical Functions and Operators](https://www.postgresql.org/docs/current/functions-math.html).
