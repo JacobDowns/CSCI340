@@ -333,20 +333,7 @@ The inner query forms a table named `progress` for this query. The outer query c
 
 </details>
 
-### Parentheses and numeric types affect the question
-
-**Question:** Which saves have at most one-fifth of the game left? Show each save's ID and the **fraction remaining**, where `0.20` means 20% remains.
-
-Subtract first, then divide:
-
-```sql
-SELECT save_id,
-       (100 - completion_percent) / 100.0 AS remaining_fraction
-FROM save_file
-WHERE (100 - completion_percent) / 100.0 <= 0.20;
-```
-
-For save 5, `(100 - 80.00) / 100.0` is `0.20`. Without parentheses, `100 - 80.00 / 100.0` is `99.20`: division occurs before subtraction. The query above returns saves 5, 6, and 8, with fractions 0.20, 0.00, and 0.20, in unspecified order.
+### Integer and decimal division
 
 **Question:** Does dividing two integers produce the same result as division with a decimal operand? Return one row with both calculations of one-half side by side.
 
