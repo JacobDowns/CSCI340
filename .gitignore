@@ -28,6 +28,7 @@ __pycache__/
 # Instructor-only reference materials
 /instructor-solutions/
 /resources/
+/review/
 
 # Editors and operating systems
 .vscode/
