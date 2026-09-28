@@ -4,6 +4,8 @@ project:
   resources:
     - "notebooks/assignment-01-relational-operators-starter.ipynb"
     - "assignments/week-05-escape-room-data-changes.docx"
+    - "activities/lab-02-video-game-setup.sql"
+    - "activities/lab-02-sql-joins-response-template.docx"
   render:
     - "index.qmd"
     - "schedule.qmd"
@@ -66,6 +68,10 @@ website:
             contents:
               - lectures/week-04-changing-table-data.qmd
               - lectures/week-03-asking-questions-with-sql.qmd
+          - section: Week 6
+            contents:
+              - lectures/week-06-joining-tables-with-sql.qmd
+              - lectures/week-06-introduction-to-er-diagrams.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd

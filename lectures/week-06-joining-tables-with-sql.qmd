@@ -1,0 +1,164 @@
+---
+title: "Joining tables with SQL"
+subtitle: "From relational-algebra joins to players and their saved games"
+description: "A short introduction to INNER JOIN, ON, table aliases, and selection across related tables, using the video game platform database."
+author: "CSCI 340"
+toc: true
+toc-depth: 2
+code-fold: false
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 6 · SQL JOINS
+:::
+
+# Which player saved which game?
+
+A save stores IDs. The game and player tables store the titles and usernames people recognize. A join lets us bring those facts together in one query result.
+
+:::
+
+**Previous:** [Asking precise questions with SQL](week-03-asking-questions-with-sql.qmd). **Algebra refresher:** [Join combines related tuples](week-02-relational-algebra.qmd#join-combines-related-tuples).
+
+## 1. Follow the relationships
+
+We return to the same video game platform, players, and eight saves from the previous lecture. Use the [Lab 2 setup and data tables](../activities/week-03-query-reasoning-lab.qmd#set-up-the-video-game-data) to reset `video_game`, `player_account`, and `save_file` and load the supplied rows. Run the setup in your personal schema; the same tables serve both this lecture and the activity.
+
+| Table | One row represents | Relevant attributes |
+|---|---|---|
+| `video_game` | One game | `game_id` (primary key), `title`, `studio_name` |
+| `player_account` | One player account | `player_id` (primary key), `username` |
+| `save_file` | One saved game | `save_id` (primary key), `game_id` and `player_id` (foreign keys), save time, completion percentage, slot label |
+
+- A save's `game_id` refers to a game's `game_id`.
+- A save's `player_id` refers to a player's `player_id`.
+- One player can have several saves, including several for the same game.
+
+For example, save **8** has `game_id = 3` and `player_id = 2`: **moss_runner** saved **Circuit Garden**. Matching player 2 to game 2 would describe a different relationship.
+
+## 2. Translate the algebra join
+
+Recall that a theta join keeps the pairs satisfying a predicate:
+
+$$
+S \bowtie_{S.\text{game\_id} = G.\text{game\_id}} G
+=
+\sigma_{S.\text{game\_id} = G.\text{game\_id}}(S \times G)
+$$
+
+Here $S$ means saves and $G$ means games. Eight saves and three games give 24 possible pairs; matching game IDs keeps eight pairs. This describes the logical result, not a requirement that PostgreSQL physically construct all 24 pairs.
+
+**Information wanted:** For every save, show its save ID and the title of the game it belongs to, ordered by save ID.
+
+```sql
+SELECT s.save_id, g.title
+FROM save_file AS s
+INNER JOIN video_game AS g
+    ON s.game_id = g.game_id
+ORDER BY s.save_id;
+```
+
+| save_id | title |
+|---:|---|
+| 1 | Starfall Cartographers |
+| 2 | Starfall Cartographers |
+| 3 | Starfall Cartographers |
+| 4 | Starfall Cartographers |
+| 5 | Mosslight |
+| 6 | Mosslight |
+| 7 | Circuit Garden |
+| 8 | Circuit Garden |
+
+- `AS s` and `AS g` give tables short names **within this query**; they do not rename stored tables.
+- `s.game_id` identifies which table supplies the column. An unqualified `game_id` is ambiguous here because both tables have it.
+- `ON` states which pairs match. A foreign key does not write the join condition for us.
+- `INNER JOIN` keeps matching pairs. `JOIN` alone means the same thing; an unmatched row contributes no result row.
+
+In this schema, each save has a non-null foreign key referencing a game's unique primary key, so it matches exactly one game. Joins in general can have zero, one, or several matches per input row.
+
+### Aliases are optional
+
+To retrieve the same save IDs and game titles, we can use full `table.column` names instead:
+
+```sql
+SELECT save_file.save_id, video_game.title
+FROM save_file
+JOIN video_game
+    ON save_file.game_id = video_game.game_id
+ORDER BY save_file.save_id;
+```
+
+- Aliases shorten references; they are not required for this join.
+- Once a table has an alias, use that alias in this query: after `FROM save_file AS s`, write `s.save_id`, not `save_file.save_id`.
+- The keyword `AS` is also optional: `FROM save_file s` means the same thing as `FROM save_file AS s`.
+
+## 3. Filter the joined result
+
+**Information wanted:** Which saves for Mosslight have at least 80% completion? Show save ID, game title, and completion percentage, ordered by save ID.
+
+```sql
+SELECT s.save_id, g.title, s.completion_percent
+FROM save_file AS s
+JOIN video_game AS g
+    ON s.game_id = g.game_id
+WHERE s.completion_percent >= 80
+  AND g.title = 'Mosslight'
+ORDER BY s.save_id;
+```
+
+| save_id | title | completion_percent |
+|---:|---|---:|
+| 5 | Mosslight | 80.00 |
+| 6 | Mosslight | 100.00 |
+
+Read the query as a composition of familiar operations:
+
+1. **Join:** combine saves with their games.
+2. **Select rows:** keep saves for Mosslight with at least 80% completion.
+3. **Project columns:** return the requested attributes.
+4. **Order:** sort the output.
+
+We put the relationship in `ON` and the result filters in `WHERE` to make each purpose visible. For inner joins, a filter can often be moved between these clauses without changing the result; this is not a general rule for outer joins.
+
+## 4. Bring in the third table
+
+**Information wanted:** For every save labeled `favorite`, show the username, game title, and save ID, ordered by save ID.
+
+```sql
+SELECT s.save_id, p.username, g.title
+FROM save_file AS s
+JOIN video_game AS g
+    ON s.game_id = g.game_id
+JOIN player_account AS p
+    ON s.player_id = p.player_id
+WHERE s.slot_label = 'favorite'
+ORDER BY s.save_id;
+```
+
+| save_id | username | title |
+|---:|---|---|
+| 3 | moss_runner | Starfall Cartographers |
+| 6 | star_mapper | Mosslight |
+
+Each join adds a related record using its own condition. The save links the game and player; matching a player's primary key directly to a game's primary key would not tell us who saved what.
+
+## 5. Decide what one result row means
+
+The queries above return **one row per save**. Repeated game titles or usernames are expected when there are multiple saves.
+
+- Keep `save_id` when the question asks for individual saves.
+- If the question asks for each player once, select `DISTINCT p.player_id, p.username`. SQL does not remove duplicate output rows automatically.
+- `DISTINCT` compares the entire selected row. Including `save_id` would keep different saves distinct, even when they belong to the same player.
+
+**Check together:** If the saves-to-games query returns eight rows, does that prove its condition is correct? Trace save 8 through the IDs to check its title, not just the result count.
+
+::: {.takeaway-panel}
+## Continue to Lab 2
+
+In [Lab 2 — Follow the save](../activities/week-03-query-reasoning-lab.qmd), connect players, games, and saves using selection and joins, then test whether the query connected the right records. You may collaborate; each student submits an individual Word document.
+:::
+
+**Next:** [Modeling a game world with ER diagrams](week-06-introduction-to-er-diagrams.qmd) moves from querying an existing design to describing entities, relationships, and rules.
+
+**Reference:** [PostgreSQL: joined tables and aliases](https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-JOIN).

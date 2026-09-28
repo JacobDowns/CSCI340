@@ -3,7 +3,7 @@ title: "Labs and activities"
 subtitle: "Apply an idea, produce a small artifact, and make your reasoning visible"
 ---
 
-Labs and activities are short small-group exercises that make the course ideas concrete.
+Labs and activities are short exercises that make the course ideas concrete. Each page explains how you may collaborate and what to submit.
 
 ## Week 1
 
@@ -20,8 +20,8 @@ Labs and activities are short small-group exercises that make the course ideas c
 
 ## Week 6
 
-- [Lab 2 — Ask it, write it, break it](week-03-query-reasoning-lab.qmd): translate questions into SQL, predict results, and construct boundary cases that distinguish correct queries from plausible mistakes.
+- [Lab 2 — Follow the save](week-03-query-reasoning-lab.qmd): practice selection and joins with video game saves, games, and players, then check the connections in a query result. Group work is welcome; each student submits their own Word document.
 
 ## Submission principle
 
-Lab submissions are deliberately small. They should preserve enough reasoning that the instructor can see what the group tried, what it concluded, and which assumptions remain unresolved. The detailed submission location and deadline will be announced with each offering.
+Lab submissions are deliberately small. They should preserve enough reasoning that the instructor can see what you tried, what you concluded, and which assumptions remain unresolved. The detailed submission location and deadline will be announced with each offering.

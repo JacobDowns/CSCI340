@@ -461,6 +461,30 @@ If `NULL` represents unknown progress, then the truth of “unknown progress equ
 
 A `WHERE` clause retains only tuples for which its predicate is `TRUE`. Tuples producing `FALSE` or `UNKNOWN` are filtered out.
 
+### Remember the difference between CHECK and WHERE
+
+The same condition can be used to validate stored data or filter query results, but the two contexts treat `UNKNOWN` differently:
+
+| Condition evaluates to | Passes this `CHECK`? | Included by `WHERE`? |
+|---|---|---|
+| `TRUE` | Yes | Yes |
+| `FALSE` | No | No |
+| `UNKNOWN` | Yes | No |
+
+Our table has `CHECK (completion_percent BETWEEN 0 AND 100)`. For save 7, whose progress is `NULL`, this condition is `UNKNOWN`. The row passes this check and can be stored.
+
+**Question:** Which saves have a reported completion percentage in the valid range? Show their IDs and completion percentages.
+
+```sql
+SELECT save_id, completion_percent
+FROM save_file
+WHERE completion_percent BETWEEN 0 AND 100;
+```
+
+This returns every sample save **except save 7**: the same condition is `UNKNOWN` for that row, so `WHERE` excludes it. The row remains in the table.
+
+A range `CHECK` alone does not require a value. Add `NOT NULL` when a value must be present; our schema intentionally allows unreported progress.
+
 ::: {.callout-caution appearance="simple"}
 ## `NULL` does not explain why a value is absent
 
@@ -587,12 +611,13 @@ The phrase **define one result row** is especially important. It prevents many l
 `SELECT`, `FROM`, and `WHERE` are compact, but the real skill is translating a question into a precise result contract and then testing whether the query satisfies it.
 :::
 
-## Continue to Lab 2 in Week 6
+## Continue to joins and Lab 2 in Week 6
 
-Apply this process in [Lab 2 — Ask it, write it, break it](../activities/week-03-query-reasoning-lab.qmd). The lab transfers the same reasoning to stream-temperature observations. Your group will translate questions into SQL, predict results, and design counterexamples for plausible incorrect queries.
+Next, [Joining tables with SQL](week-06-joining-tables-with-sql.qmd) connects these query ideas to relational-algebra joins. Practice in [Lab 2 — Follow the save](../activities/week-03-query-reasoning-lab.qmd) using video game saves, games, and players. You may collaborate, but each student submits their own Word document.
 
 ## Sources and further reading
 
 - Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapters 2-3.
 - PostgreSQL documentation, [Queries](https://www.postgresql.org/docs/current/queries.html) and [Comparison Functions and Operators](https://www.postgresql.org/docs/current/functions-comparison.html).
+- PostgreSQL documentation, [`CHECK` constraints](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS) and [`WHERE` filtering](https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-WHERE).
 - PostgreSQL documentation, [`SELECT` output names](https://www.postgresql.org/docs/current/sql-select.html) and [Mathematical Functions and Operators](https://www.postgresql.org/docs/current/functions-math.html).
