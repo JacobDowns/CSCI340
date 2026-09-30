@@ -1,10 +1,11 @@
 ---
 title: "Modeling a game world with ER diagrams"
 subtitle: "From game rules to entities, attributes, relationships, and constraints"
-description: "An introduction to the entity-relationship model using characters, items, inventories, and locations, following the core concepts in Chapter 6 of Database System Concepts."
+description: "Model characters, items, locations, guilds, and quests with textbook ER notation for keys, cardinality, and participation."
 author: "CSCI 340"
 toc: true
 toc-depth: 2
+lightbox: true
 ---
 
 ::: {.lesson-hero}
@@ -14,12 +15,12 @@ WEEK 6 · ER MODELING FOUNDATIONS
 
 # What must a game remember about its world?
 
-A character enters a village, picks up a sword, and equips it. The game must remember who the character is, where they are, which sword they carry, and whether it is equipped. Before choosing tables, we need a model of those objects and the rules connecting them.
+A character enters a village, picks up a sword, joins a guild, and accepts a quest. The game must remember the character, their possessions, and their progress. Before choosing tables, we need a model of those objects and the rules connecting them.
 :::
 
 **Previous:** [Joining tables with SQL](week-06-joining-tables-with-sql.qmd).
 
-This first ER lecture follows the core concepts of *Database System Concepts*, 7th edition, [Chapter 6](https://www.db-book.com/slides-dir/PDF-dir/ch6.pdf). We use an original game-world example and a small diagram legend. Later lectures will extend the model and convert it into relational schemas.
+This first ER lecture follows the core concepts and diagram notation of *Database System Concepts*, 7th edition, [Chapter 6](https://www.db-book.com/slides-dir/PDF-dir/ch6.pdf). We build an original game-world example in stages. Later lectures will extend the model and convert it into relational schemas.
 
 ## 1. Start with the game rules
 
@@ -34,20 +35,21 @@ For our first model, assume:
 - Items without a carrier are allowed. We will add ground and storage locations for those items in a later version.
 - Characters have names and stats; items have names, weights, and other properties. Names need not be unique.
 
-We are modeling the **current state** of one game world. Movement history, item stacks, equipment slots, and quests will give us extensions to examine later.
+Next, add some social and quest rules:
+
+- A **guild** is an organization, such as the Lantern Watch. A character may belong to at most one guild; every guild has at least one member.
+- Every guild has exactly one leader. A character may lead at most one guild, and must be a member of the guild they lead.
+- A **quest** is a task offered by exactly one guild, such as “Light the Old Beacon.” A guild may offer several quests or none.
+- A character may undertake many quests, and many characters may undertake the same quest. Some characters have no quests, and some quests have no participants.
+- Record each character's quest status separately. For now, a character can undertake a particular quest only once; completed or abandoned attempts stay in the record.
+
+We model one game world: current locations, inventories, and guild memberships, plus retained quest progress. Movement history, repeatable quests, and item stacks would require further design decisions.
 
 These are requirements, not conclusions drawn from a few example records. A sample can expose a violated rule; it cannot establish every rule that future data must obey.
 
-### Where an ER model fits
-
-| Design stage | Question we answer | Example decision |
-|---|---|---|
-| Requirements | What must the game remember and allow? | Two characters can each carry a different iron sword. |
-| Conceptual design | What objects, associations, and rules describe that need? | Model individual items and their current carriers. |
-| Logical design | How will a relational schema represent the model? | Choose tables and foreign keys for those associations. |
-| Physical design | How will the system store and access the data? | Choose indexes for inventory lookups. |
-
+::: {.callout-note appearance="simple"}
 An **entity-relationship model**, or **ER model**, supports conceptual design. Its diagram makes the model visible; written requirements explain assumptions the drawing cannot fully capture.
+:::
 
 ## 2. Entities and entity sets
 
@@ -62,6 +64,8 @@ An **entity set** is a collection of entities with the same kind of properties. 
 | One particular iron sword | `ITEM` | `item_id = 501` |
 | Another iron sword | `ITEM` | `item_id = 502` |
 | Ashvale Village | `LOCATION` | `location_id = 10` |
+| The Lantern Watch | `GUILD` | `guild_id = 20` |
+| Light the Old Beacon | `QUEST` | `quest_id = 301` |
 
 **Discuss:** Why would an item name be insufficient to identify the sword Mira is carrying?
 
@@ -83,8 +87,17 @@ An **attribute** records a property of an entity. Its **domain** describes the v
 | `CHARACTER` | `character_id` | `name`, `control_kind`, `health`, `max_health`, `base_strength` |
 | `ITEM` | `item_id` | `name`, `weight`, `durability` |
 | `LOCATION` | `location_id` | `name`, `description` |
+| `GUILD` | `guild_id` | `name`, `motto` |
+| `QUEST` | `quest_id` | `title`, `description`, `reward_gold` |
 
-For this game, `control_kind` is either `player` or `npc`. Health must be between zero and the character's maximum health. Item weight is a nonnegative number in the game's chosen weight units. These meanings come before the PostgreSQL types.
+For this game:
+
+- `control_kind` is either `player` or `npc`.
+- Health must be between zero and the character's maximum health.
+- Item weight is nonnegative, in the game's chosen weight units.
+- `reward_gold` is the nonnegative amount awarded to a character for completing a quest.
+
+These meanings come before the PostgreSQL types. A quest's title and reward describe the shared task; one character's progress on it describes an association.
 
 ### Identify objects reliably
 
@@ -138,14 +151,39 @@ For **each direction** of a binary relationship, ask two questions:
 
 | Cardinality | Meaning | Example under an explicit game rule |
 |---|---|---|
-| One-to-one | At most one on either side | Each character has at most one personal quest journal; each journal belongs to at most one character. |
+| One-to-one | At most one on either side | Each guild has at most one leader; each character leads at most one guild. |
 | One-to-many | One object can relate to many on the other side | A character can carry many items; an item has at most one carrier. |
 | Many-to-one | The same pattern read in the other direction | Many items can be carried by one character. |
-| Many-to-many | Multiple associations are allowed in both directions | A character can complete many quests; a quest can be completed by many characters. |
+| Many-to-many | Multiple associations are allowed in both directions | A character can undertake many quests; a quest can have many participating characters. |
 
-The journal and quest examples are possible extensions, not additional entities required in our first diagram.
+Requiring every guild to actually have a leader is a separate **participation** constraint.
 
 “Many” means that multiple associations are allowed, not that every entity must have multiple matches today.
+
+### See the four patterns
+
+These illustrations follow the set-and-connection approach in the book's [mapping-cardinality slides](https://www.db-book.com/slides-dir/PDF-dir/ch6.pdf#page=21), using original example instances. Read each pattern **from A to B**.
+
+- Each oval contains an **entity set**; each labeled dot is one entity.
+- Each connecting line is one **relationship instance** between two entities.
+- Unconnected dots are allowed here: cardinality describes the maximum, while participation determines whether a match is required.
+
+![One-to-one and one-to-many: compare how many lines can meet each entity.](figures/er-cardinality-one-to-one-one-to-many.svg){fig-alt="Two sample mappings from A to B. One-to-one: a1 connects to b1, a2 to b3, and a3 to b4; no entity has more than one connection. One-to-many: a1 connects to both b1 and b2, a2 to b3, and a3 to b4; each B entity has at most one A partner. Both examples include unconnected entities."}
+
+![Many-to-one and many-to-many: several entities may share a partner.](figures/er-cardinality-many-to-one-many-to-many.svg){fig-alt="Two sample mappings from A to B. Many-to-one: a1 and a2 both connect to b1, while a3 connects to b3; each A entity has at most one B partner. Many-to-many: a1 connects to b1 and b2, a2 to b2 and b3, and a3 to b3; entities on either side can have multiple partners. Both examples include unconnected entities."}
+
+These are **sample instances**, not the ER schema diagrams introduced below. A sample can be compatible with a cardinality rule without proving that rule; the application's requirements determine which future associations are allowed.
+
+### Cardinality depends on what we are modeling
+
+The entity sets alone do not determine cardinality. We must first define **what the relationship represents**, including whether it describes the present or the past.
+
+- **Where is each character now?** `located_in` is **many-to-one** from `CHARACTER` to `LOCATION`: each character has one current location, while a location may contain many characters.
+- **Which locations has each character visited?** `has_visited` would be **many-to-many**: a character may have visited many locations, and each location may have been visited by many characters.
+
+If Mira moves from Ashvale Village to the Old Mine, her current-location association changes. A visited-locations relationship would retain both places.
+
+**Our diagram uses `located_in` to model the present state.** Neither cardinality is universally correct for characters and locations; each answers a different question. Recording every separate visit, including return visits and times, would require more detail than a list of character–location pairs.
 
 ### Participation describes whether an association is required
 
@@ -167,48 +205,95 @@ No. Partial participation allows empty locations, even when none happen to be em
 
 ## 6. Draw and read the model
 
-We will use rectangles for entity sets and diamonds for relationship sets, as in the book. We label keys with `(key)` rather than underlining them, and use numeric minimum–maximum labels for participation and cardinality.
+### Our diagram legend
 
-**Our label convention:** A label on an entity's connection says how many instances of that relationship **each entity in that set** may participate in. Read the label with the adjacent entity, not as an arrow pointing toward the other box.
+We will use the book's **arrow notation**, consistently across these diagrams. Select a diagram to enlarge it.
 
-| Label | Meaning for each entity on that connection |
+| Symbol | Meaning |
 |---|---|
-| `0..1` | No association is required; at most one is allowed. |
-| `1..1` | Exactly one association is required. |
-| `0..*` | Zero or more associations are allowed. |
-| `1..*` | At least one association is required; multiple are allowed. |
+| Rectangle | An entity set; its attributes appear inside. |
+| Solid underline beneath an attribute | A chosen primary-key attribute. Underline all attributes if the key is composite. |
+| Diamond | A relationship set. |
+| Arrow from a relationship toward an entity set | The **one** side: an entity on the opposite side can be associated with **at most one** entity here. |
+| Connection without an arrowhead | The **many** side: multiple related entities are allowed. |
+| Single connection line | **Partial participation**: an entity on this connection may have no association. |
+| Two parallel connection lines | **Total participation**: every entity on this connection must participate in at least one association. |
+| Attribute box attached to a diamond by a dashed line | Attributes of the relationship, rather than of either entity set. |
 
-The drawing includes selected attributes to keep the relationships easy to read.
+**Arrows describe the maximum; single or double lines describe participation.** An arrow does not mean “exactly one,” indicate data flow, or specify a SQL join direction.
 
-```{mermaid}
-flowchart LR
-    L["LOCATION<br/>location_id (key)<br/>name"]
-    R{"located_in"}
-    C["CHARACTER<br/>character_id (key)<br/>name<br/>control_kind<br/>health"]
-    K{"carries"}
-    I["ITEM<br/>item_id (key)<br/>name<br/>weight"]
-    L ---|"0..*"| R
-    R ---|"1..1"| C
-    C ---|"0..*"| K
-    K ---|"0..1"| I
+For a binary relationship:
 
-    classDef entity fill:#eaf4f7,stroke:#247487,color:#173b4d;
-    classDef relationship fill:#f7f3ea,stroke:#9b7b36,color:#3f321c;
-    linkStyle default stroke:#52616b,marker-end:none,marker-start:none;
-    class L,C,I entity;
-    class R,K relationship;
-```
+- Arrows toward **both** entity sets mean one-to-one.
+- An arrow toward **only one** entity set means many-to-one toward that set (or one-to-many read in reverse).
+- **No arrows** mean many-to-many.
 
-Read the drawing aloud in both directions:
+### Characters, locations, and items
 
-- Each location contains **zero or more characters**; each character is in **exactly one location**.
-- Each character carries **zero or more items**; each item has **zero or one carrier**.
+![Characters, locations, and items. Selected attributes are shown.](figures/er-world-core.svg){fig-alt="CHARACTER participates totally in located_in; located_in points to LOCATION. Each character has exactly one location, and a location can contain zero or more characters. carries points to CHARACTER; both sides participate partially. Each item has zero or one carrier, and each character carries zero or more items."}
 
-**Where are the foreign keys?** The conceptual diagram expresses associations through relationships. It does not repeat a location ID inside `CHARACTER` or a carrier ID inside `ITEM`. In a relational implementation, foreign-key columns can represent these associations. We will study that conversion explicitly later.
+Read the drawing in both directions:
 
-Other ER notations, including crow's-foot diagrams, place or draw cardinalities differently. Always check the legend before interpreting an unfamiliar diagram.
+- **Location:** the arrow points to `LOCATION`, so each character has **at most one** location. The double line beside `CHARACTER` requires a location. Together, these mean **exactly one**.
+- **Occupants:** there is no arrow toward `CHARACTER` in `located_in`, so a location may contain many characters. The single line beside `LOCATION` allows it to be empty.
+- **Inventory:** the arrow from `carries` points to `CHARACTER`, so an item has at most one carrier. Single lines allow an uncarried item or a character with no items.
 
-## 7. Some attributes belong to relationships
+Notice that the arrow and double line establishing “each character has exactly one location” appear on **opposite sides** of the relationship diamond. They answer different questions.
+
+**Where are the foreign keys?** Relationships express the associations in this conceptual model. We do not also list a location ID inside `CHARACTER` or a carrier ID inside `ITEM`. Foreign-key columns enter when we convert the model into relations.
+
+Other ER notations, including crow's-foot diagrams, draw cardinality differently. Always check the legend before interpreting an unfamiliar diagram.
+
+## 7. Add guilds and quests
+
+**Question:** How do we distinguish belonging to a guild, leading a guild, and accepting one of its quests?
+
+These are separate relationships, even when they connect the same entity sets. This diagram extends the same `CHARACTER` entity set from above; it omits items and locations to keep the new relationships readable.
+
+![Guild membership, leadership, and quest participation.](figures/er-guilds-quests.svg){fig-alt="CHARACTER and GUILD are connected by member_of and led_by. member_of points only to GUILD; led_by points to both entities. GUILD has double lines for both relationships. CHARACTER and QUEST have an optional many-to-many undertakes relationship, with accepted_at and status attributes. offers points to GUILD and has a double line to QUEST."}
+
+| Relationship | Rule in both directions | How it appears |
+|---|---|---|
+| `member_of` | A character belongs to zero or one guild; a guild has one or more members. | Arrow to `GUILD`; double line beside `GUILD`. |
+| `led_by` | A guild has exactly one leader; a character leads zero or one guild. | Arrows to both sets; double line beside `GUILD`. |
+| `offers` | A guild offers zero or more quests; each quest has exactly one issuing guild. | Arrow to `GUILD`; double line beside `QUEST`. |
+| `undertakes` | A character undertakes zero or more quests; a quest has zero or more participating characters. | No arrows; single lines on both sides. |
+
+**One additional rule:** a guild's leader must be one of its members. The separate arrows and lines do not enforce this connection between `led_by` and `member_of`; write it alongside the diagram.
+
+For this game, characters can accept quests from any guild, including one they have not joined. If quests were restricted to guild members, we would need another written rule connecting the relationships.
+
+**Discuss:** If characters could join multiple guilds, which arrow would you remove? Would that also change how many guilds a character can lead?
+
+<details class="practice-solution">
+<summary>Possible answer</summary>
+
+Remove the arrow from `member_of` to `GUILD`, making membership many-to-many. The double line beside `GUILD` still requires each guild to have members. Leave `led_by` unchanged: membership and leadership have separate constraints.
+
+</details>
+
+## 8. Some attributes belong to relationships
+
+### A character's quest progress
+
+**Question:** Can `status` be a single attribute of `QUEST`?
+
+| Character | Quest | accepted_at | status |
+|---|---|---|---|
+| Mira | Light the Old Beacon | Day 3, 10:00 | active |
+| Tobin | Light the Old Beacon | Day 2, 09:00 | completed |
+| Mira | Clear the Old Mine | Day 3, 11:00 | abandoned |
+
+The same quest can have different statuses for different characters. The diagram attaches `accepted_at` and `status` to **`undertakes`**:
+
+- `accepted_at`: when this character accepted this quest.
+- `active`: the character accepted the quest and is still working on it.
+- `completed`: the character satisfied the quest's objectives.
+- `abandoned`: the character stopped the attempt without completing it; the attempt remains recorded.
+
+Our “one attempt per character per quest” rule makes one association sufficient. Repeatable quests would require a way to distinguish multiple attempts by the same character.
+
+### When an item was acquired
 
 **Question:** Where should we record when a character acquired an item they currently carry?
 
@@ -228,33 +313,41 @@ If we need every past transfer, one current carrying association is insufficient
 
 Equipment raises a related question: an `equips` relationship could record the slot in which a character equips an item. Rules such as “one item per equipment slot” require more detail than simply labeling the relationship one-to-many.
 
-## 8. Test the model against situations
+## 9. Test the model against situations
 
-**For each situation, decide whether the model allows it and identify the rule you used.**
+**For each situation, decide whether the model allows it and identify the rule or symbol you used.**
 
 1. Mira has an empty inventory.
 2. The Old Mine contains no characters.
 3. Mira carries two different items both named Iron Sword.
 4. Mira and Tobin both carry the same item 501 at the same time.
 5. Tobin has no current location.
+6. Mira belongs to two guilds at once.
+7. Mira and Tobin both undertake Light the Old Beacon, but only Tobin has completed it.
+8. Mira leads the Lantern Watch but is not a member of it.
 
 <details class="practice-solution">
 <summary>Check your reasoning</summary>
 
-1. Allowed: character participation in `carries` is `0..*`.
-2. Allowed: location participation in `located_in` is `0..*`.
+1. Allowed: the single line beside `CHARACTER` in `carries` permits no items.
+2. Allowed: the single line beside `LOCATION` permits no occupants.
 3. Allowed: items have separate identities; their names need not be unique.
-4. Not allowed: item participation in `carries` is `0..1`.
-5. Not allowed: character participation in `located_in` is `1..1`.
+4. Not allowed: the arrow from `carries` to `CHARACTER` permits only one carrier per item.
+5. Not allowed: the double line from `CHARACTER` to `located_in` requires participation.
+6. Not allowed: the arrow from `member_of` to `GUILD` permits only one guild per character.
+7. Allowed: `undertakes` is many-to-many, and `status` belongs to each association.
+8. Not allowed by our written membership rule. The diagram's arrows alone would allow it.
 
 </details>
 
 A diagram also has limits. “Health cannot exceed maximum health” and “an equipped item must be in that character's inventory” need additional written constraints. The connections above do not express those rules, and `equips` is not yet part of the drawing.
 
-## 9. Extend the world one requirement at a time
+## 10. Extend the world one requirement at a time
 
 Choose one extension to discuss:
 
+- **Quest prerequisites:** how could one quest require completion of another quest?
+- **Repeatable quests:** how would we distinguish a character's first and second attempts?
 - **Equipment:** what would connect a character, an item, and an equipment slot?
 - **World placement:** how would we locate an item that nobody carries?
 - **NPCs:** what additional information might an NPC need, such as dialogue or a patrol route?

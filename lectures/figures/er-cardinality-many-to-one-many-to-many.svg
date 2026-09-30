@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="465" viewBox="0 0 1000 465" role="img" aria-labelledby="title desc">
+<title id="title">Many-to-one and many-to-many</title>
+<desc id="desc">Many-to-one: a1 and a2 both relate to b1, while a3 relates to b3. Many-to-many: a1 relates to b1 and b2, a2 to b2 and b3, and a3 to b3. Unconnected entities are allowed.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.title{font-size:25px;font-weight:700}.set{font-size:24px;font-weight:700}.entity{font-size:22px}.rule{font-size:20px}</style>
+<rect width="1000" height="465" fill="#fff"/>
+<line x1="500" y1="15" x2="500" y2="450" stroke="#e2e8f0" stroke-width="1.5"/>
+<g transform="translate(0,0)">
+<text x="250" y="36" class="title" text-anchor="middle">Many-to-one</text>
+<ellipse cx="130" cy="225" rx="66" ry="145" fill="#eaf4f7" stroke="#64748b" stroke-width="1.8"/>
+<text x="130" y="67" class="set" text-anchor="middle">A</text>
+<ellipse cx="370" cy="225" rx="66" ry="145" fill="#f7f3ea" stroke="#64748b" stroke-width="1.8"/>
+<text x="370" y="67" class="set" text-anchor="middle">B</text>
+<line x1="155" y1="135" x2="345" y2="115" stroke="#344955" stroke-width="2.2"/>
+<line x1="155" y1="195" x2="345" y2="115" stroke="#344955" stroke-width="2.2"/>
+<line x1="155" y1="255" x2="345" y2="215" stroke="#344955" stroke-width="2.2"/>
+<circle cx="155" cy="135" r="6" fill="#173b4d"/>
+<text x="125" y="142" class="entity" text-anchor="end">a1</text>
+<circle cx="155" cy="195" r="6" fill="#173b4d"/>
+<text x="125" y="202" class="entity" text-anchor="end">a2</text>
+<circle cx="155" cy="255" r="6" fill="#173b4d"/>
+<text x="125" y="262" class="entity" text-anchor="end">a3</text>
+<circle cx="155" cy="315" r="6" fill="#173b4d"/>
+<text x="125" y="322" class="entity" text-anchor="end">a4</text>
+<circle cx="345" cy="115" r="6" fill="#173b4d"/>
+<text x="370" y="122" class="entity">b1</text>
+<circle cx="345" cy="165" r="6" fill="#173b4d"/>
+<text x="370" y="172" class="entity">b2</text>
+<circle cx="345" cy="215" r="6" fill="#173b4d"/>
+<text x="370" y="222" class="entity">b3</text>
+<circle cx="345" cy="265" r="6" fill="#173b4d"/>
+<text x="370" y="272" class="entity">b4</text>
+<circle cx="345" cy="315" r="6" fill="#173b4d"/>
+<text x="370" y="322" class="entity">b5</text>
+<text x="250" y="411" class="rule" text-anchor="middle">Each A: at most one B</text>
+<text x="250" y="440" class="rule" text-anchor="middle">Each B: may relate to many A entities</text>
+</g>
+<g transform="translate(500,0)">
+<text x="250" y="36" class="title" text-anchor="middle">Many-to-many</text>
+<ellipse cx="130" cy="225" rx="66" ry="145" fill="#eaf4f7" stroke="#64748b" stroke-width="1.8"/>
+<text x="130" y="67" class="set" text-anchor="middle">A</text>
+<ellipse cx="370" cy="225" rx="66" ry="145" fill="#f7f3ea" stroke="#64748b" stroke-width="1.8"/>
+<text x="370" y="67" class="set" text-anchor="middle">B</text>
+<line x1="155" y1="135" x2="345" y2="115" stroke="#344955" stroke-width="2.2"/>
+<line x1="155" y1="135" x2="345" y2="165" stroke="#344955" stroke-width="2.2"/>
+<line x1="155" y1="195" x2="345" y2="165" stroke="#344955" stroke-width="2.2"/>
+<line x1="155" y1="195" x2="345" y2="215" stroke="#344955" stroke-width="2.2"/>
+<line x1="155" y1="255" x2="345" y2="215" stroke="#344955" stroke-width="2.2"/>
+<circle cx="155" cy="135" r="6" fill="#173b4d"/>
+<text x="125" y="142" class="entity" text-anchor="end">a1</text>
+<circle cx="155" cy="195" r="6" fill="#173b4d"/>
+<text x="125" y="202" class="entity" text-anchor="end">a2</text>
+<circle cx="155" cy="255" r="6" fill="#173b4d"/>
+<text x="125" y="262" class="entity" text-anchor="end">a3</text>
+<circle cx="155" cy="315" r="6" fill="#173b4d"/>
+<text x="125" y="322" class="entity" text-anchor="end">a4</text>
+<circle cx="345" cy="115" r="6" fill="#173b4d"/>
+<text x="370" y="122" class="entity">b1</text>
+<circle cx="345" cy="165" r="6" fill="#173b4d"/>
+<text x="370" y="172" class="entity">b2</text>
+<circle cx="345" cy="215" r="6" fill="#173b4d"/>
+<text x="370" y="222" class="entity">b3</text>
+<circle cx="345" cy="265" r="6" fill="#173b4d"/>
+<text x="370" y="272" class="entity">b4</text>
+<circle cx="345" cy="315" r="6" fill="#173b4d"/>
+<text x="370" y="322" class="entity">b5</text>
+<text x="250" y="411" class="rule" text-anchor="middle">Each A: may relate to many B entities</text>
+<text x="250" y="440" class="rule" text-anchor="middle">Each B: may relate to many A entities</text>
+</g>
+</svg>

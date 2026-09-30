@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="410" viewBox="0 0 1000 410" role="img" aria-labelledby="title desc">
+<title id="title">Characters, locations, and items</title>
+<desc id="desc">Textbook ER notation: arrows point to the one side, double lines require participation, and primary keys have solid underlines.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.heading{font-size:21px;font-weight:700}.attribute{font-family:Consolas,monospace;font-size:20px}.relationship{font-size:20px}.note{font-size:19px;fill:#475569}</style>
+<rect width="1000" height="410" fill="#ffffff"/>
+<rect x="25" y="95" width="255" height="225" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="26" y="96" width="253" height="44" fill="#eaf4f7"/>
+<path d="M25 140 H280" stroke="#344955" stroke-width="2"/>
+<text x="152.5" y="125" class="heading" text-anchor="middle" >CHARACTER</text>
+<text x="45" y="172" class="attribute" text-anchor="start" text-decoration="underline">character_id</text>
+<text x="45" y="203" class="attribute" text-anchor="start" >name</text>
+<text x="45" y="234" class="attribute" text-anchor="start" >control_kind</text>
+<text x="45" y="265" class="attribute" text-anchor="start" >health</text>
+<text x="45" y="296" class="attribute" text-anchor="start" >max_health</text>
+<rect x="760" y="75" width="215" height="140" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="761" y="76" width="213" height="44" fill="#eaf4f7"/>
+<path d="M760 120 H975" stroke="#344955" stroke-width="2"/>
+<text x="867.5" y="105" class="heading" text-anchor="middle" >LOCATION</text>
+<text x="780" y="152" class="attribute" text-anchor="start" text-decoration="underline">location_id</text>
+<text x="780" y="183" class="attribute" text-anchor="start" >name</text>
+<rect x="760" y="230" width="215" height="160" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="761" y="231" width="213" height="44" fill="#eaf4f7"/>
+<path d="M760 275 H975" stroke="#344955" stroke-width="2"/>
+<text x="867.5" y="260" class="heading" text-anchor="middle" >ITEM</text>
+<text x="780" y="307" class="attribute" text-anchor="start" text-decoration="underline">item_id</text>
+<text x="780" y="338" class="attribute" text-anchor="start" >name</text>
+<text x="780" y="369" class="attribute" text-anchor="start" >weight</text>
+<polygon points="415,145 510,100 605,145 510,190" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="510" y="152" class="relationship" text-anchor="middle" >located_in</text>
+<polygon points="425,290 510,245 595,290 510,335" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="510" y="297" class="relationship" text-anchor="middle" >carries</text>
+<path d="M280,141 L415,141" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M280,149 L415,149" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="760,145 746.0,151.5 746.0,138.5" fill="#344955"/>
+<path d="M605,145 L746,145" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="280,290 294.0,283.5 294.0,296.5" fill="#344955"/>
+<path d="M425,290 L294,290" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M595,290 L760,290" fill="none" stroke="#344955" stroke-width="2"/>
+</svg>

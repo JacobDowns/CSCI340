@@ -51,7 +51,7 @@ Complete relational algebra with joins, composed expressions, and set operations
 
 - **SQL joins:** [Joining tables with SQL](lectures/week-06-joining-tables-with-sql.qmd) translates relational-algebra joins into SQL using the video game platform database.
 - **Lab 2:** [Follow the save](activities/week-03-query-reasoning-lab.qmd) practices selection, two- and three-table joins, and checking which records a query combines. Collaboration is allowed; each student submits their own Word document.
-- **ER foundations:** [Modeling a game world with ER diagrams](lectures/week-06-introduction-to-er-diagrams.qmd) introduces entities, attributes, keys, relationships, cardinality, participation, and written assumptions through characters, items, inventories, and locations. Use these ideas to begin discussing project applications.
+- **ER foundations:** [Modeling a game world with ER diagrams](lectures/week-06-introduction-to-er-diagrams.qmd) introduces entities, attributes, relationships, cardinality, and participation through characters, items, locations, guilds, and quests. Diagrams use the book's arrow notation with an explicit symbol legend. Use these ideas to begin discussing project applications.
 
 ### Week 7 (October 5-9) - Develop ER models and begin relational mapping
 
