@@ -55,7 +55,9 @@ Complete relational algebra with joins, composed expressions, and set operations
 
 ### Week 7 (October 5-9) - Develop ER models and begin relational mapping
 
-Continue ER modeling with weak and associative entities, relationship roles, recursive relationships, specialization/generalization, and multivalued information. Refine project models and begin translating them into relations, keys, and integrity constraints.
+Practice with [Activity 4 — ER relationships](activities/week-07-er-relationship-practice.qmd): interpret short scenarios about gym lockers, company departments, and college enrollment; justify cardinality and participation, draw each relationship, and compare models with classmates. This activity is ungraded.
+
+Continue with [Keys and cardinality in ER models](lectures/week-07-er-keys-and-cardinality.qmd): express minimum–maximum limits, derive keys for binary relationships, and distinguish a relationship from repeated events. A short extension introduces weak entities through quest objectives. Refine project models and begin translating them into relations, keys, and integrity constraints; revisit further ER extensions as time permits.
 
 ### Week 8 (October 12-16) - Dependencies and normalization
 

@@ -1,0 +1,21 @@
+---
+title: "Activity 4 - ER relationships"
+subtitle: "Interpret a scenario, justify the cardinality, draw the model"
+description: "An ungraded ER activity using gym lockers, company departments, and college enrollment to practice cardinality, participation, and relationship attributes."
+toc: false
+---
+
+Explore relationships in three settings: a gym, a company, and a college. Each case supplies two entity sets and a short description of the relationship to model. Name the relationship, establish and justify its cardinality in both directions, then draw your ER representation. The enrollment case also asks you to place and explain a relationship attribute.
+
+::: {.lesson-hero}
+# Use the activity worksheet
+
+This is an **ungraded activity**. Feel free to work in a group or as an individual. Compare your draft with another individual or group, then record what you revised or why you kept your model.
+
+[Download the activity Word document](week-07-er-modeling-activity.docx){download="week-07-er-modeling-activity.docx" .btn .btn-primary}
+
+[Download the printable PDF](week-07-er-modeling-activity.pdf){download="week-07-er-modeling-activity.pdf" .btn .btn-outline-primary}
+
+:::
+
+The handout provides blank space for explanations and sketches. Make any additional assumptions explicit. Use the arrow notation from [Modeling a game world with ER diagrams](../lectures/week-06-introduction-to-er-diagrams.qmd).

@@ -6,6 +6,8 @@ project:
     - "assignments/week-05-escape-room-data-changes.docx"
     - "activities/lab-02-video-game-setup.sql"
     - "activities/lab-02-sql-joins-response-template.docx"
+    - "activities/week-07-er-modeling-activity.docx"
+    - "activities/week-07-er-modeling-activity.pdf"
   render:
     - "index.qmd"
     - "schedule.qmd"
@@ -72,6 +74,9 @@ website:
             contents:
               - lectures/week-06-joining-tables-with-sql.qmd
               - lectures/week-06-introduction-to-er-diagrams.qmd
+          - section: Week 7
+            contents:
+              - lectures/week-07-er-keys-and-cardinality.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd
@@ -88,6 +93,9 @@ website:
           - section: Week 6
             contents:
               - activities/week-03-query-reasoning-lab.qmd
+          - section: Week 7
+            contents:
+              - activities/week-07-er-relationship-practice.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd

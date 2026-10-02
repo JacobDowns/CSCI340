@@ -37,7 +37,7 @@ For our first model, assume:
 
 Next, add some social and quest rules:
 
-- A **guild** is an organization, such as the Lantern Watch. A character may belong to at most one guild; every guild has at least one member.
+- A **guild** is an organization, such as the Lantern Watch. A character may belong to several guilds or none; every guild has at least one member and may have many.
 - Every guild has exactly one leader. A character may lead at most one guild, and must be a member of the guild they lead.
 - A **quest** is a task offered by exactly one guild, such as “Light the Old Beacon.” A guild may offer several quests or none.
 - A character may undertake many quests, and many characters may undertake the same quest. Some characters have no quests, and some quests have no participants.
@@ -250,11 +250,11 @@ Other ER notations, including crow's-foot diagrams, draw cardinality differently
 
 These are separate relationships, even when they connect the same entity sets. This diagram extends the same `CHARACTER` entity set from above; it omits items and locations to keep the new relationships readable.
 
-![Guild membership, leadership, and quest participation.](figures/er-guilds-quests.svg){fig-alt="CHARACTER and GUILD are connected by member_of and led_by. member_of points only to GUILD; led_by points to both entities. GUILD has double lines for both relationships. CHARACTER and QUEST have an optional many-to-many undertakes relationship, with accepted_at and status attributes. offers points to GUILD and has a double line to QUEST."}
+![Guild membership, leadership, and quest participation.](figures/er-guilds-quests.svg){fig-alt="CHARACTER and GUILD are connected by member_of and led_by. member_of has no arrows and is many-to-many; led_by points to both entities. GUILD has double lines for both relationships. CHARACTER and QUEST have an optional many-to-many undertakes relationship, with accepted_at and status attributes. offers points to GUILD and has a double line to QUEST."}
 
 | Relationship | Rule in both directions | How it appears |
 |---|---|---|
-| `member_of` | A character belongs to zero or one guild; a guild has one or more members. | Arrow to `GUILD`; double line beside `GUILD`. |
+| `member_of` | A character belongs to zero or more guilds; a guild has one or more members. | No arrows; single line beside `CHARACTER`, double line beside `GUILD`. |
 | `led_by` | A guild has exactly one leader; a character leads zero or one guild. | Arrows to both sets; double line beside `GUILD`. |
 | `offers` | A guild offers zero or more quests; each quest has exactly one issuing guild. | Arrow to `GUILD`; double line beside `QUEST`. |
 | `undertakes` | A character undertakes zero or more quests; a quest has zero or more participating characters. | No arrows; single lines on both sides. |
@@ -263,12 +263,12 @@ These are separate relationships, even when they connect the same entity sets. T
 
 For this game, characters can accept quests from any guild, including one they have not joined. If quests were restricted to guild members, we would need another written rule connecting the relationships.
 
-**Discuss:** If characters could join multiple guilds, which arrow would you remove? Would that also change how many guilds a character can lead?
+**What if:** Suppose characters could belong to at most one guild instead. Which arrow would you add? Would that also change how many guilds a character can lead?
 
 <details class="practice-solution">
 <summary>Possible answer</summary>
 
-Remove the arrow from `member_of` to `GUILD`, making membership many-to-many. The double line beside `GUILD` still requires each guild to have members. Leave `led_by` unchanged: membership and leadership have separate constraints.
+Add an arrow from `member_of` toward `GUILD`, making membership many-to-one from `CHARACTER` to `GUILD`. Keep the single line beside `CHARACTER` because joining is still optional, and the double line beside `GUILD` because every guild still needs members. Leave `led_by` unchanged: membership and leadership have separate constraints. This is a hypothetical restriction; our main model allows multiple guild memberships.
 
 </details>
 
@@ -334,7 +334,7 @@ Equipment raises a related question: an `equips` relationship could record the s
 3. Allowed: items have separate identities; their names need not be unique.
 4. Not allowed: the arrow from `carries` to `CHARACTER` permits only one carrier per item.
 5. Not allowed: the double line from `CHARACTER` to `located_in` requires participation.
-6. Not allowed: the arrow from `member_of` to `GUILD` permits only one guild per character.
+6. Allowed: `member_of` is many-to-many, so Mira may belong to two guilds at once.
 7. Allowed: `undertakes` is many-to-many, and `status` belongs to each association.
 8. Not allowed by our written membership rule. The diagram's arrows alone would allow it.
 
@@ -357,7 +357,7 @@ For the chosen extension, identify a possible entity set or relationship, state 
 
 Use the same process when considering a [project application](../projects/capstone.qmd): identify users and their needs, sketch a few entities and relationships, and make assumptions explicit before choosing tables.
 
-**Next in the design sequence:** more cardinality and participation practice; entities versus attributes; relationship roles and recursive relationships; weak entities and specialization; then conversion to relational schemas. The game world gives us examples to revisit throughout that sequence.
+**Next:** [Keys and cardinality in ER models](week-07-er-keys-and-cardinality.qmd) adds minimum–maximum notation, derives keys for relationships, and introduces weak entities through quest objectives. We will then use these constraints when converting the model into relational schemas and revisit further ER extensions as needed.
 
 ## Reference
 

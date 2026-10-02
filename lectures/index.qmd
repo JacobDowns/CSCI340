@@ -39,3 +39,8 @@ Lecture pages provide the course narrative. Related practice and submissions app
 - [Lab 2 — Follow the save](../activities/week-03-query-reasoning-lab.qmd) — Practice selection and joins with video game saves, games, and players. Each student submits their own Word document; collaboration is welcome.
 
 - [Modeling a game world with ER diagrams](week-06-introduction-to-er-diagrams.qmd) — Model characters, items, locations, guilds, and quests using textbook arrow notation, cardinality, and participation.
+
+## Week 7
+
+- [Keys and cardinality in ER models](week-07-er-keys-and-cardinality.qmd) — Express minimum–maximum limits, derive keys for binary relationships, distinguish repeated events, and introduce weak entities through quest objectives.
+- [Activity 4 — ER relationships](../activities/week-07-er-relationship-practice.qmd) — Interpret short scenarios, justify cardinality, draw relationships, and explain a relationship attribute.
