@@ -5,7 +5,7 @@ description: "An ER activity on entities, attributes, relationships, cardinality
 toc: false
 ---
 
-Distinguish entities, attributes, and relationships, then compare cardinalities in gym, company, and college scenarios. Build a combined college ER diagram, explain a relationship attribute, and reason about participation when requirements change. The activity is designed for approximately **40–45 minutes**, including peer comparison.
+Distinguish entities, attributes, and relationships, then compare cardinalities in gym, company, college, and supplier scenarios. Build a combined college ER diagram, place entity and relationship attributes, and reason about participation when requirements change. The activity is designed for approximately **40–45 minutes**, including peer comparison.
 
 ::: {.lesson-hero}
 # Use the activity worksheet

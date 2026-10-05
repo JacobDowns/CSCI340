@@ -24,7 +24,7 @@ Labs and activities are short exercises that make the course ideas concrete. Eac
 
 ## Week 7
 
-- [Activity 4 — ER relationships](week-07-er-relationship-practice.qmd): distinguish entities, attributes, and relationships; compare cardinalities across three domains; draw a combined ER diagram; and explain relationship attributes and participation. Approximately 40–45 minutes. Work individually or in a group, then compare with classmates.
+- [Activity 4 — ER relationships](week-07-er-relationship-practice.qmd): distinguish entities, attributes, and relationships; compare cardinalities across four scenarios; draw a combined ER diagram; and explain relationship attributes and participation. Approximately 40–45 minutes. Work individually or in a group, then compare with classmates.
 
 ## Submission principle
 
