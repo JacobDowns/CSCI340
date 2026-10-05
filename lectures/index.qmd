@@ -43,4 +43,4 @@ Lecture pages provide the course narrative. Related practice and submissions app
 ## Week 7
 
 - [Keys and cardinality in ER models](week-07-er-keys-and-cardinality.qmd) — Express minimum–maximum limits, derive keys for binary relationships, distinguish repeated events, and introduce weak entities through quest objectives.
-- [Activity 4 — ER relationships](../activities/week-07-er-relationship-practice.qmd) — Interpret short scenarios, justify cardinality, draw relationships, and explain a relationship attribute.
+- [Activity 4 — ER relationships](../activities/week-07-er-relationship-practice.qmd) — Distinguish entities from relationships, compare cardinalities, draw a combined ER diagram, and explain relationship attributes and participation.

@@ -180,7 +180,7 @@ We will develop event modeling and relational mapping separately. For today's ba
 
 ## 6. Apply the ideas to the activity
 
-Return to [Activity 4](../activities/week-07-er-relationship-practice.qmd). Supply identifiers `member_id`, `locker_id`, `employee_id`, `department_id`, `student_id`, and a globally unique `section_id` for this exercise.
+Return to the three cases in **Part B of [Activity 4](../activities/week-07-er-relationship-practice.qmd)**. Supply identifiers `member_id`, `locker_id`, `employee_id`, `department_id`, `student_id`, and a globally unique `section_id` for this exercise.
 
 For each case:
 

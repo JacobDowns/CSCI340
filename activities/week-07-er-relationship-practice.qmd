@@ -1,16 +1,16 @@
 ---
 title: "Activity 4 - ER relationships"
-subtitle: "Interpret a scenario, justify the cardinality, draw the model"
-description: "An ungraded ER activity using gym lockers, company departments, and college enrollment to practice cardinality, participation, and relationship attributes."
+subtitle: "Choose the concepts, explain the constraints, draw the model"
+description: "An ER activity on entities, attributes, relationships, cardinality, diagramming, and participation, designed for approximately 40–45 minutes."
 toc: false
 ---
 
-Explore relationships in three settings: a gym, a company, and a college. Each case supplies two entity sets and a short description of the relationship to model. Name the relationship, establish and justify its cardinality in both directions, then draw your ER representation. The enrollment case also asks you to place and explain a relationship attribute.
+Distinguish entities, attributes, and relationships, then compare cardinalities in gym, company, and college scenarios. Build a combined college ER diagram, explain a relationship attribute, and reason about participation when requirements change. The activity is designed for approximately **40–45 minutes**, including peer comparison.
 
 ::: {.lesson-hero}
 # Use the activity worksheet
 
-This is an **ungraded activity**. Feel free to work in a group or as an individual. Compare your draft with another individual or group, then record what you revised or why you kept your model.
+Feel free to work in a group or as an individual. Compare your draft with another individual or group, then record what you revised or why you kept your model.
 
 [Download the activity Word document](week-07-er-modeling-activity.docx){download="week-07-er-modeling-activity.docx" .btn .btn-primary}
 
