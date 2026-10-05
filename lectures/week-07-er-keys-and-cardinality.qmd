@@ -15,12 +15,12 @@ WEEK 7 · ER CONSTRAINTS AND IDENTITY
 
 # What identifies one association?
 
-Mira undertakes two quests, carries three items, and leads one guild. Each association connects entities, but the information needed to identify it depends on the rules. We will make those rules precise and use them to determine keys.
+Mira undertakes two quests, carries three items, and leads one guild. What identifies each association? The answer depends on how many partners the rules allow.
 :::
 
-**Previous:** [Modeling a game world with ER diagrams](week-06-introduction-to-er-diagrams.qmd). **Related practice:** [Activity 4 — ER relationships](../activities/week-07-er-relationship-practice.qmd).
+**Previous:** [Modeling a game world with ER diagrams](week-06-introduction-to-er-diagrams.qmd).
 
-This lecture follows *Database System Concepts*, 7th edition, §6.4 and §§6.5.1–6.5.3. We continue our original game-world example. Cardinality ranges and relationship keys are the core; Section 7 is a short extension on weak entities that can be carried into the next meeting.
+**Focus:** minimum–maximum cardinality and relationship keys, followed by a short extension on weak entities.
 
 ## 1. Separate three questions
 
@@ -45,13 +45,14 @@ For each relationship, distinguish:
 <details class="practice-solution">
 <summary>Possible reasoning</summary>
 
-A character can undertake several quests, so the character ID alone does not select one quest-progress association. Each character has only one current location, so their ID does select their current-location association. The different maximum counts change what is sufficient to identify a relationship instance.
+- **Quest progress:** no. One character may have several quests.
+- **Current location:** yes. Each character has only one current location.
 
 </details>
 
 ## 2. Write minimum and maximum together
 
-The book's §6.4 uses a range on an entity–relationship connection, written `l..h`. We will call the endpoints `a..b`: **at least `a` and at most `b` associations for each entity on that connection**.
+A range **`a..b`** means **at least `a` and at most `b` associations** for each entity on that connection.
 
 | Range | Meaning for one entity |
 |---|---|
@@ -61,11 +62,13 @@ The book's §6.4 uses a range on an entity–relationship connection, written `l
 | `1..*` | At least one association is required, with no stated upper limit. |
 | `2..8` | Between two and eight associations, inclusive, are required. |
 
-`*` means the model places no upper bound on this count. It does not mean there are infinitely many current records. A positive minimum requires participation; a maximum of one restricts an entity to one partner in a binary relationship.
+- **Minimum:** a positive value requires participation.
+- **Maximum:** one allows at most one partner in a binary relationship.
+- **`*`:** no stated upper bound.
 
 ### Read the label beside the entity
 
-In **this textbook convention**, start at the entity beside a range and count the relationship instances involving **one entity of that set**. For a binary relationship, this is also its number of partners.
+In **our notation**, read the range beside an entity as the number of associations involving **one entity of that set**.
 
 ![The same current-location rule in arrow notation and minimum–maximum notation.](figures/er-location-cardinality-ranges.svg){fig-alt="Two equivalent ER diagrams connect CHARACTER to LOCATION through located_in. The upper diagram has a double line beside CHARACTER and an arrow toward LOCATION. The lower diagram uses plain lines with 1..1 beside CHARACTER and 0..* beside LOCATION. Each character has exactly one location; each location has zero or more characters."}
 
@@ -73,25 +76,27 @@ In **this textbook convention**, start at the entity beside a range and count th
 - `0..*` beside `LOCATION`: one location participates in zero or more `located_in` associations.
 
 ::: {.callout-important appearance="simple"}
-The `1..1` belongs beside **CHARACTER**, even though the earlier arrow points toward **LOCATION**. The range counts a character's participation; the arrow identifies the side containing that character's single partner. Follow the legend rather than transferring label positions from another ER notation.
+The **range** beside `CHARACTER` counts its associations. The **arrow** toward `LOCATION` identifies its single partner. These markings go on different sides.
 :::
 
-In the range version, the numbers replace the arrows and single/double participation markings. Plain connecting lines there do **not** independently mean partial participation.
+Ranges replace arrows and single/double participation markings. Plain lines in this version do **not** mean partial participation.
 
 ### Express a limit arrows cannot show
 
-Our default `member_of` relationship is many-to-many: `0..*` beside `CHARACTER` and `1..*` beside `GUILD`. Suppose we **change the guild-size rule**: a guild must now have between two and eight members. Characters may still belong to several guilds or none.
+**Default membership:** `CHARACTER` has `0..*`; `GUILD` has `1..*`.
+
+**New guild-size rule:** require two to eight members per guild. Characters may still join several guilds or none.
 
 ![A bounded guild-membership rule.](figures/er-guild-membership-ranges.svg){fig-alt="CHARACTER connects to GUILD through member_of, with 0..* beside CHARACTER and 2..8 beside GUILD. A character may belong to zero or more guilds; each guild must have two through eight members."}
 
-The earlier diagram's absence of arrows allows multiple partners on both sides, and its double line beside `GUILD` requires each guild to have members. Those markings could not express the minimum of two or maximum of eight. The range makes both limits explicit; this bounded version is still many-to-many.
+A double line beside `GUILD` requires each guild to have members but cannot express “two to eight.” The range supplies both bounds. The relationship is still **many-to-many**.
 
 **Check:** If a guild has two members and one leaves, is the remaining state valid under the new rule?
 
 <details class="practice-solution">
 <summary>Possible answer</summary>
 
-No. One member is below the minimum of two. The system needs a policy for restoring a valid state, such as disbanding the guild or replacing the departing member. The ER constraint states which states are valid; it does not choose that policy.
+No: one member is below the minimum. The constraint defines valid states; a separate policy determines what happens when someone leaves.
 
 </details>
 
@@ -103,9 +108,9 @@ The key vocabulary from the relational model applies here:
 - A **candidate key** is a minimal superkey: removing any attribute loses that guarantee.
 - A **primary key** is the candidate key we choose to use.
 
-In the book's basic ER model, a relationship set contains at most one instance for a particular combination of participating entities. Combining their primary keys therefore gives a **superkey**. Cardinality may let us use less.
+**Basic ER assumption:** each combination of participants occurs at most once in a relationship set. Combining their primary keys gives a **superkey**; cardinality may let us use less.
 
-We will work with binary relationships and the stated rules. The small tables below display associations to help reason about identity; they are not yet decisions about which SQL tables to create.
+The following tables display associations for reasoning about keys. SQL table design comes later.
 
 ### Many-to-many: a character undertaking a quest
 
@@ -115,11 +120,15 @@ We will work with binary relationships and the stated rules. The small tables be
 | 101 | 302 | abandoned |
 | 102 | 301 | completed |
 
-`character_id` can repeat because a character may undertake several quests. `quest_id` can repeat because several characters may undertake the same quest. The pair **`(character_id, quest_id)`** identifies one association and is our chosen primary key for `undertakes`.
+- **`character_id` alone fails:** a character may undertake several quests.
+- **`quest_id` alone fails:** a quest may have several characters.
+- **Chosen key:** `(character_id, quest_id)`, because each pair occurs at most once.
 
-These rows demonstrate why either ID alone fails. The rule permitting only one undertaking per character–quest pair guarantees that the pair works for future data too.
+::: {.callout-note appearance="simple"}
+### A descriptive attribute need not be a key attribute
 
-**Does `status` belong in the key?** No. It describes the identified association. Changing an undertaking from active to completed changes its state, not its identity. Similarly, `accepted_at` is descriptive; adding a relationship attribute does not automatically add a key attribute. This distinction follows §6.5.2 of the textbook.
+`status` and `accepted_at` describe the association. Updating an undertaking from active to completed changes its state, not its identity.
+:::
 
 ### One-to-many: a character carrying items
 
@@ -129,17 +138,21 @@ These rows demonstrate why either ID alone fails. The rule permitting only one u
 | 101 | 503 | Day 3, 11:00 |
 | 102 | 502 | Day 2, 09:00 |
 
-An item has at most one current carrier, so **`item_id` alone** identifies its `carries` association. `character_id` alone fails because one character may carry multiple items.
+- **`character_id` alone fails:** a character may carry several items.
+- **Chosen key:** `item_id`, because an item has at most one current carrier.
+- **The pair is unnecessary:** `(character_id, item_id)` is a superkey, but is not minimal.
 
-The pair `(character_id, item_id)` is a superkey, but it is not minimal: removing `character_id` still leaves a key. This is why the book chooses the key of the **many side** for a one-to-many relationship. Each entity on that side has at most one partner.
-
-An uncarried item has no `carries` association. Optional participation does not produce an association with a missing key.
+An uncarried item has no `carries` association. Optional participation does not create an association with a missing key.
 
 ### One-to-one: a guild and its leader
 
-Each guild has exactly one leader, and each character leads at most one guild. Both **`guild_id`** and **`character_id`** are candidate keys for `led_by`. Choose `guild_id` as the primary key here; the rule that a character cannot lead two guilds still applies.
+Each guild has one leader; each character leads at most one guild.
 
-The pair `(guild_id, character_id)` would identify the association, but is not minimal. Choosing one primary key does not remove the uniqueness requirement on the other candidate key.
+- **Candidate keys:** `guild_id` and `character_id`, each on its own.
+- **Chosen primary key:** `guild_id`.
+- **Remaining constraint:** `character_id` must still be unique in `led_by`.
+
+The pair `(guild_id, character_id)` is a superkey, but is not minimal.
 
 ## 4. Derive the key rather than memorize the label
 
@@ -152,56 +165,47 @@ For binary relationships with these mapping constraints:
 | Many-to-one | Use the key of A, the many side. | Each A participates in at most one association. |
 | One-to-one | Either entity's key is a candidate; choose one. | Neither entity can participate in two associations. |
 
-If an entity has a composite key, carry over **all its key attributes** when the rule calls for that entity's key. If both sets call their key `id`, distinguish them as `character_id` and `quest_id` when discussing the relationship.
+**Composite keys:** carry over every attribute of the entity key. Use distinct names such as `character_id` and `quest_id`.
 
-To test a proposed key, try to construct **two allowed associations with the same proposed key values**. If you can, it is not a key. If you cannot because of the requirements, check whether removing any attribute would still work.
+::: {.callout-tip appearance="simple"}
+### Test a proposed key
 
-Under our default many-to-many membership rule, **`(character_id, guild_id)`** identifies a `member_of` association. Neither ID alone is sufficient: a character may join several guilds, and a guild may have several members.
+1. Can two **allowed** associations share its values? If yes, it is not a key.
+2. Does removing an attribute preserve uniqueness? If yes, it is not minimal.
 
-**Minimum counts do not determine these keys.** Changing a character's membership range from `0..*` to `1..*` would require everyone to join at least one guild. The relationship would still be many-to-many and would still use `(character_id, guild_id)` as its key.
+Use the requirements, not just the sample rows.
+:::
+
+### Revisit guild membership
+
+**Default:** characters may join several guilds, and guilds may have several members. The key of `member_of` is **`(character_id, guild_id)`**.
+
+**Require membership:** changing `0..*` to `1..*` makes participation mandatory. It remains many-to-many, with the same key. **Minimum counts do not determine these keys.**
 
 ### What if a character could belong to only one guild?
 
-Suppose we restrict each character to **at most one guild**, with joining still optional. The range beside `CHARACTER` becomes `0..1`; in arrow notation, we add an arrow toward `GUILD`. The guild's member-count rule stays the same.
+- **Range:** `0..1` beside `CHARACTER`; guild limits stay the same.
+- **Arrow notation:** add an arrow toward `GUILD`.
+- **Mapping:** many-to-one from character to guild.
+- **New key:** `character_id` alone; the pair is no longer minimal.
 
-Now `member_of` is many-to-one from `CHARACTER` to `GUILD`, and **`character_id` alone** identifies a membership association. The pair `(character_id, guild_id)` remains a superkey but is no longer minimal. Requiring exactly one guild would change `0..1` to `1..1` without changing that key. Our default model retains multiple guild memberships.
+Requiring exactly one guild changes `0..1` to `1..1`, but leaves the key unchanged. This is a hypothetical restriction; our default allows multiple memberships.
 
 ## 5. Recognize when a pair no longer represents the fact
 
 Now change the quest rule: Mira can complete quest 301 and later undertake it again. We need to retain both attempts.
 
-The old `undertakes` relationship has only one place for the pair `(101, 301)`. Giving it `status` and `accepted_at` attributes still describes that one association; it does not create distinct first and second attempts.
+**Problem:** `(101, 301)` identifies one association. Adding `status` or `accepted_at` does not create a second attempt.
 
-One possible redesign introduces **`QUEST_ATTEMPT`**, with an `attempt_id`, acceptance time, and status. Each attempt connects to exactly one character and exactly one quest. The same character–quest pair can then be connected through several distinct attempt entities. This changes the modeled object and its identity.
+**Possible redesign: introduce `QUEST_ATTEMPT`.**
 
-The same issue arises with repeated escape-room reservations. A team–room pair identifies which team and which room; it does not identify which reservation. A timestamp could contribute to an event key only if the requirements actually guarantee the necessary uniqueness.
+- Attributes: `attempt_id`, acceptance time, and status.
+- Each attempt connects to exactly one character and one quest.
+- Several attempts may connect the same character–quest pair.
 
-We will develop event modeling and relational mapping separately. For today's basic binary relationships, first establish whether one association per participant pair is enough.
+Before choosing a relationship key, ask whether **one association per participant pair** captures what the system must remember.
 
-## 6. Apply the ideas to the activity
-
-Return to cases **B1–B3** in **Part B of [Activity 4](../activities/week-07-er-relationship-practice.qmd)**. Supply identifiers `member_id`, `locker_id`, `employee_id`, `department_id`, `student_id`, and a globally unique `section_id` for this exercise.
-
-For each case:
-
-1. Add `a..b` labels using the textbook's placement convention.
-2. Identify the candidate key or keys implied by the mapping and choose a primary key for the relationship.
-3. Explain why a smaller proposed key fails, or why another attribute would be unnecessary.
-
-<details class="practice-solution">
-<summary>Compare your reasoning</summary>
-
-| Case | Range beside each entity | Relationship key |
-|---|---|---|
-| Personal locker rental | `MEMBER`: `0..1`; `LOCKER`: `0..1` | Either `member_id` or `locker_id`; choose one. Both remain unique. |
-| Home department | `EMPLOYEE`: `1..1`; `DEPARTMENT`: `0..*` | `employee_id`: each employee has just one home department. |
-| Enrollment | `STUDENT`: `0..*`; `SECTION`: `0..*` | `(student_id, section_id)`: either ID alone can repeat. |
-
-`final_grade` describes an enrollment; it is not needed in its key. A grade changing does not create a different student–section association.
-
-</details>
-
-## 7. Short extension: identify an entity through its owner
+## 6. Weak entities: identify an entity through its owner
 
 **Question:** The game designer says “objective 1.” Which quest's objective is that?
 
@@ -217,9 +221,12 @@ Add quest objectives under these rules:
 | 301 | 2 | Light the beacon. |
 | 302 | 1 | Enter the Old Mine. |
 
-`objective_no` alone is insufficient, and `description` need not be unique. We identify an objective using its owning quest plus its local number: **`(quest_id, objective_no)`**.
+**Complete key:** `(quest_id, objective_no)`. The local number alone can repeat across quests; descriptions need not be unique.
 
-This is a **weak entity set** in the sense of §6.5.3. The objective depends on an **identifying entity**, its quest. Its **discriminator**, also called a partial key, distinguishes objectives belonging to the same quest. The **identifying relationship** supplies the owner needed to complete its identity.
+- **Weak entity:** `QUEST_OBJECTIVE`, identified through its owner.
+- **Identifying entity:** `QUEST`, the owner.
+- **Discriminator (partial key):** `objective_no`, unique within one quest.
+- **Identifying relationship:** `has_objective`, which supplies the owner.
 
 ![Quest objectives identified through their owning quests.](figures/er-quest-objectives.svg){fig-alt="QUEST has primary key quest_id. QUEST_OBJECTIVE has a double rectangle and dashed underline beneath its discriminator objective_no. The double-diamond has_objective relationship points toward QUEST. Double lines on both sides express our rule that every objective has an owner and every quest has at least one objective. An objective's complete key is quest_id together with objective_no."}
 
@@ -231,20 +238,24 @@ This is a **weak entity set** in the sense of §6.5.3. The objective depends on 
 | Arrow toward `QUEST` | Each objective has at most one owner. |
 | Double line beside `QUEST_OBJECTIVE` | Each objective must have an owner. |
 
-The double line beside `QUEST` comes from our additional rule requiring every quest to have an objective. Owner participation need not be total in every weak-entity design. Here the equivalent ranges would be `QUEST`: `1..*` and `QUEST_OBJECTIVE`: `1..1`.
+### Read the ownership constraint
 
-The conceptual diagram obtains the quest identity through the identifying relationship, so it does not also list `quest_id` inside the objective rectangle. The eventual objective relation will include both key attributes. A foreign key or a mandatory relationship alone does not establish this owner-based identification pattern.
+- **Objective participation is total:** every objective needs its owner (`1..1`).
+- **Quest participation is total here:** our game requires at least one objective (`1..*`). This is an additional rule, not a requirement of all weak-entity designs.
+- **The diagram supplies `quest_id` through ownership.** The eventual objective relation includes it in the complete key.
+
+A mandatory relationship alone does not make an entity weak; the owner contributes to its identity.
 
 **Check:** Is `quest_id` alone a key for `has_objective` because it is on the arrow's side?
 
 <details class="practice-solution">
 <summary>Possible answer</summary>
 
-No. One quest has several objectives. Each objective has one owner, so the identifying relationship is identified by the complete key of its many-side entity, `QUEST_OBJECTIVE`: `(quest_id, objective_no)`. Keep the entire key, including the owner's contribution.
+No. A quest may have several objectives. Use the **complete key of the many side**, `QUEST_OBJECTIVE`: `(quest_id, objective_no)`.
 
 </details>
 
-## 8. Check your model before mapping it to tables
+## 7. Check your model before mapping it to tables
 
 Explain each answer using a rule rather than the current sample data:
 
@@ -263,16 +274,10 @@ Explain each answer using a rule rather than the current sample data:
 
 </details>
 
-**Next:** use these identities and constraints when converting the ER model into relations. A conceptual relationship does not necessarily require its own SQL table; the mapping must preserve its meaning, keys, and participation rules.
+**Next:** map the ER model to relations while preserving its keys and constraints. A relationship does not necessarily need its own SQL table.
 
 ## Reference and reading
 
-Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapter 6, “Database Design Using the E-R Model,” listed in [course resources](../resources.qmd).
+Based on Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapter 6, “Database Design Using the E-R Model.”
 
-| Topic | Textbook reading |
-|---|---|
-| Mapping cardinalities and participation; minimum–maximum notation | §6.4, pp. 252–256; especially Figure 6.13 on p. 256. |
-| Entity keys and keys for relationship sets | §§6.5.1–6.5.2, pp. 257–259; binary relationship rules on p. 258. |
-| Weak entity sets and their notation | §6.5.3, pp. 259–260; Figure 6.14 on p. 260. |
-
-These are the book's printed page numbers. The authors also provide [Chapter 6 slides](https://www.db-book.com/slides-dir/PDF-dir/ch6.pdf) and [chapter resources](https://www.db-book.com/slides-dir/). The explanations above follow the textbook's distinction between a relationship's full description and the attributes needed for its key. Game-world examples and diagrams are original course material.
+[Course resources](../resources.qmd) · [Chapter 6 slides](https://www.db-book.com/slides-dir/PDF-dir/ch6.pdf)
