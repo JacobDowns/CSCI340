@@ -357,7 +357,7 @@ For the chosen extension, identify a possible entity set or relationship, state 
 
 Use the same process when considering a [project application](../projects/capstone.qmd): identify users and their needs, sketch a few entities and relationships, and make assumptions explicit before choosing tables.
 
-**Next:** [Keys and cardinality in ER models](week-07-er-keys-and-cardinality.qmd) adds minimum–maximum notation, derives keys for relationships, and introduces weak entities through quest objectives. We will then use these constraints when converting the model into relational schemas and revisit further ER extensions as needed.
+**Next:** [Relationship keys and mapping ER models to relations](week-07-er-keys-and-cardinality.qmd) pairs each relationship's key with its table or foreign-key representation. We will revisit minimum–maximum notation and weak entities in a later lecture on ER extensions.
 
 ## Reference
 

@@ -57,7 +57,7 @@ Complete relational algebra with joins, composed expressions, and set operations
 
 Practice with [Activity 4 — ER relationships](activities/week-07-er-relationship-practice.qmd): distinguish entities from relationships, compare cardinalities across gym, company, college, and supplier scenarios, draw a combined ER diagram, and reason about participation. This activity takes approximately 40–45 minutes, including comparison with classmates.
 
-Continue with [Keys and cardinality in ER models](lectures/week-07-er-keys-and-cardinality.qmd): express minimum–maximum limits, derive keys for binary relationships, and distinguish a relationship from repeated events. A short extension introduces weak entities through quest objectives. Refine project models and begin translating them into relations, keys, and integrity constraints; revisit further ER extensions as time permits.
+Continue with [Relationship keys and mapping ER models to relations](lectures/week-07-er-keys-and-cardinality.qmd): derive each relationship's key and use it to choose a separate relation or foreign-key columns in an entity relation. Preserve cardinality and participation with primary keys, foreign keys, uniqueness, and nullability, then apply the same reasoning to Activity 4. Reserve minimum–maximum notation and weak entities for a later lecture on ER extensions.
 
 ### Week 8 (October 12-16) - Dependencies and normalization
 

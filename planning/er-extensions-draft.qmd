@@ -1,0 +1,110 @@
+---
+title: "ER extensions — deferred lecture material"
+description: "Instructor draft of minimum–maximum notation and weak entities for a later ER lecture."
+---
+
+These sections are reserved for a later lecture. The next class pairs relationship keys with mapping to relations. This draft is not part of the course website's render list.
+
+## 1. Write minimum and maximum together
+
+A range **`a..b`** means **at least `a` and at most `b` associations** for each entity on that connection.
+
+| Range | Meaning for one entity |
+|---|---|
+| `0..1` | An association is optional; at most one is allowed. |
+| `1..1` | Exactly one association is required. |
+| `0..*` | Zero or more associations are allowed. |
+| `1..*` | At least one association is required, with no stated upper limit. |
+| `2..8` | Between two and eight associations, inclusive, are required. |
+
+- **Minimum:** a positive value requires participation.
+- **Maximum:** one allows at most one partner in a binary relationship.
+- **`*`:** no stated upper bound.
+
+### Read the label beside the entity
+
+In **our notation**, read the range beside an entity as the number of associations involving **one entity of that set**.
+
+![The same current-location rule in arrow notation and minimum–maximum notation.](../lectures/figures/er-location-cardinality-ranges.svg){fig-alt="Two equivalent ER diagrams connect CHARACTER to LOCATION through located_in. The upper diagram has a double line beside CHARACTER and an arrow toward LOCATION. The lower diagram uses plain lines with 1..1 beside CHARACTER and 0..* beside LOCATION. Each character has exactly one location; each location has zero or more characters."}
+
+- `1..1` beside `CHARACTER`: one character participates in exactly one `located_in` association.
+- `0..*` beside `LOCATION`: one location participates in zero or more `located_in` associations.
+
+::: {.callout-important appearance="simple"}
+The **range** beside `CHARACTER` counts its associations. The **arrow** toward `LOCATION` identifies its single partner. These markings go on different sides.
+:::
+
+Ranges replace arrows and single/double participation markings. Plain lines in this version do **not** mean partial participation.
+
+### Express a limit arrows cannot show
+
+**Default membership:** `CHARACTER` has `0..*`; `GUILD` has `1..*`.
+
+**New guild-size rule:** require two to eight members per guild. Characters may still join several guilds or none.
+
+![A bounded guild-membership rule.](../lectures/figures/er-guild-membership-ranges.svg){fig-alt="CHARACTER connects to GUILD through member_of, with 0..* beside CHARACTER and 2..8 beside GUILD. A character may belong to zero or more guilds; each guild must have two through eight members."}
+
+A double line beside `GUILD` requires each guild to have members but cannot express “two to eight.” The range supplies both bounds. The relationship is still **many-to-many**.
+
+**Check:** If a guild has two members and one leaves, is the remaining state valid under the new rule?
+
+<details class="practice-solution">
+<summary>Possible answer</summary>
+
+No: one member is below the minimum. The constraint defines valid states; a separate policy determines what happens when someone leaves.
+
+</details>
+
+## 2. Weak entities: identify an entity through its owner
+
+**Question:** The game designer says “objective 1.” Which quest's objective is that?
+
+Add quest objectives under these rules:
+
+- Every quest has at least one objective.
+- Every objective belongs to exactly one quest and cannot exist independently of it.
+- `objective_no` is unique **within a quest**, but different quests reuse numbers.
+
+| quest_id | objective_no | description |
+|---|---|---|
+| 301 | 1 | Find the beacon tower. |
+| 301 | 2 | Light the beacon. |
+| 302 | 1 | Enter the Old Mine. |
+
+**Complete key:** `(quest_id, objective_no)`. The local number alone can repeat across quests; descriptions need not be unique.
+
+- **Weak entity:** `QUEST_OBJECTIVE`, identified through its owner.
+- **Identifying entity:** `QUEST`, the owner.
+- **Discriminator (partial key):** `objective_no`, unique within one quest.
+- **Identifying relationship:** `has_objective`, which supplies the owner.
+
+![Quest objectives identified through their owning quests.](../lectures/figures/er-quest-objectives.svg){fig-alt="QUEST has primary key quest_id. QUEST_OBJECTIVE has a double rectangle and dashed underline beneath its discriminator objective_no. The double-diamond has_objective relationship points toward QUEST. Double lines on both sides express our rule that every objective has an owner and every quest has at least one objective. An objective's complete key is quest_id together with objective_no."}
+
+| Marking | Meaning |
+|---|---|
+| Double rectangle | Weak entity set. |
+| Dashed underline under `objective_no` | Discriminator, unique within one owner. |
+| Double diamond | Identifying relationship. |
+| Arrow toward `QUEST` | Each objective has at most one owner. |
+| Double line beside `QUEST_OBJECTIVE` | Each objective must have an owner. |
+
+### Read the ownership constraint
+
+- **Objective participation is total:** every objective needs its owner (`1..1`).
+- **Quest participation is total here:** our game requires at least one objective (`1..*`). This is an additional rule, not a requirement of all weak-entity designs.
+- **The diagram supplies `quest_id` through ownership.** The eventual objective relation includes it in the complete key.
+
+A mandatory relationship alone does not make an entity weak; the owner contributes to its identity.
+
+**Check:** Is `quest_id` alone a key for `has_objective` because it is on the arrow's side?
+
+<details class="practice-solution">
+<summary>Possible answer</summary>
+
+No. A quest may have several objectives. Use the **complete key of the many side**, `QUEST_OBJECTIVE`: `(quest_id, objective_no)`.
+
+</details>
+
+## Source material
+
+Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Sections 6.4 and 6.5.3; [Chapter 6 slides](https://www.db-book.com/slides-dir/PDF-dir/ch6.pdf).
