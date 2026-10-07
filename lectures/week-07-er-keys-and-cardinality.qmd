@@ -20,7 +20,7 @@ In Activity 4, a student's grade belonged to an enrollment, while an instructor 
 
 **Previous:** [Modeling a game world with ER diagrams](week-06-introduction-to-er-diagrams.qmd) · [Activity 4 — ER relationships](../activities/week-07-er-relationship-practice.qmd).
 
-**Focus:** translating binary relationships into tables, foreign keys, and constraints. We keep the book's arrow and single/double-line notation. The cheat sheet and examples give the main mapping rules; extended discussion is collected in the expandable reference at the end.
+**Focus:** translating binary relationships into tables, foreign keys, and constraints. We keep the book's arrow and single/double-line notation. The cheat sheet and examples give the main mapping rules. We close with repeated quest attempts as a lead-in to weak entities; other nuances stay in the expandable reference.
 
 ## 1. Mapping cheat sheet
 
@@ -223,7 +223,7 @@ For our examples:
 For the many-to-many `undertakes` table, each row requires both participants. The composite primary key makes their IDs non-null and prevents duplicate pairs, while allowing either ID to repeat with different partners.
 
 <details>
-<summary>Additional reference: relationship keys, alternative tables, and repeated quest attempts</summary>
+<summary>Additional reference: relationship keys and alternative mappings</summary>
 
 ### Why does the book define a relationship key?
 
@@ -272,94 +272,6 @@ UNIQUE (character_id, quest_id)
 
 This is a **column/constraint fragment**, replacing the primary key in the earlier `undertakes` definition. A generated ID identifies the row; the `UNIQUE` constraint still prevents duplicate character–quest pairs. This storage choice does not by itself change the ER relationship into an entity.
 
-### What if quests can be repeated?
-
-**Question:** What if Mira can finish quest 301 and try it again, and we want to retain each attempt?
-
-The character–quest pair no longer identifies one attempt. Give each attempt a number **within that character–quest pair**:
-
-::: {.table-responsive}
-| character_id | quest_id | attempt_no | status |
-|---|---|---|---|
-| 101 | 301 | 1 | completed |
-| 101 | 301 | 2 | active |
-| 101 | 302 | 1 | abandoned |
-| 102 | 301 | 1 | completed |
-:::
-
-- The first two rows describe different attempts involving the same character and quest.
-- `attempt_no` is not globally unique: different characters and quests reuse attempt numbers.
-- `status` describes an attempt; several attempts can have the same status.
-
-In the basic ER model, a binary relationship has at most one instance per participant pair. Merely adding `attempt_no` to the relationship diamond would not let it represent repeated occurrences. Instead, model **individual attempts as entities**.
-
-::: {.callout-note title="Two ways to identify the attempt entity"}
-- **Independent identification:** give `QUEST_ATTEMPT` its own globally unique `attempt_id`.
-- **Dependent identification:** model `QUEST_ATTEMPT` as a **weak entity**, identified by its character, quest, and local `attempt_no`.
-
-**Both options model attempts as entities.** A single-column versus composite primary key does not determine whether something is an entity or a relationship. Here, the reason to introduce an entity is to distinguish individual occurrences.
-:::
-
-### Option 1: an attempt entity with its own ID
-
-**Question:** How do we connect each independently identified attempt to its character and quest?
-
-![An entity with independent identification: each attempt connects to one character and one quest.](figures/er-quest-attempt-entity.svg){fig-alt="CHARACTER and QUEST are rectangles with underlined character_id and quest_id. A third rectangle, QUEST_ATTEMPT, has underlined attempt_id and descriptive attempt_no, accepted_at, and status. The made_by diamond has an arrow toward CHARACTER, and attempt_of has an arrow toward QUEST. Double lines connect QUEST_ATTEMPT to both diamonds. Thus each attempt requires exactly one character and one quest; either character or quest can have zero or many attempts."}
-
-- `accepted_at` and `status` move into the attempt rectangle because they describe a particular attempt.
-- Arrows point toward `CHARACTER` and `QUEST`: each attempt has at most one of each. Double lines require both associations, making each exactly one.
-- A character or quest may have zero or many attempts. Distinct attempt entities can connect to the same character and quest.
-- Underline `attempt_id`, the chosen key. `attempt_no` alone does not identify an attempt.
-
-**Mapping:** use `quest_attempt` in place of `undertakes`. The two many-to-one relationships become non-null foreign keys in the attempt table; they do not need separate tables.
-
-```sql
-CREATE TABLE quest_attempt (
-    attempt_id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    character_id integer NOT NULL REFERENCES game_character (character_id),
-    quest_id integer NOT NULL REFERENCES quest (quest_id),
-    attempt_no integer NOT NULL CHECK (attempt_no > 0),
-    accepted_at timestamptz NOT NULL,
-    status text NOT NULL
-        CHECK (status IN ('active', 'completed', 'abandoned')),
-    UNIQUE (character_id, quest_id, attempt_no)
-);
-```
-
-- `attempt_id` identifies the attempt independently of its character, quest, and local number.
-- The three-column `UNIQUE` constraint preserves our local-numbering rule. That rule is not conveyed by the arrows alone.
-- PostgreSQL generates `attempt_id`; the application supplies `attempt_no`. The constraints do not generate local numbers or require consecutive numbering.
-- Do **not** make the character–quest pair unique: that would prohibit repeat attempts.
-
-### Option 2: dependent identification — a preview
-
-**Question:** Could we identify attempts without adding `attempt_id`?
-
-Yes. Use the character ID, quest ID, and local attempt number together. Removing any of the three can leave duplicates in the example above.
-
-For this alternative table definition, omit `attempt_id` and replace the three-column `UNIQUE` constraint with:
-
-```sql
-PRIMARY KEY (character_id, quest_id, attempt_no)
-```
-
-Keep the foreign keys and other columns and checks. This is an **alternative definition of the same table**, not a second table to create alongside it.
-
-- This still models an **attempt entity**, not a binary relationship with an extra attribute.
-- In the conceptual model, its identity depends on the character and quest. This is the **weak-entity** option.
-- A composite key does not automatically make an entity weak; the identifying dependence on other entities is what matters here.
-
-We will revisit this example when we introduce weak-entity notation and identifying relationships. The diagram above deliberately shows **Option 1**, with an independent key.
-
-**Discuss:** Does removing `attempt_id` turn the attempt back into a relationship? What must identify it instead?
-
-<details class="practice-solution">
-<summary>Possible answer</summary>
-
-No. We still record distinct attempt entities. Without the independent ID, the character, quest, and local attempt number identify each attempt together. The choice changes how the entity is identified, not whether individual attempts need to be distinguished.
-
-</details>
-
 ### Apply the defaults to the remaining relationships
 
 The remaining game relationships follow the same patterns:
@@ -383,6 +295,68 @@ The simple keys and foreign keys above do not enforce every rule in the game mod
 - `guild.leader_id` referencing `game_character` does not ensure the leader is also a member of that guild.
 
 Keep these requirements with the design. They need additional enforcement beyond the definitions shown; an ordinary row-level `CHECK` cannot inspect other table rows to establish them.
+
+</details>
+
+## 7. Looking ahead: repeated quest attempts
+
+**Question:** What if Mira finishes quest 301 and tries it again, and we want to keep both attempts?
+
+::: {.table-responsive}
+| character_id | quest_id | attempt_no | status |
+|---|---|---|---|
+| 101 | 301 | 1 | completed |
+| 101 | 301 | 2 | active |
+| 101 | 302 | 1 | abandoned |
+| 102 | 301 | 1 | completed |
+:::
+
+The first two rows share the same character–quest pair, so that pair no longer identifies one attempt. In the basic ER model, a binary relationship records one association per pair. To distinguish repeated occurrences, model **each attempt as an entity**. There are two ways to identify it.
+
+### Option 1: give the attempt its own ID
+
+Use a globally unique `attempt_id` as the primary key. This makes `QUEST_ATTEMPT` a **strong entity**, self-sufficient for identification.
+
+![An entity with independent identification: each attempt connects to one character and one quest.](figures/er-quest-attempt-entity.svg){fig-alt="CHARACTER and QUEST are rectangles with underlined character_id and quest_id. A third rectangle, QUEST_ATTEMPT, has underlined attempt_id and descriptive attempt_no, accepted_at, and status. The made_by diamond has an arrow toward CHARACTER, and attempt_of has an arrow toward QUEST. Double lines connect QUEST_ATTEMPT to both diamonds. Thus each attempt requires exactly one character and one quest; either character or quest can have zero or many attempts."}
+
+- Each attempt belongs to exactly one character and one quest: apply our many-to-one rule twice, using two non-null foreign keys in `quest_attempt`.
+- If we also keep local attempt numbers, make the character ID, quest ID, and attempt number **unique together**.
+
+### Option 2: identify the attempt through its context
+
+Instead of adding `attempt_id`, use:
+
+```sql
+PRIMARY KEY (character_id, quest_id, attempt_no)
+```
+
+- `attempt_no` is local to a character–quest pair; it is not globally unique.
+- The character, quest, and local number together identify the attempt. This is the **weak-entity** option: identification depends on other entities.
+- Both designs allow retries. Making the character–quest pair unique would prohibit them.
+
+**Both options model attempt entities.** The difference is independent versus dependent identification, not simply a single-column versus composite key. The diagram shows Option 1; we will return to Option 2 when introducing weak-entity notation.
+
+<details>
+<summary>SQL reference for the two attempt designs</summary>
+
+For Option 1, use this table in place of `undertakes`:
+
+```sql
+CREATE TABLE quest_attempt (
+    attempt_id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    character_id integer NOT NULL REFERENCES game_character (character_id),
+    quest_id integer NOT NULL REFERENCES quest (quest_id),
+    attempt_no integer NOT NULL CHECK (attempt_no > 0),
+    accepted_at timestamptz NOT NULL,
+    status text NOT NULL
+        CHECK (status IN ('active', 'completed', 'abandoned')),
+    UNIQUE (character_id, quest_id, attempt_no)
+);
+```
+
+For Option 2, omit `attempt_id` and replace the three-column `UNIQUE` constraint with the composite primary key shown above. Keep the foreign keys, non-null columns, and checks. These are alternative definitions of one table.
+
+PostgreSQL generates `attempt_id`; the application supplies `attempt_no`. The constraints require positive, unique local numbers, but do not generate them or require consecutive numbering.
 
 </details>
 
