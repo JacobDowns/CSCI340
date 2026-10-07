@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="190" viewBox="0 0 960 190" role="img" aria-labelledby="title desc">
+<title id="title">One-to-one guild leadership</title>
+<desc id="desc">led_by points toward both CHARACTER and GUILD. CHARACTER has partial participation and GUILD has total participation. Every guild has exactly one leader; a character leads zero or one guild. Entity keys are underlined.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.heading{font-size:22px;font-weight:700}.attribute{font-family:Consolas,monospace;font-size:21px}.relationship{font-size:21px}.note{font-size:20px;fill:#475569}</style>
+<rect width="960" height="190" fill="#fff"/>
+<rect x="30" y="30" width="250" height="122" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="31" y="31" width="248" height="43" fill="#eaf4f7"/>
+<path d="M30 74 H280" stroke="#344955" stroke-width="2"/>
+<text x="155.0" y="60" class="heading" text-anchor="middle">CHARACTER</text>
+<text x="50" y="106" class="attribute" text-decoration="underline">character_id</text>
+<text x="50" y="140" class="attribute">name</text>
+<rect x="680" y="30" width="250" height="122" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="681" y="31" width="248" height="43" fill="#eaf4f7"/>
+<path d="M680 74 H930" stroke="#344955" stroke-width="2"/>
+<text x="805.0" y="60" class="heading" text-anchor="middle">GUILD</text>
+<text x="700" y="106" class="attribute" text-decoration="underline">guild_id</text>
+<text x="700" y="140" class="attribute">name</text>
+<polygon points="380,100 480,50 580,100 480,150" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="480" y="107" class="relationship" text-anchor="middle">led_by</text>
+<path d="M380 100 H294" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="280,100 294,93 294,107" fill="#344955"/>
+<path d="M572 96 H666" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M572 104 H666" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="680,100 666,93 666,107" fill="#344955"/>
+</svg>

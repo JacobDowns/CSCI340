@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="490" viewBox="0 0 960 490" role="img" aria-labelledby="title desc">
+<title id="title">Individual quest attempts with their own identifier</title>
+<desc id="desc">QUEST_ATTEMPT is an entity with underlined attempt_id and descriptive attempt_no, accepted_at and status. Its made_by relationship points to CHARACTER and its attempt_of relationship points to QUEST. Double lines connect QUEST_ATTEMPT to both relationships: every attempt has exactly one character and quest. Characters and quests may have zero or many attempts.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.heading{font-size:22px;font-weight:700}.attribute{font-family:Consolas,monospace;font-size:21px}.relationship{font-size:21px}.note{font-size:20px;fill:#475569}</style>
+<rect width="960" height="490" fill="#fff"/>
+<rect x="30" y="30" width="250" height="122" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="31" y="31" width="248" height="43" fill="#eaf4f7"/>
+<path d="M30 74 H280" stroke="#344955" stroke-width="2"/>
+<text x="155.0" y="60" class="heading" text-anchor="middle">CHARACTER</text>
+<text x="50" y="106" class="attribute" text-decoration="underline">character_id</text>
+<text x="50" y="140" class="attribute">name</text>
+<rect x="680" y="30" width="250" height="122" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="681" y="31" width="248" height="43" fill="#eaf4f7"/>
+<path d="M680 74 H930" stroke="#344955" stroke-width="2"/>
+<text x="805.0" y="60" class="heading" text-anchor="middle">QUEST</text>
+<text x="700" y="106" class="attribute" text-decoration="underline">quest_id</text>
+<text x="700" y="140" class="attribute">title</text>
+<rect x="340" y="240" width="280" height="190" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="341" y="241" width="278" height="43" fill="#eaf4f7"/>
+<path d="M340 284 H620" stroke="#344955" stroke-width="2"/>
+<text x="480.0" y="270" class="heading" text-anchor="middle">QUEST_ATTEMPT</text>
+<text x="360" y="316" class="attribute" text-decoration="underline">attempt_id</text>
+<text x="360" y="350" class="attribute">attempt_no</text>
+<text x="360" y="384" class="attribute">accepted_at</text>
+<text x="360" y="418" class="attribute">status</text>
+<polygon points="55,330 155,280 255,330 155,380" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="155" y="337" class="relationship" text-anchor="middle">made_by</text>
+<polygon points="705,330 805,280 905,330 805,380" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="805" y="337" class="relationship" text-anchor="middle">attempt_of</text>
+<path d="M155 280 V166" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="155,152 148,166 162,166" fill="#344955"/>
+<path d="M805 280 V166" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="805,152 798,166 812,166" fill="#344955"/>
+<path d="M247 326 H340" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M247 334 H340" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M620 326 H713" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M620 334 H713" fill="none" stroke="#344955" stroke-width="2"/>
+</svg>

@@ -1,7 +1,7 @@
 ---
 title: "Relationship keys and mapping ER models to relations"
-subtitle: "Use cardinality and participation to choose keys, tables, and foreign keys"
-description: "Derive keys for binary relationships and map them to separate relations or foreign-key columns, preserving cardinality, participation, and relationship attributes."
+subtitle: "Choose relationship tables, foreign keys, and constraints from an ER model"
+description: "Apply default ER-to-table mappings, then examine relationship keys, optional participation, and alternative designs."
 author: "CSCI 340"
 toc: true
 toc-depth: 2
@@ -15,16 +15,40 @@ WEEK 7 · RELATIONSHIP KEYS AND RELATIONAL MAPPING
 
 # What identifies an association, and where do we store it?
 
-In Activity 4, a student's grade belonged to an enrollment, while an instructor could teach several sections. Both are relationships, but they need different keys and can lead to different table designs. We will make those decisions together.
+In Activity 4, a student's grade belonged to an enrollment, while an instructor could teach several sections. When does a relationship need a new table, and when can we represent it with a foreign key in an existing table?
 :::
 
 **Previous:** [Modeling a game world with ER diagrams](week-06-introduction-to-er-diagrams.qmd) · [Activity 4 — ER relationships](../activities/week-07-er-relationship-practice.qmd).
 
-**Focus:** binary relationship keys and their relational representation. We keep the book's arrow and single/double-line notation. Minimum–maximum notation and weak entities will come in a later lecture.
+**Focus:** translating binary relationships into tables, foreign keys, and constraints. We keep the book's arrow and single/double-line notation. The cheat sheet and examples give the main mapping rules; extended discussion is collected in the expandable reference at the end.
 
-## 1. Move from the model to a schema
+## 1. Mapping cheat sheet
 
-An **ER relationship** is an association between entities. A **relation** is the table-shaped structure we studied earlier. An ER relationship may become its own relation, or we may represent it using columns in an entity relation.
+Start with a table for each entity set. For a binary relationship, use these **default mappings**:
+
+::: {.table-responsive}
+| Relationship | Where to store it | Primary key and uniqueness |
+|---|---|---|
+| **Many-to-many** | Create a relationship table with foreign keys to both entity tables. | Use both participant keys together as the new table's primary key. |
+| **One-to-many / many-to-one** | Put a foreign key to the one side in the **many-side table**. | Keep that table's existing primary key. Do not make the foreign key unique. |
+| **One-to-one** | Put a foreign key in one entity table, preferably the side with required participation. | Keep that table's existing primary key and make the foreign key **`UNIQUE`**. |
+:::
+
+- **Required partner:** make the foreign key `NOT NULL` when every row in the table holding it must have a partner. Otherwise, allow null.
+- **Relationship attributes:** store them in the relationship table or alongside the foreign key that represents the relationship.
+- **Composite entity keys:** carry over all key columns when creating the reference.
+
+For many-to-many, we choose a primary key for a **new table**. For the other default mappings, we add **foreign keys and constraints to existing tables**. Separate relationship tables are still possible; we will consider those alternatives after the basic examples.
+
+### Keep entity identity separate from relationship storage
+
+A **strong entity** is self-sufficient for identification: its own attributes provide its key. A **relationship** is identified through its participating entities.
+
+- `character_id` identifies a character without needing a location or guild. Requiring a location does not change that identity.
+- A character and quest together identify an `undertakes` association; `status` describes it.
+- Adding a foreign key records an association. It does not change the entity's primary key or make it dependent for identification.
+
+### Starting entity relations
 
 Start with one relation for each entity set and carry over its key and simple attributes. For the game world, assume these entity relations already exist:
 
@@ -40,30 +64,13 @@ Start with one relation for each entity set and carry over its key and simple at
 
 For the SQL examples, assume these keys are generated integer primary keys. **Foreign keys reuse existing IDs; they do not generate new IDs for the related entity.** The snippets add relationships to these tables; unrelated attributes are omitted.
 
-For each relationship, ask:
-
-1. **Meaning:** what does one association represent?
-2. **Identity:** which participant IDs distinguish that association?
-3. **Storage:** do we need a separate relation, or can one entity row hold the association?
-4. **Constraints:** what must the database require or prohibit?
-
-### Recall the key vocabulary
-
-- A **superkey** uniquely identifies each relationship instance.
-- A **candidate key** is a minimal superkey: removing an attribute loses that guarantee.
-- A **primary key** is the candidate key we choose to use.
-
-In the basic ER model, each combination of participants occurs at most once in a relationship set. Their combined keys therefore form a **superkey**. Cardinality determines whether a smaller set is sufficient.
-
-::: {.callout-note appearance="simple"}
-A descriptive attribute does not automatically belong in the key. Updating a quest's `status` changes the association's state, not which character–quest association it is.
-:::
-
-## 2. Many-to-many: keep a separate relationship relation
+## 2. Many-to-many: create a relationship table
 
 **Question:** Where should we store each character's progress on each quest?
 
 Our `undertakes` rule allows a character to undertake many quests and a quest to have many participating characters. Each character undertakes a particular quest at most once.
+
+![An association: progress belongs to the character–quest relationship.](figures/er-quest-association.svg){fig-alt="CHARACTER and QUEST are connected by an undertakes diamond. Neither connection has an arrow, so this is many-to-many. Both connections are single lines, allowing characters and quests with no undertakings. accepted_at and status appear in a relationship-attribute box connected to the diamond by a dashed line."}
 
 ::: {.table-responsive}
 | character_id | quest_id | status |
@@ -73,7 +80,7 @@ Our `undertakes` rule allows a character to undertake many quests and a quest to
 | 102 | 301 | completed |
 :::
 
-### Derive the key
+### Choose the new table’s primary key
 
 - `character_id` alone fails: character 101 has two quests.
 - `quest_id` alone fails: quest 301 has two characters.
@@ -106,41 +113,17 @@ No. The primary key rejects the duplicate pair. Update the existing association'
 
 </details>
 
-### Would a generated relationship ID work?
-
-Yes, but it would not by itself enforce the one-association-per-pair rule. An alternative design would use:
-
-```sql
-undertaking_id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
--- Keep character_id and quest_id as NOT NULL foreign keys, plus:
-UNIQUE (character_id, quest_id)
-```
-
-This is a **column/constraint fragment**, replacing the composite primary key above. A generated ID identifies the row; the `UNIQUE` constraint still prevents duplicate character–quest pairs.
-
-## 3. Many-to-one: incorporate the relationship into the many side
+## 3. Many-to-one: add a foreign key on the many side
 
 **Question:** Does a character's current location need a separate table?
 
 Each character has exactly one current location. A location may contain many characters or none. In the ER diagram, `located_in` points to `LOCATION`, and `CHARACTER` has total participation.
 
-### Derive the key
+![Many-to-one: each character has one current location; several characters may share it.](figures/er-mapping-current-location.svg){fig-alt="CHARACTER, with underlined character_id, connects by double lines to a located_in diamond. A single line with an arrow points from the diamond to LOCATION, whose location_id is underlined. Every character has exactly one location; a location can have zero or many characters."}
 
-If we represent the associations separately, we get:
+### Put the foreign key on the many side
 
-::: {.table-responsive}
-| character_id | location_id |
-|---|---|
-| 101 | 10 |
-| 102 | 10 |
-| 103 | 11 |
-:::
-
-- **`character_id` is a key:** a character has only one current location.
-- `location_id` is not a key: characters can share a location.
-- The pair is a superkey, but is not minimal.
-
-A separate `located_in(character_id, location_id)` relation could use `character_id` as its primary key and both columns as foreign keys. However, `game_character` already has exactly one row per character. We can combine the relationship relation with it:
+`CHARACTER` is the many side: several characters can share a location. Each character row needs only one location reference, so add the foreign key to `game_character`:
 
 ```sql
 ALTER TABLE game_character
@@ -163,13 +146,7 @@ ADD COLUMN location_id integer NOT NULL
 
 **The character's primary key remains `character_id`.** We added a foreign key, not another component of the character's primary key.
 
-::: {.callout-note appearance="simple"}
-The relationship can be combined with the entity relation because they have the **same key**. We are combining `game_character` with `located_in`, not combining characters and locations into one entity table.
-:::
-
-The `ALTER TABLE` examples assume empty entity tables. With existing rows, add the column, populate valid values, and then apply `NOT NULL`.
-
-**Why prefer this representation?** A separate relationship table's foreign keys would validate its rows, but would not by themselves require every character to appear in that table. The non-null column in `game_character` enforces that requirement directly.
+The `ALTER TABLE` examples assume empty tables. With existing rows, add the column, populate valid values, and then apply `NOT NULL`.
 
 ## 4. One-to-many with optional participation
 
@@ -177,32 +154,11 @@ The `ALTER TABLE` examples assume empty entity tables. With existing rows, add t
 
 A character may carry many items. An item has at most one carrier and may have none. Assume every recorded carrying association includes an acquisition time.
 
-### Derive the key
+![One-to-many: a character may carry several items; an item may have no carrier.](figures/er-mapping-carries.svg){fig-alt="CHARACTER and ITEM have underlined character_id and item_id. A carries diamond points toward CHARACTER and has no arrow toward ITEM. Both connections are single lines, allowing either entity to have no association. A dashed line joins acquired_at to the diamond as a relationship attribute."}
 
-For `carries(character_id, item_id, acquired_at)`:
+### Use the same rule, read in the other direction
 
-- `character_id` alone fails: a character may carry several items.
-- **`item_id` is a key:** an item has at most one current carrier.
-- `(character_id, item_id)` is a superkey, but is not minimal.
-
-The key comes from the **many side**, `ITEM`. This is the same rule as the previous example, read in the other direction.
-
-### Option A: a separate relationship table
-
-```sql
-CREATE TABLE carries (
-    item_id integer PRIMARY KEY REFERENCES item (item_id),
-    character_id integer NOT NULL
-        REFERENCES game_character (character_id),
-    acquired_at timestamptz NOT NULL
-);
-```
-
-An uncarried item remains in `item` and has **no row in `carries`**. Each carrying row must identify both participants. Making `character_id` nullable here would create a row that does not represent a carrying association.
-
-### Option B: columns in the item table
-
-Alternatively, combine the relationship with the item relation:
+`ITEM` is the many side. Add a reference to its carrier and store the relationship's `acquired_at` alongside it. Both columns may be null because an item can be uncarried.
 
 ```sql
 ALTER TABLE item
@@ -215,12 +171,12 @@ ADD CONSTRAINT carrying_details_together CHECK (
 );
 ```
 
-- `carrier_id` is the relationship's `character_id`, renamed to communicate its role.
+- `carrier_id` references `game_character.character_id`; the name communicates its role.
 - An uncarried item has nulls in both added columns.
 - The check keeps the acquisition time together with the association it describes.
 - Do not make `carrier_id` unique: one character can carry several items.
 
-**Choose one representation for `carries`.** Both express these rules; storing both independently would duplicate the same fact. Option A avoids null relationship fields. Option B keeps the current carrier directly on the item row.
+**The item's primary key remains `item_id`.** We added relationship columns to an existing entity table. A separate `carries` table is also possible; we will compare that alternative later.
 
 ## 5. One-to-one: preserve both uniqueness rules
 
@@ -228,19 +184,11 @@ ADD CONSTRAINT carrying_details_together CHECK (
 
 Every guild has exactly one leader; a character leads at most one guild. Guild leadership is separate from the many-to-many `member_of` relationship.
 
-### Derive the key
+![One-to-one: every guild has one leader, and a character leads at most one guild.](figures/er-mapping-guild-leader.svg){fig-alt="A led_by diamond has arrows toward both CHARACTER and GUILD, whose character_id and guild_id are underlined. The CHARACTER connection is a single line; the GUILD connection is doubled. Each guild requires exactly one leader, while a character may lead zero or one guild."}
 
-For a separate `led_by(guild_id, character_id)` relation:
+### Add a unique foreign key
 
-- `guild_id` is a candidate key: each guild has at most one leader.
-- `character_id` is also a candidate key: each character leads at most one guild.
-- Choose one as the primary key and enforce uniqueness of the other.
-
-For example, a separate table could use `guild_id` as its primary key and `character_id` as a non-null, unique foreign key. Both columns would reference their entity tables.
-
-### Combine with the side that must participate
-
-A direct representation puts the leader on the guild row:
+Put `leader_id` on `guild`, the side that must participate. Each guild row stores its leader; `UNIQUE` prevents that character from appearing as another guild's leader.
 
 ```sql
 ALTER TABLE guild
@@ -253,23 +201,166 @@ ADD COLUMN leader_id integer NOT NULL UNIQUE
 - `UNIQUE` prevents a character from leading two guilds.
 - The foreign key requires the leader to be an existing character.
 
+**The guild's primary key remains `guild_id`.**
+
 **Without `UNIQUE`, this would allow many guilds to share one leader.** A foreign key alone does not make a relationship one-to-one.
 
 In principle, a one-to-one relationship can be incorporated into either entity relation. Putting a nullable, unique `led_guild_id` on characters would record who leads a guild, but would not by itself ensure every guild has a leader. Total participation makes `guild` the convenient choice here.
 
-## 6. Put the mapping rules together
+## 6. Check the foreign-key constraints
 
-For these binary relationships, assuming no additional uniqueness rules:
+Once you have chosen the table that holds a foreign key, ask:
+
+1. **May several rows refer to the same partner?** If yes, allow repeated foreign-key values. If no, add `UNIQUE`.
+2. **Must every row in this table have a partner?** If yes, add `NOT NULL`. Otherwise, allow null.
+
+For our examples:
+
+- **Character → location:** repeated locations are allowed; a location is required. Use `NOT NULL`, without `UNIQUE`.
+- **Item → carrier:** repeated carriers are allowed; a carrier is optional. Use neither `UNIQUE` nor `NOT NULL` on `carrier_id`.
+- **Guild → leader:** a character can lead only one guild; a leader is required. Use both `UNIQUE` and `NOT NULL`.
+
+For the many-to-many `undertakes` table, each row requires both participants. The composite primary key makes their IDs non-null and prevents duplicate pairs, while allowing either ID to repeat with different partners.
+
+<details>
+<summary>Additional reference: relationship keys, alternative tables, and repeated quest attempts</summary>
+
+### Why does the book define a relationship key?
+
+A relationship has an identity even when we store it using columns in an entity table. If we represented each association as a separate row, the book's rules tell us which participant keys would identify that row:
 
 ::: {.table-responsive}
-| Cardinality | Key of a separate relationship relation | Common representation |
-|---|---|---|
-| Many-to-many | Combine both entity keys. | Separate relation with both foreign keys and relationship attributes. |
-| One-to-many or many-to-one | Use the many-side entity's key. | Put a foreign key to the one side in the many-side relation; carry relationship attributes with it. |
-| One-to-one | Either entity key can be chosen; the other remains unique. | Put a unique foreign key on one side, usually the side with total participation. |
+| Cardinality | Minimal superkey for the relationship |
+|---|---|
+| Many-to-many | Both participants' primary keys together. |
+| One-to-many or many-to-one | The primary key of the many-side entity. |
+| One-to-one | Either participant's primary key. |
 :::
 
-If an entity key is composite, carry over **all** of its attributes. The same reasoning applies; an entity key need not be a single ID.
+These rules assume the stated binary cardinalities and no additional uniqueness requirements. If we create a separate relationship table, we can choose the indicated key as its primary key; for one-to-one, we must also enforce uniqueness of the other participant's key.
+
+**With a foreign-key mapping, we do not declare another primary key.** The existing entity row already identifies the association: `character_id` identifies a character's current-location association, and `guild_id` identifies a guild's leadership association. The relationship-key rules explain why these mappings work.
+
+### Alternative: a separate table for carrying
+
+A separate relationship table can be useful when participation is optional: uncarried items then need no null relationship fields.
+
+```sql
+CREATE TABLE carries (
+    item_id integer PRIMARY KEY REFERENCES item (item_id),
+    character_id integer NOT NULL
+        REFERENCES game_character (character_id),
+    acquired_at timestamptz NOT NULL
+);
+```
+
+An uncarried item remains in `item` and has **no row in `carries`**. Each carrying row must identify both participants. Making `character_id` nullable here would create a row that does not represent a carrying association.
+
+Here, **`item_id` is the relationship table's primary key** because an item has at most one carrier. This is where the many-side key rule directly determines a new table's primary key.
+
+Choose either this table or the earlier columns in `item`. Storing both independently would duplicate the same fact. A separate table's foreign keys also do not, by themselves, require every entity to participate; this matters for mandatory associations such as a character's location.
+
+### Would a generated relationship ID work?
+
+For the many-to-many `undertakes` table, yes—but the ID would not by itself enforce the one-association-per-pair rule. An alternative design would use:
+
+```sql
+undertaking_id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+-- Keep character_id and quest_id as NOT NULL foreign keys, plus:
+UNIQUE (character_id, quest_id)
+```
+
+This is a **column/constraint fragment**, replacing the primary key in the earlier `undertakes` definition. A generated ID identifies the row; the `UNIQUE` constraint still prevents duplicate character–quest pairs. This storage choice does not by itself change the ER relationship into an entity.
+
+### What if quests can be repeated?
+
+**Question:** What if Mira can finish quest 301 and try it again, and we want to retain each attempt?
+
+The character–quest pair no longer identifies one attempt. Give each attempt a number **within that character–quest pair**:
+
+::: {.table-responsive}
+| character_id | quest_id | attempt_no | status |
+|---|---|---|---|
+| 101 | 301 | 1 | completed |
+| 101 | 301 | 2 | active |
+| 101 | 302 | 1 | abandoned |
+| 102 | 301 | 1 | completed |
+:::
+
+- The first two rows describe different attempts involving the same character and quest.
+- `attempt_no` is not globally unique: different characters and quests reuse attempt numbers.
+- `status` describes an attempt; several attempts can have the same status.
+
+In the basic ER model, a binary relationship has at most one instance per participant pair. Merely adding `attempt_no` to the relationship diamond would not let it represent repeated occurrences. Instead, model **individual attempts as entities**.
+
+::: {.callout-note title="Two ways to identify the attempt entity"}
+- **Independent identification:** give `QUEST_ATTEMPT` its own globally unique `attempt_id`.
+- **Dependent identification:** model `QUEST_ATTEMPT` as a **weak entity**, identified by its character, quest, and local `attempt_no`.
+
+**Both options model attempts as entities.** A single-column versus composite primary key does not determine whether something is an entity or a relationship. Here, the reason to introduce an entity is to distinguish individual occurrences.
+:::
+
+### Option 1: an attempt entity with its own ID
+
+**Question:** How do we connect each independently identified attempt to its character and quest?
+
+![An entity with independent identification: each attempt connects to one character and one quest.](figures/er-quest-attempt-entity.svg){fig-alt="CHARACTER and QUEST are rectangles with underlined character_id and quest_id. A third rectangle, QUEST_ATTEMPT, has underlined attempt_id and descriptive attempt_no, accepted_at, and status. The made_by diamond has an arrow toward CHARACTER, and attempt_of has an arrow toward QUEST. Double lines connect QUEST_ATTEMPT to both diamonds. Thus each attempt requires exactly one character and one quest; either character or quest can have zero or many attempts."}
+
+- `accepted_at` and `status` move into the attempt rectangle because they describe a particular attempt.
+- Arrows point toward `CHARACTER` and `QUEST`: each attempt has at most one of each. Double lines require both associations, making each exactly one.
+- A character or quest may have zero or many attempts. Distinct attempt entities can connect to the same character and quest.
+- Underline `attempt_id`, the chosen key. `attempt_no` alone does not identify an attempt.
+
+**Mapping:** use `quest_attempt` in place of `undertakes`. The two many-to-one relationships become non-null foreign keys in the attempt table; they do not need separate tables.
+
+```sql
+CREATE TABLE quest_attempt (
+    attempt_id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    character_id integer NOT NULL REFERENCES game_character (character_id),
+    quest_id integer NOT NULL REFERENCES quest (quest_id),
+    attempt_no integer NOT NULL CHECK (attempt_no > 0),
+    accepted_at timestamptz NOT NULL,
+    status text NOT NULL
+        CHECK (status IN ('active', 'completed', 'abandoned')),
+    UNIQUE (character_id, quest_id, attempt_no)
+);
+```
+
+- `attempt_id` identifies the attempt independently of its character, quest, and local number.
+- The three-column `UNIQUE` constraint preserves our local-numbering rule. That rule is not conveyed by the arrows alone.
+- PostgreSQL generates `attempt_id`; the application supplies `attempt_no`. The constraints do not generate local numbers or require consecutive numbering.
+- Do **not** make the character–quest pair unique: that would prohibit repeat attempts.
+
+### Option 2: dependent identification — a preview
+
+**Question:** Could we identify attempts without adding `attempt_id`?
+
+Yes. Use the character ID, quest ID, and local attempt number together. Removing any of the three can leave duplicates in the example above.
+
+For this alternative table definition, omit `attempt_id` and replace the three-column `UNIQUE` constraint with:
+
+```sql
+PRIMARY KEY (character_id, quest_id, attempt_no)
+```
+
+Keep the foreign keys and other columns and checks. This is an **alternative definition of the same table**, not a second table to create alongside it.
+
+- This still models an **attempt entity**, not a binary relationship with an extra attribute.
+- In the conceptual model, its identity depends on the character and quest. This is the **weak-entity** option.
+- A composite key does not automatically make an entity weak; the identifying dependence on other entities is what matters here.
+
+We will revisit this example when we introduce weak-entity notation and identifying relationships. The diagram above deliberately shows **Option 1**, with an independent key.
+
+**Discuss:** Does removing `attempt_id` turn the attempt back into a relationship? What must identify it instead?
+
+<details class="practice-solution">
+<summary>Possible answer</summary>
+
+No. We still record distinct attempt entities. Without the independent ID, the character, quest, and local attempt number identify each attempt together. The choice changes how the entity is identified, not whether individual attempts need to be distinguished.
+
+</details>
+
+### Apply the defaults to the remaining relationships
 
 The remaining game relationships follow the same patterns:
 
@@ -293,71 +384,17 @@ The simple keys and foreign keys above do not enforce every rule in the game mod
 
 Keep these requirements with the design. They need additional enforcement beyond the definitions shown; an ordinary row-level `CHECK` cannot inspect other table rows to establish them.
 
-## 7. Revisit Activity 4
-
-**Question:** How would the activity's relationships appear in a relational schema?
-
-Assume each entity set has its own ID. As in the activity, college enrollment describes the **current term**, and each scheduled section has its own `section_id`.
-
-::: {.table-responsive}
-| Activity example | Relationship key | One suitable mapping |
-|---|---|---|
-| B1: current personal-locker rental | Either `member_id` or `locker_id` | `rental(member_id, locker_id)`: primary key on `member_id`, `UNIQUE` on `locker_id`, and both columns non-null foreign keys. |
-| B2: employee's home department | `employee_id` | Add a non-null `department_id` foreign key to `employee`. Do not make it unique. |
-| B3/C2: enrollment and final grade | `(student_id, section_id)` | Create `enrollment` with both foreign keys and `final_grade`. The grade can be null before it is known. |
-| B4/C3: a supplier's quoted price | `(supplier_id, product_id)` | Create `offers` with both foreign keys and `quoted_price`. |
-| C1: the instructor teaching a section | `section_id` | Add a non-null `instructor_id` foreign key to `section`. Do not make it unique. |
-:::
-
-`contact_email` stays with `supplier`, and `shipping_weight` stays with `product`. A supplier's `quoted_price` describes the supplier–product association.
-
-**Discuss:** If every student must enroll in at least one section, does `enrollment` need a different primary key? Does making both foreign keys non-null enforce that new rule?
-
-<details class="practice-solution">
-<summary>Possible answer</summary>
-
-The key stays `(student_id, section_id)`: the relationship is still many-to-many. Non-null foreign keys ensure each enrollment row names a student and a section. They do not ensure every student has an enrollment row.
-
 </details>
 
-## 8. Recognize when the fact itself changes
-
-Suppose Mira can finish quest 301 and later undertake it again, and the game must retain both attempts.
-
-- `(character_id, quest_id)` identifies one association under our original rule.
-- Changing `status` does not distinguish repeated attempts; different attempts can share a status.
-- Introduce `QUEST_ATTEMPT`, with its own `attempt_id`, character and quest foreign keys, acceptance time, and status. Several attempts can reference the same pair.
-
-This changes the model from “a character undertakes a quest once” to “record individual attempts.” Adding a generated ID while keeping a unique character–quest pair would still prohibit repeats.
-
-## 9. Check the resulting schema
-
-Explain each answer from the requirements:
-
-1. Why does `undertakes` need both participant IDs as its key, while `carries` can use `item_id` alone?
-2. What would go wrong if we declared `game_character.location_id` unique?
-3. What rule would be lost if we omitted `UNIQUE` from `guild.leader_id`?
-4. In the two `carries` designs, how do we represent an uncarried item, and where does `acquired_at` go?
-5. Does adding a generated enrollment ID remove the need to prevent duplicate student–section pairs?
-
-<details class="practice-solution">
-<summary>Check your explanations</summary>
-
-1. A character and a quest may each have several partners, so neither ID alone identifies an undertaking. An item has at most one carrier, so its ID identifies a carrying association.
-2. It would allow at most one character in a location, contradicting the game rule.
-3. The same character could lead multiple guilds.
-4. With a separate table, the item has no `carries` row; `acquired_at` belongs in existing carrying rows. With embedded columns, both `carrier_id` and `acquired_at` are null on an uncarried item's row.
-5. No. Under the one-enrollment-per-pair rule, keep a unique constraint on the non-null student and section IDs.
-
-</details>
-
-**Next:** extend ER modeling with minimum–maximum notation, weak entities, and other modeling choices. We will revisit their relational representations as those concepts are introduced.
+**Next:** extend ER modeling with minimum–maximum notation, weak entities, and other modeling choices. We will revisit quest attempts to show dependent identification in an ER diagram, alongside the relational representations of these concepts.
 
 ## Reference and reading
 
 Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition:
 
 - **Section 6.5.2:** relationship keys, pp. 257–258.
+- **Section 6.5.3:** weak entities and identification using one or more identifying entity sets, pp. 259–260 (preview).
+- **Section 6.9.3:** choosing entity sets versus relationship sets, pp. 282–283.
 - **Sections 6.7.1 and 6.7.4:** representing entity and relationship sets as relations.
 - **Section 6.7.6:** combining relationship and entity schemas, including optional participation and nulls, pp. 270–271.
 

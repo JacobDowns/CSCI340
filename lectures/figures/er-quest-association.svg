@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360" role="img" aria-labelledby="title desc">
+<title id="title">One character–quest association per pair</title>
+<desc id="desc">CHARACTER and QUEST have an optional many-to-many undertakes relationship, with no arrows. accepted_at and status are relationship attributes. Entity keys are underlined.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.heading{font-size:22px;font-weight:700}.attribute{font-family:Consolas,monospace;font-size:21px}.relationship{font-size:21px}.note{font-size:20px;fill:#475569}</style>
+<rect width="960" height="360" fill="#fff"/>
+<rect x="30" y="40" width="250" height="122" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="31" y="41" width="248" height="43" fill="#eaf4f7"/>
+<path d="M30 84 H280" stroke="#344955" stroke-width="2"/>
+<text x="155.0" y="70" class="heading" text-anchor="middle">CHARACTER</text>
+<text x="50" y="116" class="attribute" text-decoration="underline">character_id</text>
+<text x="50" y="150" class="attribute">name</text>
+<rect x="680" y="40" width="250" height="122" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="681" y="41" width="248" height="43" fill="#eaf4f7"/>
+<path d="M680 84 H930" stroke="#344955" stroke-width="2"/>
+<text x="805.0" y="70" class="heading" text-anchor="middle">QUEST</text>
+<text x="700" y="116" class="attribute" text-decoration="underline">quest_id</text>
+<text x="700" y="150" class="attribute">title</text>
+<polygon points="380,110 480,60 580,110 480,160" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="480" y="117" class="relationship" text-anchor="middle">undertakes</text>
+<path d="M280 110 H380" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M580 110 H680" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M480 160 V215" fill="none" stroke="#344955" stroke-width="2" stroke-dasharray="7 5"/>
+<rect x="365" y="215" width="230" height="94" fill="#fff" stroke="#344955" stroke-width="1.5"/>
+<text x="385" y="250" class="attribute">accepted_at</text>
+<text x="385" y="284" class="attribute">status</text>
+</svg>
