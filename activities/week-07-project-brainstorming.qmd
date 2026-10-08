@@ -1,0 +1,48 @@
+---
+title: "Activity 5 - Database project brainstorming"
+subtitle: "Choose a topic together and describe the database you want to build"
+description: "A group activity with 25 minutes to compare project ideas and choose a topic, followed by guided questions about purpose, users, entities, relationships, and modeling uncertainties."
+toc: false
+---
+
+Work with your assigned project group. Use the **first 25 minutes** to explore **two or three possible database topics** and agree on one. Spend the **remainder of class** elaborating on that choice so everyone leaves with a shared understanding of the project.
+
+::: {.lesson-hero}
+# Use the activity worksheet
+
+[Download the activity Word document](week-07-project-brainstorming.docx){download="week-07-project-brainstorming.docx" .btn .btn-primary}
+
+The worksheet includes guidance and space for your group's answers. Lists and short explanations are enough. An informal sketch is optional; a complete ER diagram is not required in this session.
+:::
+
+## First 25 minutes
+
+Discuss two or three possibilities. For each, identify the intended users, the problem or activity the database would support, and what makes the idea promising or uncertain. Make room for each group member to contribute.
+
+Choose **one topic by the end of these 25 minutes**. Record your choice and why it seems useful, interesting, and manageable for the group. You will develop this topic together during the rest of class.
+
+## Remainder of class
+
+Use the worksheet to describe:
+
+- The database's purpose, users, and the problem it addresses.
+- A few questions users should be able to answer with its data.
+- A manageable initial scope and a possible source of example data.
+- Potential entity types, what one instance represents, and a few useful attributes.
+- Potential relationships, described in words, with tentative cardinalities or participation rules where you can identify them.
+- Modeling questions, assumptions, or ambiguities that need further thought.
+
+## Complexity guidelines
+
+- Include **at least five meaningful entity types**; aim for a compact core of **five to seven**. An entity type describes a kind of thing, such as a member or a loan, rather than one particular record.
+- Use a **target minimum of four meaningful relationships**. Add relationships as needed to connect the entity types into a coherent model.
+- Each entity and relationship should help meet a user need or represent a real rule. Avoid adding unrelated features just to increase the count.
+- Keep the project focused on one setting or activity. Record larger features as possible extensions.
+
+Your topic should be settled today. Individual modeling choices can develop as you learn more. If you do not see an ambiguity yet, write down an assumption and consider a case in which it might fail.
+
+## Before leaving
+
+Keep one shared group worksheet with your group number and contributors' names. Agree on the chosen topic, summarize its purpose, and identify the most important open modeling question. Make sure every group member can access the group's notes.
+
+See the [semester project overview](../projects/capstone.qmd) for the broader project context.

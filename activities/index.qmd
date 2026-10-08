@@ -26,6 +26,8 @@ Labs and activities are short exercises that make the course ideas concrete. Eac
 
 - [Activity 4 — ER relationships](week-07-er-relationship-practice.qmd): distinguish entities, attributes, and relationships; compare cardinalities across four scenarios; draw a combined ER diagram; and explain relationship attributes and participation. Approximately 40–45 minutes. Work individually or in a group, then compare with classmates.
 
+- [Activity 5 — Database project brainstorming](week-07-project-brainstorming.qmd): spend the first 25 minutes comparing two or three topics and choosing one with your project group, then elaborate on its purpose, users, scope, entities, relationships, and modeling questions. Includes a Word worksheet with space for answers.
+
 ## Submission principle
 
 Lab submissions are deliberately small. They should preserve enough reasoning that the instructor can see what you tried, what you concluded, and which assumptions remain unresolved. The detailed submission location and deadline will be announced with each offering.

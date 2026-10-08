@@ -8,6 +8,7 @@ project:
     - "activities/lab-02-sql-joins-response-template.docx"
     - "activities/week-07-er-modeling-activity.docx"
     - "activities/week-07-er-modeling-activity.pdf"
+    - "activities/week-07-project-brainstorming.docx"
   render:
     - "index.qmd"
     - "schedule.qmd"
@@ -96,6 +97,7 @@ website:
           - section: Week 7
             contents:
               - activities/week-07-er-relationship-practice.qmd
+              - activities/week-07-project-brainstorming.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd
