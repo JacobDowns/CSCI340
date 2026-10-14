@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" role="img" aria-labelledby="title desc">
+<title id="title">Recorded triples versus pairwise connections</title>
+<desc id="desc">On the left, three hubs preserve the recorded sponsorship triples: A joins Mira, Light the Beacon, and Lantern Watch; B joins Mira, Explore the Mine, and Stonekeepers; C joins Rowan, Explore the Mine, and Lantern Watch. On the right, selected pairwise connections form a triangle between Mira, Explore the Mine, and Lantern Watch. Its three edges come from three different recorded triples, so the triangle does not establish a sponsorship for that combination.</desc>
+<rect width="1100" height="620" fill="white"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d;font-size:18px}.heading{font-size:23px;font-weight:bold}.small{font-size:17px}.bold{font-weight:bold}</style>
+<rect x="15" y="15" width="530" height="590" rx="12" fill="#f8fafc" stroke="#cbd5e1"/><rect x="565" y="15" width="520" height="590" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="280" y="52" text-anchor="middle" class="heading">Recorded triples</text>
+<text x="825" y="52" text-anchor="middle" class="heading">Keep only the pairs</text>
+<text x="280" y="82" text-anchor="middle" class="small">Each hub represents one sponsorship.</text>
+<text x="825" y="82" text-anchor="middle" class="small">Selected edges from the pairwise projections</text>
+<rect x="35" y="115" width="105" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="87.5" y="150" text-anchor="middle" class="">Mira</text>
+<polyline points="87.5,173 87.5,209 252.5,209" fill="none" stroke="#236b8e" stroke-width="2.5"/>
+<rect x="165" y="115" width="175" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="252.5" y="139" text-anchor="middle" class="">Light the</text>
+<text x="252.5" y="161" text-anchor="middle" class="">Beacon</text>
+<polyline points="252.5,173 252.5,209 252.5,209" fill="none" stroke="#236b8e" stroke-width="2.5"/>
+<rect x="365" y="115" width="160" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="445.0" y="139" text-anchor="middle" class="">Lantern</text>
+<text x="445.0" y="161" text-anchor="middle" class="">Watch</text>
+<polyline points="445.0,173 445.0,209 252.5,209" fill="none" stroke="#236b8e" stroke-width="2.5"/>
+<circle cx="252.5" cy="209" r="17" fill="#236b8e"/>
+<text x="252.5" y="215" text-anchor="middle" style="fill:white;font-weight:bold">A</text>
+<rect x="35" y="255" width="105" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="87.5" y="290" text-anchor="middle" class="">Mira</text>
+<polyline points="87.5,313 87.5,349 252.5,349" fill="none" stroke="#a45a12" stroke-width="2.5"/>
+<rect x="165" y="255" width="175" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="252.5" y="279" text-anchor="middle" class="">Explore the</text>
+<text x="252.5" y="301" text-anchor="middle" class="">Mine</text>
+<polyline points="252.5,313 252.5,349 252.5,349" fill="none" stroke="#a45a12" stroke-width="2.5"/>
+<rect x="365" y="255" width="160" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="445.0" y="290" text-anchor="middle" class="">Stonekeepers</text>
+<polyline points="445.0,313 445.0,349 252.5,349" fill="none" stroke="#a45a12" stroke-width="2.5"/>
+<circle cx="252.5" cy="349" r="17" fill="#a45a12"/>
+<text x="252.5" y="355" text-anchor="middle" style="fill:white;font-weight:bold">B</text>
+<rect x="35" y="395" width="105" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="87.5" y="430" text-anchor="middle" class="">Rowan</text>
+<polyline points="87.5,453 87.5,489 252.5,489" fill="none" stroke="#6d5099" stroke-width="2.5"/>
+<rect x="165" y="395" width="175" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="252.5" y="419" text-anchor="middle" class="">Explore the</text>
+<text x="252.5" y="441" text-anchor="middle" class="">Mine</text>
+<polyline points="252.5,453 252.5,489 252.5,489" fill="none" stroke="#6d5099" stroke-width="2.5"/>
+<rect x="365" y="395" width="160" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="445.0" y="419" text-anchor="middle" class="">Lantern</text>
+<text x="445.0" y="441" text-anchor="middle" class="">Watch</text>
+<polyline points="445.0,453 445.0,489 252.5,489" fill="none" stroke="#6d5099" stroke-width="2.5"/>
+<circle cx="252.5" cy="489" r="17" fill="#6d5099"/>
+<text x="252.5" y="495" text-anchor="middle" style="fill:white;font-weight:bold">C</text>
+<text x="280" y="558" text-anchor="middle" class="small">Repeated labels denote the same entity.</text>
+<polyline points="825,198 675,350" fill="none" stroke="#a45a12" stroke-width="3"/>
+<polyline points="825,198 975,350" fill="none" stroke="#236b8e" stroke-width="3"/>
+<polyline points="675,379 975,379" fill="none" stroke="#6d5099" stroke-width="3"/>
+<rect x="765" y="140" width="120" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="825.0" y="175" text-anchor="middle" class="">Mira</text>
+<rect x="590" y="350" width="170" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="675.0" y="374" text-anchor="middle" class="">Explore the</text>
+<text x="675.0" y="396" text-anchor="middle" class="">Mine</text>
+<rect x="890" y="350" width="170" height="58" rx="8" fill="#eaf4f7" stroke="#537383" stroke-width="1.5"/>
+<text x="975.0" y="374" text-anchor="middle" class="">Lantern</text>
+<text x="975.0" y="396" text-anchor="middle" class="">Watch</text>
+<circle cx="730" cy="270" r="17" fill="#a45a12"/>
+<text x="730" y="276" text-anchor="middle" style="fill:white;font-weight:bold">B</text>
+<circle cx="920" cy="270" r="17" fill="#236b8e"/>
+<text x="920" y="276" text-anchor="middle" style="fill:white;font-weight:bold">A</text>
+<circle cx="825" cy="379" r="17" fill="#6d5099"/>
+<text x="825" y="385" text-anchor="middle" style="fill:white;font-weight:bold">C</text>
+<text x="825" y="460" text-anchor="middle" class="bold">All three pairs are present.</text>
+<text x="825" y="493" text-anchor="middle" class="">But Mira + Explore the Mine + Lantern Watch</text>
+<text x="825" y="519" text-anchor="middle" class="bold">is not one of the recorded triples.</text>
+<text x="825" y="558" text-anchor="middle" class="small">A triangle alone does not establish a ternary fact.</text>
+</svg>

@@ -15,12 +15,15 @@ WEEK 8 · ER DESIGN CHOICES
 
 # When does a simple relationship stop being enough?
 
-“Stage 1” needs a quest. A player character has properties an NPC does not. A guild sponsors a character on a quest. A review concerns one of that character's guild memberships. Each requirement asks us to represent a different kind of fact.
+- **Identity:** which quest's “stage 1”?
+- **Subtypes:** what makes a player character different from an NPC?
+- **Combinations:** which guild sponsors which character on which quest?
+- **Associations:** which membership does a review concern?
 :::
 
 **Previous:** [Relationship keys and mapping ER models to relations](week-07-er-keys-and-cardinality.qmd).
 
-**Focus:** choose the simplest model that preserves the required facts and constraints. We extend the game world with quest stages, character subtypes, guild sponsorship, and membership reviews.
+**Focus:** choose the simplest model that preserves the required facts and constraints.
 
 ## 1. Weak entities need an owner for identification
 
@@ -36,7 +39,7 @@ WEEK 8 · ER DESIGN CHOICES
 | 301 | 2 | Light the beacon. |
 | 302 | 1 | Enter the Old Mine. |
 
-**Complete identity:** `(quest_id, stage_no)`. The stage number identifies a stage only when we know its quest.
+**Complete identity:** `(quest_id, stage_no)`.
 
 ![A stage is identified through its quest and its local number.](figures/er-quest-stages.svg){fig-alt="Quest has underlined quest_id. Quest Stage has a double rectangle and dashed-underlined stage_no. The double-diamond has_stage identifying relationship points toward Quest. Double lines on the Quest Stage side require every stage to have an owner; the single line on the Quest side allows quests with no stages."}
 
@@ -47,25 +50,51 @@ WEEK 8 · ER DESIGN CHOICES
 | **Discriminator / partial key** | `stage_no`, unique within one quest | Dashed underline |
 | **Identifying relationship** | `has_stage` | Double diamond |
 
-- **Every weak entity needs its owner:** total participation in the identifying relationship.
-- **The owner need not have children:** our model allows a quest with no stages yet.
-- **A required foreign key alone does not make an entity weak.** The owner contributes to its identification.
+- **Stage participation is total:** every stage needs a quest.
+- **Quest participation is partial:** a quest may have no stages.
+- **Weakness concerns identification:** a required foreign key alone is insufficient.
 
-### Map the identity to a relation
+### Build the weak entity's primary key
 
-```text
-quest_stage(quest_id, stage_no, description)
-Primary key: (quest_id, stage_no)
-Foreign key: quest_id → quest
+::: {.callout-important appearance="simple"}
+**Weak entity primary key = identifying owner's primary key + discriminator.**
+
+For Quest Stage: `quest_id` + `stage_no` → **`(quest_id, stage_no)`**.
+
+Include all key columns from every identifying owner, plus all discriminator columns.
+:::
+
+- Neither column is unique alone: quests have several stages, and stage numbers repeat across quests.
+- The **pair** is unique: `(301, 1)` and `(302, 1)` are allowed; duplicate `(301, 1)` rows are not.
+- The dashed underline marks the **partial key**; the identifying relationship supplies the owner identity.
+
+### Map the weak entity to a relation
+
+1. Create a relation containing the weak entity's attributes: `stage_no`, `description`.
+2. Add the owner's primary-key column, `quest_id`, as a **foreign key** to `quest`.
+3. Make **`(quest_id, stage_no)` together** the relation's primary key.
+
+Assuming `quest(quest_id, ...)` already exists:
+
+```sql
+CREATE TABLE quest_stage (
+    quest_id integer REFERENCES quest (quest_id),
+    stage_no integer,
+    description text,
+    PRIMARY KEY (quest_id, stage_no)
+);
 ```
 
-The identifying relationship supplies the owner key. Include it in `quest_stage`; a separate `has_stage` table is unnecessary.
+- **Primary key:** the pair is unique and both columns are non-null.
+- **Foreign key:** `quest_id` requires an existing quest and also contributes to the primary key.
+- **No `has_stage` table:** the owner reference already records that association.
+- **No stages yet:** the quest has no matching `quest_stage` rows.
 
 **Use a weak entity when:** a distinguishable object has a local identifier meaningful only within its owner or owners.
 
 ### Revisit quest attempts: two identifying entities
 
-The earlier **Quest Attempt** example can also be modeled as a weak entity, using `(character_id, quest_id, attempt_no)` instead of a standalone `attempt_id`.
+**Quest Attempt** can use two owners and a local number instead of a standalone `attempt_id`.
 
 ![An attempt is identified through its character, its quest, and its local number.](figures/er-quest-attempt-weak.svg){fig-alt="Quest Attempt is a double rectangle with dashed-underlined attempt_no and descriptive attributes accepted_at and status. Double-diamond identifying relationships made_by and attempt_of point toward Character and Quest. Double lines connect the attempt to both relationships. Both owner keys and attempt_no together identify the attempt; either owner may have zero or many attempts."}
 
@@ -76,7 +105,18 @@ The earlier **Quest Attempt** example can also be modeled as a weak entity, usin
 | **Identifying relationships** | `made_by` and `attempt_of` |
 | **Complete identity** | `(character_id, quest_id, attempt_no)` |
 
-Each attempt requires both owners; either owner may have no attempts. With a globally unique `attempt_id`, the attempt is independently identified—the strong-entity option from the previous lecture.
+**Apply the same mapping rule:**
+
+```text
+quest_attempt(character_id, quest_id, attempt_no, accepted_at, status)
+Primary key: (character_id, quest_id, attempt_no)
+Foreign keys: character_id → game_character(character_id)
+              quest_id → quest(quest_id)
+```
+
+- Both owner IDs are **primary-key components and foreign keys**; `attempt_no` is only a primary-key component.
+- Every attempt needs both owners; either owner may have no attempts.
+- A globally unique `attempt_id` gives independent identification: the earlier **strong-entity** option.
 
 <details class="practice-solution">
 <summary>University connection: Course and Section</summary>
@@ -87,9 +127,9 @@ Each attempt requires both owners; either owner may have no attempts. With a glo
 (course_id, section_no, semester, year)
 ```
 
-The course supplies the owner identity; `(section_no, semester, year)` is the discriminator. A section relates separately to its instructor and enrolled students.
-
-Two sections can have the same course and instructor. Modeling Section solely as an instructor–course relationship would lose that distinction. This is the textbook's central weak-entity example.
+- **Owner:** Course. **Discriminator:** `(section_no, semester, year)`.
+- A section relates separately to its instructor and enrolled students.
+- Two sections may share a course and instructor, so an instructor–course pair cannot identify a section.
 
 </details>
 
@@ -103,7 +143,10 @@ Suppose **Character** has two kinds with additional properties:
 | **PlayerCharacter** | Adds `input_profile` |
 | **NonplayerCharacter** | Adds `dialogue_script` |
 
-**Specialization** starts with a general entity set and identifies useful subsets. **Generalization** starts with similar entity sets and brings their shared properties into a common parent. Both produce the same kind of hierarchy.
+- **Specialization:** start with the parent and identify subtypes.
+- **Generalization:** start with similar entity sets and identify a shared parent.
+
+Both produce an ISA hierarchy.
 
 ![Two character subtypes share the identity and properties of Character.](figures/er-character-specialization.svg){fig-alt="PlayerCharacter and NonplayerCharacter connect through a shared hollow ISA arrow toward Character. Character has underlined character_id and name. The subclasses add input_profile and dialogue_script. The shared arrow indicates disjoint subtypes; total is explicitly labeled."}
 
@@ -122,7 +165,13 @@ This differs from a relationship such as **Character carries Item**: the charact
 | Can one entity belong to multiple subtypes? | **Disjoint:** at most one. **Overlapping:** more than one allowed. | Disjoint: a character is not both player-controlled and an NPC. |
 | Must every parent entity belong to a subtype? | **Total:** at least one. **Partial:** may belong to none. | Total: every character is one of these two kinds. |
 
-The book uses a **shared hollow arrow** for disjoint subtypes and **separate hollow arrows** for overlapping ones. A `total` annotation states completeness. These are ISA arrows, not relationship-cardinality arrows.
+**Book notation:**
+
+- **Shared hollow arrow:** disjoint subtypes.
+- **Separate hollow arrows:** overlapping subtypes.
+- **`total` annotation:** every parent entity belongs to a subtype.
+
+ISA arrows express inheritance, not relationship cardinality.
 
 **Different example:** a **Person** can be both a **Student** and an **Employee**. That specialization is overlapping; it is partial if the database also includes people who are neither.
 
@@ -130,24 +179,55 @@ The book uses a **shared hollow arrow** for disjoint subtypes and **separate hol
 
 **Use it for subtype-specific attributes, relationships, or constraints.** If the only difference is a label, an attribute such as `control_kind` may be enough.
 
-A standard relational mapping uses:
+### Map a subtype to a relation
 
-```text
-character(character_id, name)
-player_character(character_id, input_profile)
-nonplayer_character(character_id, dialogue_script)
+Use **one relation for the parent and one for each subtype**:
+
+1. Keep shared attributes, such as `name`, in the parent relation `game_character`.
+2. Create each subtype relation with the **same primary key** and only its additional attributes.
+3. Make that key a **foreign key** to the parent relation.
+
+Assuming `game_character(character_id, name, ...)` already exists:
+
+```sql
+CREATE TABLE player_character (
+    character_id integer PRIMARY KEY
+        REFERENCES game_character (character_id),
+    input_profile text
+);
+
+CREATE TABLE nonplayer_character (
+    character_id integer PRIMARY KEY
+        REFERENCES game_character (character_id),
+    dialogue_script text
+);
 ```
 
-Each subtype's `character_id` is both its **primary key** and a **foreign key** to `character`. Those keys do not, by themselves, enforce total or disjoint membership across the subtype tables.
+::: {.callout-note appearance="simple"}
+### Same entity, same ID
 
-**Check:** Does putting different entities in different tables automatically establish an ISA relationship?
+Mira's `character_id = 101` appears in both relations:
 
-<details class="practice-solution">
-<summary>Possible answer</summary>
+- `game_character` stores her shared attributes, including `name`.
+- `player_character` stores `input_profile`.
 
-No. An ISA relationship says each subtype member is the same entity as a member of the parent set, inheriting its identity and properties. Separate tables alone do not express that meaning.
+The subtype reuses her ID; it does not generate a new one.
+:::
 
-</details>
+- **Primary key:** at most one player-character row per character.
+- **Foreign key:** every player-character row must have a corresponding parent row.
+- **Inherited attributes:** retrieve them by joining the subtype to its parent on `character_id`.
+
+```sql
+SELECT c.character_id, c.name, p.input_profile
+FROM game_character AS c
+JOIN player_character AS p USING (character_id);
+```
+
+**Still needs enforcement:**
+
+- **Total:** every parent ID must occur in a subtype.
+- **Disjoint:** no ID may occur in both subtype relations.
 
 ## 3. Higher-order relationships preserve facts about combinations
 
@@ -159,23 +239,45 @@ A **ternary relationship** connects three participants in one fact. More general
 
 **Read the arrow by holding the other two participants fixed.** A guild can sponsor many characters and many quests.
 
+::: {.callout-note appearance="simple"}
+### At most one arrow for a higher-order relationship
+
+- The book permits **at most one arrow out of a nonbinary relationship**: multiple arrows have competing interpretations.
+- State additional uniqueness rules explicitly. Functional dependencies, covered next, express them precisely.
+:::
+
+<details class="practice-solution">
+<summary>Why would two arrows be ambiguous?</summary>
+
+Suppose `sponsors` had arrows toward both Quest and Guild. Two interpretations are possible:
+
+- **Character determines the whole pair:** each character has at most one quest–guild combination.
+- **Each arrow holds the other participants fixed:** each character–quest pair has at most one guild, and each character–guild pair has at most one quest.
+
+The second permits Mira to have two sponsorships involving different quests and different guilds; the first does not. These rules imply different keys, so we avoid drawing two arrows.
+
+</details>
+
 | Character | Quest | Sponsoring guild |
 |---|---|---|
 | Mira | Light the Beacon | Lantern Watch |
 | Mira | Explore the Mine | Stonekeepers |
 | Rowan | Explore the Mine | Lantern Watch |
 
-**Sponsoring is separate from issuing.** Our existing `offers` relationship identifies the guild that issues a quest. Another guild may sponsor a character's participation. If the sponsor always had to be the issuer, recording it again would be redundant.
+- **Issuer:** the guild in the existing `offers` relationship.
+- **Sponsor:** the guild supporting a particular character's participation; it may differ from the issuer.
+
+If these always had to be the same guild, recording the sponsor again would be redundant.
 
 ### Why three pairwise relationships can lose information
 
-From these rows, we can learn that:
+![Three pairwise edges can suggest a triple that was never recorded.](figures/er-sponsorship-pairwise-loss.svg){fig-alt="Three recorded sponsorships appear as hubs A, B, and C joining their three participants. The pairwise graph forms a triangle between Mira, Explore the Mine, and Lantern Watch, but its edges come from three different hubs: Mira–Lantern Watch from A, Mira–Explore the Mine from B, and Explore the Mine–Lantern Watch from C. No recorded hub joins that triple."}
 
-- Mira has sponsorship from the Lantern Watch.
-- Mira undertakes Explore the Mine.
-- The Lantern Watch sponsors participation in Explore the Mine.
+- **Left:** each hub keeps one complete sponsorship.
+- **Right:** all three pairs exist, but their edges come from different sponsorships.
+- **Lost information:** which three participants belonged to the *same* fact.
 
-But **the Lantern Watch does not sponsor Mira on Explore the Mine** in these records. Even storing all three kinds of pairs loses which triples actually occurred.
+The triangle suggests **Mira–Explore the Mine–Lantern Watch**, which was never recorded. Hubs illustrate individual facts; they are not new entity types or IDs.
 
 ::: {.callout-important appearance="simple"}
 ### A connection among three entities is one fact
@@ -183,34 +285,115 @@ But **the Lantern Watch does not sponsor Mira on Explore the Mine** in these rec
 Use a ternary relationship when the meaning depends on the whole combination. Three binary relationships among the original entities are not automatically equivalent.
 :::
 
-### Keys follow the stated rule
+### Map the relationship to a relation
 
-For our rule, `(character_id, quest_id)` identifies a sponsorship; `guild_id` is the uniquely determined partner. A character–quest pair with no sponsor has no sponsorship row.
+1. Create a separate `sponsorship` relation with the keys of **all three participants**, each referencing its entity relation.
+2. Add any descriptive attributes of the relationship, if needed.
+3. Choose the primary key from the cardinality rule: **`(character_id, quest_id)`**, because that pair determines the sponsoring guild.
 
-**What if several guilds could jointly sponsor the same character on the same quest?** Remove the arrow. With no further uniqueness rule, all three participant keys identify the association.
+Assuming the three entity relations already exist:
+
+```sql
+CREATE TABLE sponsorship (
+    character_id integer REFERENCES game_character (character_id),
+    quest_id integer REFERENCES quest (quest_id),
+    guild_id integer NOT NULL REFERENCES guild (guild_id),
+    PRIMARY KEY (character_id, quest_id)
+);
+```
+
+**All three participant keys are columns; only two form the primary key.**
+
+- **Primary key:** one sponsor per character–quest pair; both columns are non-null.
+- **`guild_id`:** required in each row, but may repeat across rows.
+- **No sponsor:** no sponsorship row.
+- **Do not use all three as the key:** that would permit different guilds for the same pair.
+
+**What if several guilds could jointly sponsor the same character on the same quest?** Remove the arrow and, with no further uniqueness rule, use `PRIMARY KEY (character_id, quest_id, guild_id)`. Keep all three foreign keys.
 
 **Prefer binary relationships when the facts are independent.** A character's current location and guild memberships are separate facts; a three-way relationship would unnecessarily couple them.
 
 ## 4. Aggregation: make an association something we can refer to
 
-Return to **Character — member_of — Guild**. Characters may join several guilds. Suppose each guild periodically reviews its members for promotion.
+Suppose guilds review members for promotion. A review concerns **Mira's membership in the Lantern Watch**:
 
-Each **Membership Review** concerns one particular membership: Mira's membership in the Lantern Watch. A membership can exist without reviews and accumulate several reviews.
-
-Relating a review to only the character loses the guild context; relating it to only the guild loses the member. The review concerns **their association**.
+- Character alone does not identify which guild.
+- Guild alone does not identify which member.
+- Each review concerns **one membership**; a membership may have **zero or many reviews**.
 
 ### Start with a familiar design: an explicit entity
 
-Represent the association as a **Guild Membership** entity—an *associative entity*, whose meaning is an association among other entities.
+Introduce **Guild Membership**, an *associative entity* representing the character–guild association:
 
 - Give it `membership_id` for convenient reference.
-- Require exactly one character and one guild per membership.
-- Relate each **Membership Review** to exactly one membership.
-- Keep memberships even when they have no reviews.
+- Require exactly one character and one guild.
+- Link each review to its membership.
 
 ![An explicit entity lets reviews refer to a particular guild membership.](figures/er-guild-membership-entity.svg){fig-alt="Guild Membership has underlined membership_id and total participation in many-to-one relationships toward Character and Guild. Guild also participates totally, preserving the rule that every guild has a member. Membership Review has underlined review_id and total participation in a many-to-one reviews relationship toward Guild Membership. Each character–guild pair must be unique."}
 
-### Preserve the original constraints
+**Preserve the constraints:**
+
+- `UNIQUE (character_id, guild_id)` prevents duplicate memberships.
+- Both participant IDs are non-null foreign keys.
+- Every guild still needs at least one member; foreign keys alone do not enforce this.
+
+The new ID is optional: the character–guild pair can identify the membership instead.
+
+### Connect this design to textbook aggregation
+
+**Aggregation** treats a relationship and its participants as an object that another relationship can reference. This is separate from SQL aggregation (`SUM`, `COUNT`).
+
+![Textbook aggregation encloses guild membership and relates it to Membership Review.](figures/er-guild-membership-aggregation.svg){fig-alt="An aggregation boundary encloses Character, member_of, and Guild. member_of is many-to-many, with total participation from Guild and partial participation from Character. The aggregate connects through reviews to Membership Review. An arrow toward the aggregate and double lines beside Membership Review require each review to concern exactly one membership; a membership may have several reviews or none."}
+
+| Approach | How we refer to the association |
+|---|---|
+| **Textbook aggregation** | Enclose `member_of` and its participants; treat each membership as an abstract entity identified by the character–guild pair. |
+| **Explicit associative entity** | Draw Guild Membership as an entity connected to Character and Guild. Choose the pair as its key or give it its own ID. |
+
+Both preserve the same requirement and constraints. The book also describes replacing a relationship with an entity and binary relationships.
+
+::: {.callout-note appearance="simple"}
+### Adding an ID is not the definition of aggregation
+
+- **Aggregation:** make an association something other facts can concern.
+- **New ID:** an optional identification choice; adding a column alone does not change the conceptual model.
+:::
+
+### Map the aggregate to relations
+
+Using the **character–guild pair** as the membership key, map the textbook diagram in three steps:
+
+1. Keep `member_of` as a relation with primary key `(character_id, guild_id)`.
+2. Create `membership_review` with its own key and descriptive attributes.
+3. Put the **whole membership key** in each review as a composite foreign key to `member_of`.
+
+```sql
+CREATE TABLE member_of (
+    character_id integer REFERENCES game_character (character_id),
+    guild_id integer REFERENCES guild (guild_id),
+    PRIMARY KEY (character_id, guild_id)
+);
+
+CREATE TABLE membership_review (
+    review_id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    character_id integer NOT NULL,
+    guild_id integer NOT NULL,
+    reviewed_at timestamptz NOT NULL,
+    outcome text,
+    FOREIGN KEY (character_id, guild_id)
+        REFERENCES member_of (character_id, guild_id)
+);
+```
+
+**What the mapping preserves:**
+
+- **Existing membership:** the composite foreign key requires this character–guild pair in `member_of`. Separate references to Character and Guild would not.
+- **Several reviews:** the membership pair may repeat; `review_id` distinguishes reviews.
+- **No reviews yet:** the membership row still exists.
+- **No extra `reviews` table:** the non-null reference records each review's single membership. The aggregation boundary needs no additional table.
+
+<details class="practice-solution">
+<summary>Alternative mapping with membership_id</summary>
 
 ```text
 guild_membership(membership_id, character_id, guild_id)
@@ -223,39 +406,21 @@ Primary key: review_id
 membership_id: non-null foreign key to guild_membership
 ```
 
-The `UNIQUE` constraint preserves **one membership per character–guild pair**. A new ID alone would allow duplicate memberships. Our existing rule that every guild has at least one member still needs enforcement beyond these keys and foreign keys.
+Replace the composite reference with `membership_id NOT NULL REFERENCES guild_membership(membership_id)`. Keep the pair's uniqueness constraint. Use this design or the composite-key design above, not both.
 
-**The generated ID is optional.** We could instead identify the membership by `(character_id, guild_id)` and use a composite reference from Membership Review.
+</details>
 
-### Connect this design to textbook aggregation
+**When to use it:**
 
-**Aggregation** treats a relationship and its participating entities as a higher-level object that can participate in another relationship. It is unrelated to SQL functions such as `SUM` and `COUNT`.
-
-![Textbook aggregation encloses guild membership and relates it to Membership Review.](figures/er-guild-membership-aggregation.svg){fig-alt="An aggregation boundary encloses Character, member_of, and Guild. member_of is many-to-many, with total participation from Guild and partial participation from Character. The aggregate connects through reviews to Membership Review. An arrow toward the aggregate and double lines beside Membership Review require each review to concern exactly one membership; a membership may have several reviews or none."}
-
-| Approach | How we refer to the association |
-|---|---|
-| **Textbook aggregation** | Enclose `member_of` and its participants; treat each membership as an abstract entity identified by the character–guild pair. |
-| **Explicit associative entity** | Draw Guild Membership as an entity connected to Character and Guild. Choose the pair as its key or give it its own ID. |
-
-Both can express this requirement when the constraints are preserved. The book and slides also describe replacing a relationship with an entity and binary relationships, including the option of adding an identifying attribute.
-
-::: {.callout-note appearance="simple"}
-### Adding an ID is not the definition of aggregation
-
-The modeling step is to treat the association as an object that other facts can concern. A new ID is an identification choice. Adding an ID column to a relationship table alone does not change the conceptual model.
-:::
-
-**Use this approach when:** another entity or relationship must refer to a particular association, or the association has become an event or record with its own history.
-
-**Keep a relationship when:** descriptive attributes are sufficient. A single `joined_at` value can be a membership relationship attribute; several separately recorded reviews motivate referring to the membership itself.
+- **Relationship attributes suffice:** one `joined_at` value can stay on `member_of`.
+- **Other facts reference the association:** separate reviews motivate treating membership as an object.
 
 **Check:** If Mira leaves a guild and later rejoins, can this model keep two separate membership periods for her in that guild?
 
 <details class="practice-solution">
 <summary>Possible answer</summary>
 
-No. `UNIQUE (character_id, guild_id)` permits only one membership per pair. To keep separate periods, model each period as a distinct occurrence, define its identity and dates, and attach reviews to the appropriate period. A generated ID alone does not define those rules.
+No: the pair is unique. Model separate membership periods with their own identity and dates, then attach reviews to the appropriate period. A generated ID alone does not define these rules.
 
 </details>
 
@@ -269,7 +434,11 @@ No. `UNIQUE (character_id, guild_id)` permits only one membership per pair. To k
 | Another fact concerns a particular association. | **Aggregation / associative entity** | What identifies the association, and which constraints must survive? |
 | A simple property or binary association captures the requirement. | **Existing basic ER constructs** | Does an extension add useful meaning? |
 
-**Before mapping the model:** explain each entity's identity, each relationship's meaning, and every participation or uniqueness rule. Try a valid edge case—two local “1” values, a person in two subtypes, or a membership with no reviews.
+**Before mapping:**
+
+- Identify each entity and define each relationship's meaning.
+- State participation and uniqueness rules.
+- Try edge cases: repeated local numbers, overlapping subtypes, or a membership with no reviews.
 
 **Next:** use functional dependencies and normalization to examine redundancy and anomalies in the resulting relations.
 
