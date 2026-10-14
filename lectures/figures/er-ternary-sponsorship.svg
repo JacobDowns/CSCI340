@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390" role="img" aria-labelledby="title desc"><title id="title">A ternary sponsorship relationship</title><desc id="desc">Character, Quest and Guild connect to one sponsors diamond. The arrow toward Guild means a Character–Quest pair has at most one sponsoring guild. It does not limit a guild to one character or quest.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.name{font-size:21px;font-weight:700}.attr{font-family:Consolas,monospace;font-size:20px}.rel{font-size:19px}.note{font-size:19px;fill:#475569}</style>
+<rect width="1000" height="390" fill="white"/>
+<rect x="40" y="65" width="235" height="78" fill="white" stroke="#344955" stroke-width="2"/><rect x="41" y="66" width="233" height="43" fill="#eaf4f7"/>
+<text x="157.5" y="94" class="name" text-anchor="middle" >Character</text>
+<path d="M40 109 L275 109" fill="none" stroke="#344955" stroke-width="2"/>
+<text x="58" y="136" class="attr" text-anchor="start" text-decoration="underline">character_id</text>
+<rect x="725" y="65" width="235" height="78" fill="white" stroke="#344955" stroke-width="2"/><rect x="726" y="66" width="233" height="43" fill="#eaf4f7"/>
+<text x="842.5" y="94" class="name" text-anchor="middle" >Quest</text>
+<path d="M725 109 L960 109" fill="none" stroke="#344955" stroke-width="2"/>
+<text x="743" y="136" class="attr" text-anchor="start" text-decoration="underline">quest_id</text>
+<rect x="360" y="275" width="280" height="78" fill="white" stroke="#344955" stroke-width="2"/><rect x="361" y="276" width="278" height="43" fill="#eaf4f7"/>
+<text x="500.0" y="304" class="name" text-anchor="middle" >Guild</text>
+<path d="M360 319 L640 319" fill="none" stroke="#344955" stroke-width="2"/>
+<text x="378" y="346" class="attr" text-anchor="start" text-decoration="underline">guild_id</text>
+<polygon points="390.0,105 500,55.0 610.0,105 500,155.0" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="500" y="111" class="rel" text-anchor="middle" >sponsors</text>
+<path d="M275 105 L390 105" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M610 105 L725 105" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M500 155 L500 261" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="500,275 493,261 507,261" fill="#344955"/>
+<text x="530" y="210" class="note" text-anchor="start" >At most one sponsor per</text>
+<text x="530" y="237" class="note" text-anchor="start" >Character–Quest pair</text>
+</svg>

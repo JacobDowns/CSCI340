@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" role="img" aria-labelledby="title desc"><title id="title">Aggregation of guild membership</title><desc id="desc">A boundary encloses Character, member_of and Guild. The membership relationship is many-to-many; Guild has total participation. Membership Review connects through reviews to this aggregate, and each review concerns exactly one membership. A membership may have no reviews or several.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.name{font-size:21px;font-weight:700}.attr{font-family:Consolas,monospace;font-size:20px}.rel{font-size:19px}.note{font-size:19px;fill:#475569}</style>
+<rect width="1000" height="440" fill="white"/>
+<rect x="20" y="22" width="960" height="170" fill="none" stroke="#44798b" stroke-width="2"/>
+<text x="40" y="50" class="name" text-anchor="start" >One guild membership</text>
+<rect x="45" y="88" width="235" height="48" fill="white" stroke="#344955" stroke-width="2"/><rect x="46" y="89" width="233" height="43" fill="#eaf4f7"/>
+<text x="162.5" y="117" class="name" text-anchor="middle" >Character</text>
+<rect x="720" y="88" width="235" height="48" fill="white" stroke="#344955" stroke-width="2"/><rect x="721" y="89" width="233" height="43" fill="#eaf4f7"/>
+<text x="837.5" y="117" class="name" text-anchor="middle" >Guild</text>
+<polygon points="385.0,112 500,69.5 615.0,112 500,154.5" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="500" y="118" class="rel" text-anchor="middle" >member_of</text>
+<path d="M280 112 L385 112" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M615 108 L720 108" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M615 116 L720 116" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="400.0,270 500,235.0 600.0,270 500,305.0" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="500" y="276" class="rel" text-anchor="middle" >reviews</text>
+<path d="M500 235 L500 206" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="500,192 493,206 507,206" fill="#344955"/>
+<path d="M496 305 L496 355" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M504 305 L504 355" fill="none" stroke="#344955" stroke-width="2"/>
+<rect x="345" y="355" width="310" height="48" fill="white" stroke="#344955" stroke-width="2"/><rect x="346" y="356" width="308" height="43" fill="#eaf4f7"/>
+<text x="500.0" y="384" class="name" text-anchor="middle" >Membership Review</text>
+<text x="785" y="275" class="note" text-anchor="middle" >Refers to the membership</text>
+</svg>

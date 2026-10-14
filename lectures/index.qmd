@@ -44,3 +44,7 @@ Lecture pages provide the course narrative. Related practice and submissions app
 
 - [Relationship keys and mapping ER models to relations](week-07-er-keys-and-cardinality.qmd) — Derive relationship keys, choose separate tables or foreign-key columns, and preserve cardinality, participation, and relationship attributes. Connect the game-world examples to Activity 4.
 - [Activity 4 — ER relationships](../activities/week-07-er-relationship-practice.qmd) — Distinguish entities from relationships, compare cardinalities, draw a combined ER diagram, and explain relationship attributes and participation.
+
+## Week 8
+
+- [Finishing the ER model](week-08-er-extensions.qmd) — Choose weak entities, specialization, and higher-order relationships; connect textbook aggregation to modeling an association as an entity while preserving its constraints.

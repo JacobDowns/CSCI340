@@ -360,7 +360,7 @@ PostgreSQL generates `attempt_id`; the application supplies `attempt_no`. The co
 
 </details>
 
-**Next:** extend ER modeling with minimum–maximum notation, weak entities, and other modeling choices. We will revisit quest attempts to show dependent identification in an ER diagram, alongside the relational representations of these concepts.
+**Next:** [finish the ER model](week-08-er-extensions.qmd) with weak entities, specialization, higher-order relationships, and aggregation. Revisit dependent identification and learn when an association needs to become an entity. Minimum–maximum notation is included as an optional reference.
 
 ## Reference and reading
 

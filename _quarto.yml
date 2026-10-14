@@ -78,6 +78,9 @@ website:
           - section: Week 7
             contents:
               - lectures/week-07-er-keys-and-cardinality.qmd
+          - section: Week 8
+            contents:
+              - lectures/week-08-er-extensions.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd

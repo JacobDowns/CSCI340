@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="490" viewBox="0 0 960 490" role="img" aria-labelledby="title desc">
+<title id="title">Quest attempts as weak entities</title>
+<desc id="desc">Quest Attempt is weak, identified jointly by Character, Quest, and the local attempt_no. It has a double rectangle and a dashed underline for attempt_no. The identifying made_by and attempt_of relationships have double diamonds, arrows toward their respective owners, and total participation from Quest Attempt. Each owner can have zero or many attempts.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.heading{font-size:22px;font-weight:700}.attribute{font-family:Consolas,monospace;font-size:21px}.relationship{font-size:21px}.note{font-size:20px;fill:#475569}</style>
+<rect width="960" height="490" fill="#fff"/>
+<rect x="30" y="30" width="250" height="122" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="31" y="31" width="248" height="43" fill="#eaf4f7"/>
+<path d="M30 74 H280" stroke="#344955" stroke-width="2"/>
+<text x="155.0" y="60" class="heading" text-anchor="middle">Character</text>
+<text x="50" y="106" class="attribute" text-decoration="underline">character_id</text>
+<text x="50" y="140" class="attribute">name</text>
+<rect x="680" y="30" width="250" height="122" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="681" y="31" width="248" height="43" fill="#eaf4f7"/>
+<path d="M680 74 H930" stroke="#344955" stroke-width="2"/>
+<text x="805.0" y="60" class="heading" text-anchor="middle">Quest</text>
+<text x="700" y="106" class="attribute" text-decoration="underline">quest_id</text>
+<text x="700" y="140" class="attribute">title</text>
+<rect x="340" y="240" width="280" height="190" fill="#fff" stroke="#344955" stroke-width="2"/>
+<rect x="346" y="246" width="268" height="178" fill="none" stroke="#344955" stroke-width="2"/>
+<rect x="347" y="247" width="266" height="37" fill="#eaf4f7"/>
+<path d="M346 284 H614" stroke="#344955" stroke-width="2"/>
+<text x="480.0" y="270" class="heading" text-anchor="middle">Quest Attempt</text>
+<text x="360" y="321" class="attribute">attempt_no</text>
+<path d="M360 327 H486" fill="none" stroke="#173b4d" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="360" y="357" class="attribute">accepted_at</text>
+<text x="360" y="393" class="attribute">status</text>
+<polygon points="55,330 155,280 255,330 155,380" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<polygon points="66,330 155,286 244,330 155,374" fill="none" stroke="#344955" stroke-width="2"/>
+<text x="155" y="337" class="relationship" text-anchor="middle">made_by</text>
+<polygon points="705,330 805,280 905,330 805,380" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<polygon points="716,330 805,286 894,330 805,374" fill="none" stroke="#344955" stroke-width="2"/>
+<text x="805" y="337" class="relationship" text-anchor="middle">attempt_of</text>
+<path d="M155 280 V166" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="155,152 148,166 162,166" fill="#344955"/>
+<path d="M805 280 V166" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="805,152 798,166 812,166" fill="#344955"/>
+<path d="M247 326 H340" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M247 334 H340" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M620 326 H713" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M620 334 H713" fill="none" stroke="#344955" stroke-width="2"/>
+<text x="480" y="470" class="note" text-anchor="middle">Complete identity: (character_id, quest_id, attempt_no)</text>
+</svg>

@@ -96,19 +96,70 @@ def final_data_checks(rows):
     return findings
 
 
+def validate_name_map(mapping):
+    """Only explicit, one-to-one identifier substitutions; no type/value coercions."""
+    if not isinstance(mapping, dict) or set(mapping) - {"tables", "columns"}:
+        raise ValueError("Each schema mapping may contain only tables and columns dictionaries.")
+    tables, columns = mapping.get("tables", {}), mapping.get("columns", {})
+    if not isinstance(tables, dict) or not isinstance(columns, dict):
+        raise ValueError("Mapping tables and columns must be dictionaries.")
+    if (set(tables) | set(columns)) - set(FIELDS):
+        raise ValueError("Map keys must use the expected Assignment 3 table names.")
+    def identifiers(entries, expected):
+        if not isinstance(entries, dict) or set(entries) - set(expected):
+            raise ValueError("Column map keys must use the expected fields for that table.")
+        if any(not isinstance(v, str) or not v or "\x00" in v for v in entries.values()):
+            raise ValueError("Mapped identifiers must be nonempty strings without NUL characters.")
+        resolved = [entries.get(k, k) for k in expected]
+        if len(set(resolved)) != len(resolved):
+            raise ValueError("Each required table/field must map to a distinct actual identifier.")
+    identifiers(tables, FIELDS)
+    for table, entries in columns.items():
+        identifiers(entries, FIELDS[table])
+    return {"tables": {k:v for k,v in tables.items() if k != v},
+            "columns": {t:{k:v for k,v in entries.items() if k != v}
+                        for t,entries in columns.items()}}
+
+
+def read_name_map(path):
+    with path.open("rb") as stream:
+        config = tomllib.load(stream)
+    if set(config) != {"schemas"} or not isinstance(config["schemas"], dict):
+        raise ValueError("Name-map TOML must contain a schemas dictionary.")
+    if any(not s or "\x00" in s for s in config["schemas"]):
+        raise ValueError("Name-map schema names must be nonempty and contain no NUL characters.")
+    return {schema:validate_name_map(mapping) for schema,mapping in config["schemas"].items()}
+
+
 class Checker:
-    def __init__(self, conn, schema, student="", row_limit=1000):
+    def __init__(self, conn, schema, student="", row_limit=1000, name_map=None):
         self.conn, self.schema = conn, schema
         self.result = {"schema": schema, "student": student, "checks": [],
                        "columns": {}, "constraints": {}, "rows": {}}
         self.row_limit = row_limit
         self.trace = None
+        self.name_map = validate_name_map(name_map or {})
+        self.mapping_valid = True
+        self.result["table_overrides"] = self.name_map["tables"]
+        self.result["column_overrides"] = {f"{t}.{k}":v for t,cols in self.name_map["columns"].items()
+                                           for k,v in cols.items()}
+
+    def table_name(self, table):
+        return self.name_map["tables"].get(table, table)
+
+    def column(self, table, field):
+        """Map logical check names to safely quoted physical columns in DML."""
+        return self.name_map["columns"].get(table, {}).get(field, field)
+
+    def logical_row(self, table, row):
+        # Raw snapshots remain untouched. Internal probe/matcher rows use logical keys.
+        return {f:row[self.column(table, f)] for f in FIELDS[table]}
 
     def add(self, group, name, status, detail):
         self.result["checks"].append(dict(group=group, check=name, status=status, detail=detail))
 
     def table(self, table):
-        return sql.Identifier(self.schema, table)
+        return sql.Identifier(self.schema, self.table_name(table))
 
     def query(self, statement, params=None):
         if self.trace is not None:
@@ -118,6 +169,23 @@ class Checker:
 
     def inspect(self):
         complete = True
+        # Catalog-only inventory exposes unexpected names without guessing a mapping.
+        inventory = self.query("""
+            SELECT c.relname AS name, c.relkind AS kind,
+                   ARRAY(SELECT a.attname FROM pg_attribute a WHERE a.attrelid=c.oid
+                         AND a.attnum>0 AND NOT a.attisdropped ORDER BY a.attnum) AS columns
+            FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+            WHERE n.nspname=%s AND c.relkind IN ('r','p','v','m','f') ORDER BY c.relname
+        """, (self.schema,))
+        self.result["inventory"] = inventory
+        existing_tables = {r["name"] for r in inventory}
+        for expected, actual in self.name_map["tables"].items():
+            valid = actual in existing_tables and expected not in existing_tables
+            self.mapping_valid &= valid
+            self.add(GROUP_DATA, f"{expected}.name_mapping", "FAIL" if valid else "ERROR",
+                     {"expected": expected, "actual": actual,
+                      "note": "Naming mismatch retained; using the explicit mapped table."
+                      if valid else "Alternate table must exist and expected table must be absent; probes blocked."})
         for table, fields in FIELDS.items():
             try:
                 with self.conn.transaction(force_rollback=True):
@@ -130,7 +198,7 @@ class Checker:
                                       WHERE i.inhparent=c.oid OR i.inhrelid=c.oid) AS inheritance
                         FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
                         WHERE n.nspname=%s AND c.relname=%s
-                    """, (self.schema, table))
+                    """, (self.schema, self.table_name(table)))
                     if not rel or rel[0]["relkind"] != "r" or rel[0]["relpersistence"] != "p":
                         self.add(GROUP_DATA, f"{table}.accessible", "FAIL",
                                  "Missing permanent ordinary table, or unsupported relation kind.")
@@ -163,29 +231,41 @@ class Checker:
                     self.result.setdefault("relations", {})[table] = rel[0]
                     by_name = {c["name"]: c for c in cols}
                     missing = sorted(set(fields) - set(by_name))
+                    effective_missing = sorted(self.column(table, f) for f in fields
+                                               if self.column(table, f) not in by_name)
                     self.add(GROUP_DATA, f"{table}.columns", "FAIL" if missing else "PASS",
-                             {"missing": missing})
-                    complete &= not missing
+                             {"missing": missing, "missing_after_mapping": effective_missing})
+                    for expected, actual in self.name_map["columns"].get(table, {}).items():
+                        valid = actual in by_name and expected not in by_name
+                        self.mapping_valid &= valid
+                        self.add(GROUP_DATA, f"{table}.{expected}.name_mapping",
+                                 "REVIEW" if valid else "ERROR",
+                                 {"expected": expected, "actual": actual,
+                                  "note": "Explicit mapping for this run only; original column-name finding remains."
+                                  if valid else
+                                  "Alternate column must exist and expected column must be absent; probes blocked."})
+                    complete &= not effective_missing
                     key = fields[0]
-                    pk = any(c["kind"] == "p" and c["columns"] == [key] for c in constraints)
+                    actual_key = self.column(table, key)
+                    pk = any(c["kind"] == "p" and c["columns"] == [actual_key] for c in constraints)
                     self.add(GROUP_INVALID, f"{table}.primary_key", "PASS" if pk else "FAIL",
                              f"Expected primary key on {key}.")
                     for field in fields:
-                        if field not in by_name:
+                        if self.column(table, field) not in by_name:
                             continue
-                        col = by_name[field]
+                        col = by_name[self.column(table, field)]
                         if field != "special_requests":
                             self.add(GROUP_INVALID, f"{table}.{field}.required",
                                      "PASS" if col["not_null"] else "REVIEW",
                                      "NOT NULL present." if col["not_null"] else
                                      "No column NOT NULL; check domain/constraints or behavioral result.")
-                    if key in by_name:
-                        col = by_name[key]
+                    if actual_key in by_name:
+                        col = by_name[actual_key]
                         self.add(GROUP_DEFAULT, f"{table}.generated_id",
                                  "PASS" if col["identity"] or col["default"] else "FAIL", col)
-                    if not missing:
+                    if not effective_missing:
                         data = self.query(sql.SQL("SELECT * FROM {} ORDER BY {} LIMIT %s").format(
-                            self.table(table), sql.Identifier(key)), (self.row_limit + 1,))
+                            self.table(table), sql.Identifier(actual_key)), (self.row_limit + 1,))
                         self.result["rows"][table] = data[:self.row_limit]
                         truncated = len(data) > self.row_limit
                         self.add(GROUP_DATA, f"{table}.accessible", "PASS", {"rows_captured": min(len(data), self.row_limit)})
@@ -196,8 +276,12 @@ class Checker:
             except psycopg.Error as exc:
                 complete = False
                 self.add(GROUP_DATA, f"{table}.accessible", "ERROR", db_error(exc))
+        complete &= self.mapping_valid
         if complete:
-            for name, status, detail in final_data_checks(self.result["rows"]):
+            # Keep stored snapshots/catalog names untouched; normalize only the matcher input.
+            matched_rows = {t:[self.logical_row(t, row) for row in rows]
+                            for t,rows in self.result["rows"].items()}
+            for name, status, detail in final_data_checks(matched_rows):
                 self.add(GROUP_DATA, name, status, detail)
         else:
             self.add(GROUP_DATA, "final.data", "SKIP", "Requires all expected columns and complete snapshots.")
@@ -210,34 +294,37 @@ class Checker:
             ("escape_booking", "starts_at", ("timestamp without time zone", "timestamp with time zone")),
             ("escape_booking", "ends_at", ("timestamp without time zone", "timestamp with time zone")),
         ]:
-            col = next((c for c in self.result["columns"].get(table, []) if c["name"] == field), None)
+            col = next((c for c in self.result["columns"].get(table, []) if c["name"] == self.column(table, field)), None)
             if col:
                 self.add(GROUP_INVALID, f"{table}.{field}.type",
                          "PASS" if col["type"] in allowed else "REVIEW", col)
-        col = next((c for c in self.result["columns"].get("escape_booking", []) if c["name"] == "total_price"), None)
+        col = next((c for c in self.result["columns"].get("escape_booking", [])
+                    if c["name"] == self.column("escape_booking", "total_price")), None)
         if col:
             self.add(GROUP_INVALID, "escape_booking.total_price.exact_type",
                      "FAIL" if col["type"] in ("real", "double precision") else
                      "PASS" if col["type"].startswith("numeric") or col["type"] == "money" else "REVIEW", col)
         for field, parent in (("room_id", "escape_room"), ("team_id", "escape_team")):
             fks = [c for c in self.result["constraints"].get("escape_booking", [])
-                   if c["kind"] == "f" and c["columns"] == [field]
-                   and c["referenced_schema"] == self.schema and c["referenced_table"] == parent
-                   and c["referenced_columns"] == [field]]
+                   if c["kind"] == "f" and c["columns"] == [self.column("escape_booking", field)]
+                   and c["referenced_schema"] == self.schema and c["referenced_table"] == self.table_name(parent)
+                   and c["referenced_columns"] == [self.column(parent, field)]]
             okay = any(c["delete_action"] in ("a", "r") and c["validated"] for c in fks)
             self.add(GROUP_HISTORY, f"{field}.foreign_key", "PASS" if okay else "REVIEW",
                      {"matching_foreign_keys": fks, "expected": "Validated FK to own parent table; NO ACTION or RESTRICT."})
 
     def insert(self, table, values):
-        return self.query(sql.SQL("INSERT INTO {} ({}) VALUES ({}) RETURNING *").format(
-            self.table(table), sql.SQL(", ").join(map(sql.Identifier, values)),
+        row = self.query(sql.SQL("INSERT INTO {} ({}) VALUES ({}) RETURNING *").format(
+            self.table(table), sql.SQL(", ").join(sql.Identifier(self.column(table, k)) for k in values),
             sql.SQL(", ").join(sql.Placeholder() for _ in values)), tuple(values.values()))[0]
+        return self.logical_row(table, row)
 
     def update(self, table, row, values):
         key = FIELDS[table][0]
-        return self.query(sql.SQL("UPDATE {} SET {} WHERE {} = %s RETURNING *").format(
-            self.table(table), sql.SQL(", ").join(sql.SQL("{} = %s").format(sql.Identifier(k)) for k in values),
-            sql.Identifier(key)), (*values.values(), row[key]))
+        rows = self.query(sql.SQL("UPDATE {} SET {} WHERE {} = %s RETURNING *").format(
+            self.table(table), sql.SQL(", ").join(sql.SQL("{} = %s").format(sql.Identifier(self.column(table, k))) for k in values),
+            sql.Identifier(self.column(table, key))), (*values.values(), row[key]))
+        return [self.logical_row(table, r) for r in rows]
 
     def probe(self, group, name, action, *, reject=None, verify=None, column=None):
         """Rollback every individual attempt; flush deferred constraints before success."""
@@ -271,8 +358,10 @@ class Checker:
             self.add(GROUP_DEFAULT, "behavior.preflight", "SKIP",
                      "Probes support ordinary tables without RLS, enabled user triggers, rules or inheritance. Review manually.")
             return
-        if any(set(FIELDS[t]) - {c["name"] for c in self.result["columns"].get(t, [])} for t in FIELDS):
-            self.add(GROUP_DEFAULT, "behavior.preflight", "SKIP", "Missing required columns; inspect catalog findings.")
+        if not self.mapping_valid or any(
+                {self.column(t, f) for f in FIELDS[t]} - {c["name"] for c in self.result["columns"].get(t, [])}
+                for t in FIELDS):
+            self.add(GROUP_DEFAULT, "behavior.preflight", "SKIP", "Missing required columns or invalid mapping; inspect catalog findings.")
             return
         tag = uuid.uuid4().hex[:4].upper()
         rv = dict(room_code="I" + tag + "A", room_name="Check " + tag, capacity=8,
@@ -322,7 +411,8 @@ class Checker:
                     self.probe(GROUP_DEFAULT, "booking.optional_requests", lambda t=table, r=row: self.update(t, r, {"special_requests": None}))
                     continue
                 self.probe(GROUP_INVALID, f"{table}.{field}.null", lambda t=table, r=row, f=field: self.update(t, r, {f: None}),
-                           reject={"23502", "23514", "428C9"} if field == FIELDS[table][0] else {"23502", "23514"}, column=field)
+                           reject={"23502", "23514", "428C9"} if field == FIELDS[table][0] else {"23502", "23514"},
+                           column=self.column(table, field))
         for table, fields in (("escape_room", ("room_code", "room_name")), ("escape_team", ("team_name", "contact_email"))):
             if table in seeds:
                 for field in fields:
@@ -367,14 +457,14 @@ class Checker:
         for field, value in (("starts_at", None), ("ends_at", None), ("ends_at", start)):
             self.probe(GROUP_INVALID, f"booking.cancelled.{field}.{value}",
                        lambda f=field, v=value: self.update("escape_booking", booking, {"status": "cancelled", f: v}),
-                       reject={"23502", "23514"}, column=field)
+                       reject={"23502", "23514"}, column=self.column("escape_booking", field))
         for field, parent in (("room_id", "escape_room"), ("team_id", "escape_team")):
             # A deleted, newly generated parent ID has the correct type and is known absent.
             def missing_reference(f=field, p=parent):
                 vals = {**rv, "room_code": "I" + tag + "C", "room_name": "Missing " + tag} if p == "escape_room" else {"team_name": "Missing " + tag, "contact_email": "missing" + tag + "@example.com"}
                 temp = self.insert(p, vals)
-                self.conn.execute(sql.SQL("DELETE FROM {} WHERE {}=%s").format(self.table(p), sql.Identifier(f)), (temp[f],))
-                absent = self.query(sql.SQL("SELECT 1 FROM {} WHERE {}=%s").format(self.table(p), sql.Identifier(f)), (temp[f],))
+                self.conn.execute(sql.SQL("DELETE FROM {} WHERE {}=%s").format(self.table(p), sql.Identifier(self.column(p, f))), (temp[f],))
+                absent = self.query(sql.SQL("SELECT 1 FROM {} WHERE {}=%s").format(self.table(p), sql.Identifier(self.column(p, f))), (temp[f],))
                 if absent:
                     raise RuntimeError("Missing-reference fixture was not deleted")
                 return self.update("escape_booking", booking, {f: temp[f]})
@@ -383,7 +473,7 @@ class Checker:
                 def deletion(p=parent, f=field, st=status):
                     self.update("escape_booking", booking, {"status": st})
                     return self.query(sql.SQL("DELETE FROM {} WHERE {}=%s RETURNING *").format(
-                        self.table(p), sql.Identifier(f)), (seeds[p][f],))
+                        self.table(p), sql.Identifier(self.column(p, f))), (seeds[p][f],))
                 self.probe(GROUP_HISTORY, f"{parent}.delete_with_{status}_booking", deletion, reject={"23503"})
 
 
@@ -393,8 +483,17 @@ def db_error(exc):
             "constraint": exc.diag.constraint_name, "column": exc.diag.column_name}
 
 
-def check_schema(conn, schema, student="", *, probes=False, row_limit=1000, timeout_ms=5000):
-    checker = Checker(conn, schema, student, row_limit)
+def check_schema(conn, schema, student="", *, probes=False, row_limit=1000, timeout_ms=5000,
+                 team_email_column="contact_email", name_map=None):
+    if not team_email_column or "\x00" in team_email_column or team_email_column in ("team_id", "team_name"):
+        raise ValueError("Choose a nonempty team email column distinct from team_id/team_name.")
+    mapping = validate_name_map(name_map or {})
+    if team_email_column != "contact_email":
+        team = mapping["columns"].setdefault("escape_team", {})
+        if "contact_email" in team and team["contact_email"] != team_email_column:
+            raise ValueError("Conflicting team email mapping options.")
+        team["contact_email"] = team_email_column
+    checker = Checker(conn, schema, student, row_limit, mapping)
     try:
         with conn.transaction(force_rollback=True):
             conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ" + ("" if probes else " READ ONLY"))
@@ -430,7 +529,9 @@ def read_schema_file(path):
 def write_reports(directory, results, mode):
     directory.mkdir(parents=True, mode=0o700, exist_ok=False)
     payload = {"created_utc": datetime.now(timezone.utc).isoformat(), "mode": mode,
-               "note": "Evidence, not grades. Review Q10 changes. Behavioral checks roll back table changes; sequence advances persist.",
+               "note": "Evidence, not grades. Review Q10 changes. Behavioral checks roll back table changes; sequence advances persist. "
+                       "Explicit name mappings preserve naming findings. Check labels/table groups use expected names; "
+                       "raw snapshots, catalog definitions and SQL traces retain actual names. Probe/matcher values use logical field names.",
                "schemas": results}
     (directory / "results.json").write_text(json.dumps(payload, indent=2, default=str) + "\n")
     with (directory / "checks.csv").open("w", newline="") as stream:
@@ -444,10 +545,15 @@ def write_reports(directory, results, mode):
     sections = []
     for r in results:
         counts = Counter(c["status"] for c in r["checks"])
+        mappings = {k:r[k] for k in ("table_overrides", "column_overrides") if r.get(k)}
+        mapping_html = ('<p><strong>Explicit name mappings applied for this schema:</strong></p><pre>'
+                        + esc(json.dumps(mappings, indent=2)) + '</pre>') if mappings else ''
+        inventory_html = ('<details><summary>Actual tables and columns in this schema</summary><pre>'
+                          + esc(json.dumps(r.get("inventory", []), indent=2)) + '</pre></details>')
         lines = []
         for c in r["checks"]:
             lines.append(f'<tr><td class="{c["status"]}">{esc(c["status"])}</td><td>{esc(c["group"])}</td><td>{esc(c["check"])}</td><td><pre>{esc(json.dumps(c["detail"], indent=2, default=str))}</pre></td></tr>')
-        sections.append(f'<section><h2>{esc(r["student"] or r["schema"])}</h2><p>{esc(r["schema"])} · {esc(dict(counts))}</p><details><summary>Check results</summary><table><thead><tr><th>Status</th><th>Group</th><th>Check</th><th>Evidence</th></tr></thead><tbody>{"".join(lines)}</tbody></table></details><details><summary>Stored rows and definitions</summary><pre>{esc(json.dumps({k:v for k,v in r.items() if k != "checks"}, indent=2, default=str))}</pre></details></section>')
+        sections.append(f'<section><h2>{esc(r["student"] or r["schema"])}</h2><p>{esc(r["schema"])} · {esc(dict(counts))}</p>{mapping_html}{inventory_html}<details><summary>Check results</summary><table><thead><tr><th>Status</th><th>Group</th><th>Check</th><th>Evidence</th></tr></thead><tbody>{"".join(lines)}</tbody></table></details><details><summary>Stored rows and definitions</summary><pre>{esc(json.dumps({k:v for k,v in r.items() if k != "checks"}, indent=2, default=str))}</pre></details></section>')
     (directory / "report.html").write_text(f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Assignment 3 instructor checks</title>
 <style>body{{font:16px system-ui;max-width:1400px;margin:2rem auto;padding:0 1rem;color:#162b3c;background:#f4f7fa}}section{{background:white;padding:1rem;margin:1rem 0;border:1px solid #ccd7df;border-radius:8px}}table{{border-collapse:collapse;width:100%}}td,th{{border:1px solid #ccd7df;padding:.5rem;vertical-align:top;text-align:left}}pre{{white-space:pre-wrap;overflow-wrap:anywhere;max-width:70ch;font-size:13px}}.FAIL,.ERROR{{color:#a42121;font-weight:bold}}.REVIEW{{color:#815100;font-weight:bold}}.PASS{{color:#176137}}summary{{cursor:pointer;padding:.5rem}}input{{padding:.7rem;width:min(35rem,90%)}}</style>
 <h1>Assignment 3 instructor checks</h1><p>{esc(payload["created_utc"])} · {esc(mode)} · {len(results)} schemas</p><p>{esc(payload["note"])}</p><p>PASS: this check succeeded. FAIL: observed requirement mismatch. REVIEW: ambiguous evidence or unexpected rejection. ERROR: access/execution problem. SKIP: not tested. Counts are not scores; catalog and behavioral checks can overlap.</p><label>Filter schemas or students <input id="filter" type="search"></label>{"".join(sections)}
@@ -465,6 +571,10 @@ def main(argv=None):
     parser.add_argument("--service", help="libpq service name; otherwise use PGHOST/PGDATABASE/PGUSER etc.")
     parser.add_argument("--config", type=Path, help="Provisioning TOML: read database host/port/name/sslmode only; PGUSER selects instructor")
     parser.add_argument("--probe-writes", action="store_true", help="Run rolled-back DML probes; sequence numbers may advance")
+    parser.add_argument("--team-email-column", default="contact_email",
+                        help="Alternate escape_team email column; requires one explicit --schema. Does not rename columns.")
+    parser.add_argument("--name-map", type=Path,
+                        help="TOML with explicit table/column mappings keyed by schema; works with roster runs")
     parser.add_argument("--output", type=Path, default=Path("instructor-solutions") / ("assignment3-checks-" + datetime.now().strftime("%Y%m%d-%H%M%S")))
     parser.add_argument("--row-limit", type=int, default=1000)
     parser.add_argument("--timeout-ms", type=int, default=5000)
@@ -475,9 +585,14 @@ def main(argv=None):
         parser.error("Output directory already exists; choose a new directory.")
     if args.service and args.config:
         parser.error("Choose --service or --config, not both.")
+    if args.team_email_column != "contact_email" and (not args.schema or len(args.schema) != 1):
+        parser.error("--team-email-column requires exactly one explicit --schema.")
+    if not args.team_email_column or "\x00" in args.team_email_column or args.team_email_column in ("team_id", "team_name"):
+        parser.error("Choose a nonempty team email column distinct from team_id/team_name.")
     os.umask(0o077)
     try:
         schemas = read_schema_file(args.schema_file) if args.schema_file else [(s, "") for s in dict.fromkeys(args.schema or [])]
+        name_maps = read_name_map(args.name_map) if args.name_map else {}
         kwargs = {"service": args.service} if args.service else {}
         if args.config:
             with args.config.open("rb") as stream:
@@ -493,10 +608,15 @@ def main(argv=None):
                     (args.schema_prefix, args.schema_prefix))]
             if not schemas:
                 raise ValueError("No schemas selected.")
+            unused = set(name_maps) - {s for s,_ in schemas}
+            if unused:
+                print(f"Note: {len(unused)} name-map entries are outside the selected schemas; not applied.")
             results = []
             for i, (schema, student) in enumerate(schemas, 1):
                 result = check_schema(conn, schema, student, probes=args.probe_writes,
-                                      row_limit=args.row_limit, timeout_ms=args.timeout_ms)
+                                      row_limit=args.row_limit, timeout_ms=args.timeout_ms,
+                                      team_email_column=args.team_email_column,
+                                      name_map=name_maps.get(schema))
                 results.append(result)
                 print(f"[{i}/{len(schemas)}] {schema}: {dict(Counter(c['status'] for c in result['checks']))}", flush=True)
         write_reports(args.output, results, "behavioral probes" if args.probe_writes else "read-only")

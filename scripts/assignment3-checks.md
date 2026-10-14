@@ -6,12 +6,19 @@ The report groups evidence under the handout's four instructor-check categories 
 
 ## Setup and connection
 
-Use Python 3.11 or newer and psycopg 3 (already listed in this repository's `requirements.txt`):
+Use `uv` with Python 3.11 or newer and psycopg 3 (already listed in this repository's `requirements.txt`). From the repository root, create the environment if `.venv` does not already exist:
 
 ```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install 'psycopg[binary]>=3.1,<4'
+uv venv --python python3 .venv
 ```
+
+If `.venv` already exists, reuse it and skip the creation command. Install the dependency into that environment:
+
+```bash
+uv pip install --python .venv/bin/python 'psycopg[binary]>=3.1,<4'
+```
+
+The commands below run `.venv/bin/python` directly, so activating the environment is unnecessary.
 
 Connect with an instructor account that can inspect all student tables. Use libpq's `.pgpass`/`PGPASSFILE` or a configured service for authentication; the script does not read student passwords or put passwords into command arguments. In particular, the provisioning manifest selects schemas; it is **not** used to log in as students.
 
@@ -45,6 +52,80 @@ schema,student
 csci340_example1,Example Student One
 csci340_example2,Example Student Two
 ```
+
+For a targeted recheck where `escape_team.contact_email` was instead named `email`, use an explicit override:
+
+```bash
+PGUSER=course_admin .venv/bin/python scripts/check_assignment3.py \
+  --config instructor-solutions/student-account-provisioning.toml \
+  --schema csci340_790775522 \
+  --team-email-column email \
+  --probe-writes
+```
+
+Run this in the system shell, not at the `psql` prompt (`\q` exits psql). The override requires exactly one explicit `--schema`, so it cannot accidentally affect a whole-roster run. It maps the email field for final-data matching and every email-related probe, including required values, blank text and duplicate teams. It does not rename the student's column. The original column-name mismatch remains a `FAIL` and the explicit mapping is recorded as `REVIEW`; these findings do not block the adapted probes. Raw snapshots/catalog definitions retain the actual column names. If both names exist, or the alternate is absent, the mapping is rejected and behavioral probes are skipped. Omit `--probe-writes` for a read-only mapped inspection.
+
+## Table and column naming differences across the roster
+
+Use an explicit per-schema TOML map with `--name-map`. The private file
+`instructor-solutions/assignment3-name-map.toml` contains the three confirmed field-name
+differences from the saved catalog: Erin's `email`, Koen's `special_request`, and
+Samuel's `conatct_email`. It can be used with the full roster:
+
+```bash
+PGUSER=course_admin .venv/bin/python scripts/check_assignment3.py \
+  --config instructor-solutions/student-account-provisioning.toml \
+  --schema-file instructor-solutions/student-accounts-2026-09-11/credential-manifest.csv \
+  --name-map instructor-solutions/assignment3-name-map.toml \
+  --probe-writes
+```
+
+Authentication uses the same password environment/file setup as earlier runs. Omit
+`--probe-writes` to inspect first. Every report now includes a catalog-only list of
+the actual tables, views and columns in each selected schema, including schemas
+where the standard tables are missing. Use that inventory and the student's work
+to identify equivalents before adding a mapping. Similar spelling alone is not
+sufficient evidence. The checker does not automatically choose fuzzy matches.
+
+Example syntax (illustrative names, not a claim about an actual student):
+
+```toml
+[schemas.csci340_example.tables]
+escape_room = "rooms"
+escape_booking = "escape_bookings"
+
+[schemas.csci340_example.columns.escape_room]
+room_id = "id"
+room_name = "name"
+
+[schemas.csci340_example.columns.escape_booking]
+booking_id = "id"
+room_id = "room"
+special_requests = "special_request"
+```
+
+Keys always use the expected table/field names; values are actual identifiers.
+Mappings apply only inside the exact named schema, including mixed-case/quoted
+identifiers. They cover record matching, primary/foreign-key inspection and all
+behavioral SQL. Primary keys and foreign keys are still inspected for real
+constraints; a rename cannot manufacture a missing key or missing rule. Required
+fields must map one-to-one, so `room_id` cannot reuse the required `room_code` field.
+
+The report displays applied mappings prominently, retains original names in raw
+snapshots/catalogs/SQL traces, and keeps naming mismatches separate from behavior
+results. Internal returned probe values and matching candidates use expected field
+names. Unknown mapping keys, duplicate targets, missing targets and coexistence of
+expected and alternate names are rejected; ambiguous mappings block behavioral
+probes for that schema. Fix or remove stale mappings if a student repairs a name.
+Mappings for unselected schemas are ignored with a console notice.
+
+For grading, evaluate the naming requirement once rather than treating dependent
+skips as separate failed rules. Award behavior credit from the adapted tests that
+actually ran. Mapping does not normalize data values, timestamp types, text activity
+states or different key designs. For example, Koen's column mapping alone does not
+resolve the checker's boolean fixture versus his text `is_active` values. Such
+cases still need manual review. This option does not change any proposed grades or
+retroactively revise earlier reports.
 
 The default output is a new dated directory under `instructor-solutions/`, which is excluded from Git and the course website. `--output PATH` selects a different **new** directory. Reports contain student records: keep them private. The directory is created with mode 700 and files with mode 600. Existing output directories are never overwritten.
 
@@ -95,6 +176,66 @@ The report includes SQLSTATE, constraint/column names when provided by PostgreSQ
 
 The default snapshot limit is 1,000 rows per table. If exceeded, final-data matching is skipped with a review notice; increase `--row-limit` if appropriate. Statement timeout defaults to 5 seconds (`--timeout-ms`); lock timeout is 2 seconds. Each schema has a consistent snapshot. The script proceeds after individual schema errors. Exit code 2 indicates execution/configuration errors, while ordinary student findings return 0; inspect the report for FAIL/REVIEW/SKIP.
 
+## Broader catalog audit for possible evaluation mismatches
+
+`inspect_assignment3_schemas.py` complements the checker by inventorying **every**
+ordinary/partitioned/foreign table, view and materialized view in each selected
+schema, including unexpectedly named relations. It also finds relations owned by
+the student's same-named database role in other non-system schemas. Ownership is
+only a location clue: it does not establish which assignment a table belongs to,
+and tables owned by other roles outside the assigned schema are not discovered.
+
+It uses a read-only transaction per student and queries PostgreSQL catalogs only.
+It does not read student rows, run views, evaluate defaults, call student functions,
+advance sequences, or change anything in the database. It captures:
+
+- Actual names, types (including domain constraints and enum values), nullability,
+  identities, generated columns and defaults.
+- Primary/foreign keys, unique/check constraints, referenced tables and columns,
+  indexes, sequence configuration/ownership/permissions, table privileges and schema USAGE.
+- Views, triggers, rules, row security policies and inheritance metadata that may
+  require individual review before behavioral tests.
+- Review notes for similar names, existing confirmed mappings, alternate locations,
+  different key designs and representations such as text activity states.
+
+Candidate names are suggestions, never automatically applied. The audit will not
+suggest reusing a distinct required column (for example, `room_code` for `room_id`).
+Similarity is heuristic and may miss synonyms or suggest unrelated tables; full
+definitions are retained for inspection. Existing `--name-map` entries are shown
+as instructor-confirmed choices, with stale/ambiguous mappings flagged. Cross-schema
+locations cannot be handled by the checker's within-schema mappings. Representation
+notes are not deductions: compare meaning, constraints, written work and behavioral
+evidence before deciding whether an implementation satisfies the requirement.
+
+Run using the existing uv-created `.venv`; there are no new dependencies. This
+subshell prompts privately and discards its password variable when it exits:
+
+```bash
+(
+  cd /home/bizon/classes/CSCI340 || exit
+  read -rsp 'course_admin password: ' PGPASSWORD || exit
+  printf '\n'
+  export PGPASSWORD
+  PGUSER=course_admin .venv/bin/python scripts/inspect_assignment3_schemas.py \
+    --config instructor-solutions/student-account-provisioning.toml \
+    --schema-file instructor-solutions/student-accounts-2026-09-11/credential-manifest.csv \
+    --name-map instructor-solutions/assignment3-name-map.toml
+)
+```
+
+Use `--schema csci340_790775522` instead of `--schema-file ...` for one student;
+repeat `--schema` for several. The report is saved in a **new** private directory
+`instructor-solutions/assignment3-schema-audit-YYYYMMDD-HHMMSS/`, containing
+`schema-audit.json` (complete evidence for review), `report.html` (searchable viewer)
+and `summary.txt` (review notes). Optional `--output PATH` must be a new directory.
+Directory/file permissions are 700/600, and manifest passwords are not exported.
+
+Default per-statement timeout is 10 seconds (`--timeout-ms`), with a two-second
+lock timeout. An execution error marks that student's audit incomplete; other
+students continue. Exit code 2 means an execution/configuration error. Missing
+schemas and review notes return 0 and must be reviewed in the report. The audit
+does not update grades, feedback, previous reports or the name-map file.
+
 ## Local integration tests
 
 The tests require a **disposable** PostgreSQL database. They create/drop randomly named test schemas; never set this variable to the course database.
@@ -105,3 +246,9 @@ A3_TEST_DSN='host=/PATH/TO/PRIVATE/SOCKET port=55439 dbname=postgres' \
 ```
 
 Without `A3_TEST_DSN`, database integration tests are skipped. Tests cover a correct schema, incorrect defaults, missing constraints, cascading deletion, missing references, overstrict uniqueness, absent generated IDs, deferred constraints, missing schemas, Q10 changes, quoted schema names, report escaping, private output, and unchanged table data after all probes.
+
+For the additional catalog audit tests, use the same command with
+`-p test_inspect_assignment3_schemas.py`. These check alternate names, distinct
+required fields, domains/enums, cross-schema ownership, insufficient permissions,
+unexecuted student views/functions/triggers, unchanged data and sequence state,
+manifest password exclusion and private report files.

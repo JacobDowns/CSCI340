@@ -75,6 +75,34 @@ class FileTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 M.read_schema_file(p)
 
+    def test_email_override_requires_one_explicit_schema(self):
+        with tempfile.TemporaryDirectory() as temp, patch.object(M.psycopg, "connect") as connect:
+            for selector in (["--schema-prefix", "csci340_"], ["--schema", "one", "--schema", "two"]):
+                with self.assertRaises(SystemExit) as raised:
+                    M.main([*selector, "--team-email-column", "email", "--output", str(Path(temp)/"report")])
+                self.assertEqual(raised.exception.code, 2)
+            connect.assert_not_called()
+
+    def test_name_map_validation(self):
+        invalid = [
+            {"unknown": {}}, {"tables": {"wrong_table": "rooms"}},
+            {"tables": {"escape_room": "escape_team"}},
+            {"columns": {"escape_room": {"room_id": "room_code"}}},
+            {"columns": {"escape_room": {"room_nam": "name"}}},
+            {"columns": {"escape_team": {"contact_email": ""}}},
+            {"tables": {"escape_room": 123}},
+            {"tables": {"escape_room": "bad\x00name"}},
+        ]
+        for value in invalid:
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                M.validate_name_map(value)
+        with tempfile.TemporaryDirectory() as temp:
+            p = Path(temp)/"map.toml"
+            p.write_text('[schemas.student.columns.escape_team]\ncontact_email = "email"\n')
+            self.assertEqual(M.read_name_map(p)["student"]["columns"], {"escape_team":{"contact_email":"email"}})
+            p.write_text('[schema.student]\n')
+            with self.assertRaises(ValueError):M.read_name_map(p)
+
 
 @unittest.skipUnless(os.environ.get("A3_TEST_DSN"), "Set A3_TEST_DSN to an isolated test database")
 class DatabaseTests(unittest.TestCase):
@@ -103,6 +131,120 @@ class DatabaseTests(unittest.TestCase):
         self.assertGreater(len(c), 95)
         self.assertEqual({k: v for k, v in c.items() if v["status"] != "PASS"}, {})
         self.assertEqual(before, self.snapshot())
+
+    def test_alternate_email_runs_checks_preserves_names_and_rolls_back(self):
+        # Include a quote to exercise safe identifier handling in INSERT/UPDATE.
+        alternate = 'Contact "Email'
+        self.conn.execute(sql.SQL("ALTER TABLE escape_team RENAME COLUMN contact_email TO {}").format(sql.Identifier(alternate)))
+        before = self.snapshot()
+        result = M.check_schema(self.conn, self.schema, probes=True, team_email_column=alternate)
+        checks = {c["check"]: c for c in result["checks"]}
+        self.assertEqual({k:v["status"] for k,v in checks.items() if v["status"] != "PASS"}, {
+            "escape_team.columns":"FAIL", "escape_team.contact_email.name_mapping":"REVIEW"})
+        self.assertEqual(result["column_overrides"], {"escape_team.contact_email": alternate})
+        self.assertIn(alternate, result["rows"]["escape_team"][0])
+        self.assertNotIn("contact_email", result["rows"]["escape_team"][0])
+        self.assertEqual(checks["escape_team.contact_email.null"]["detail"]["column"], alternate)
+        self.assertEqual(before, self.snapshot())
+        # Without the explicit override the default checker must still block probes.
+        self.assertEqual(self.checks(probes=True)["behavior.preflight"]["status"], "SKIP")
+
+    def test_alternate_email_does_not_hide_broken_constraints(self):
+        self.conn.execute("ALTER TABLE escape_team RENAME COLUMN contact_email TO email")
+        self.conn.execute("ALTER TABLE escape_team DROP CONSTRAINT escape_team_contact_email_check")
+        self.conn.execute("ALTER TABLE escape_team ALTER COLUMN email DROP NOT NULL")
+        checks = self.checks(probes=True, team_email_column="email")
+        for case in ("null", "empty", "spaces"):
+            self.assertEqual(checks["escape_team.contact_email."+case]["status"], "FAIL")
+        self.assertEqual(checks["booking.defaults"]["status"], "PASS")
+
+    def test_alternate_email_read_only_matching_and_invalid_mapping(self):
+        # Both missing alternate and ambiguous alternate must fail closed.
+        for extra in (False, True):
+            if extra:self.conn.execute("ALTER TABLE escape_team ADD COLUMN email text")
+            checks = self.checks(probes=True, team_email_column="email")
+            self.assertEqual(checks["escape_team.contact_email.name_mapping"]["status"], "ERROR")
+            self.assertEqual(checks["behavior.preflight"]["status"], "SKIP")
+            self.assertNotIn("booking.valid_seed", checks)
+        self.conn.execute("ALTER TABLE escape_team DROP COLUMN email")
+        self.conn.execute("ALTER TABLE escape_team RENAME COLUMN contact_email TO email")
+        before = self.conn.execute("SELECT last_value FROM escape_team_team_id_seq").fetchone()
+        checks = self.checks(team_email_column="email")
+        self.assertEqual(checks["final.teams"]["status"], "PASS")
+        self.assertEqual(checks["final.booking_pattern"]["status"], "PASS")
+        self.assertEqual(before, self.conn.execute("SELECT last_value FROM escape_team_team_id_seq").fetchone())
+
+    def test_all_table_and_column_names_mapped_with_actual_foreign_keys(self):
+        mapping = {"tables": {t:'Actual "'+t for t in M.FIELDS},
+                   "columns": {t:{f:'Actual "'+t+' '+f for f in fields} for t,fields in M.FIELDS.items()}}
+        for t,fields in mapping["columns"].items():
+            for field,actual in fields.items():
+                self.conn.execute(sql.SQL("ALTER TABLE {} RENAME COLUMN {} TO {}").format(
+                    sql.Identifier(t), sql.Identifier(field), sql.Identifier(actual)))
+            self.conn.execute(sql.SQL("ALTER TABLE {} RENAME TO {}").format(
+                sql.Identifier(t), sql.Identifier(mapping["tables"][t])))
+        def snapshot():
+            return {t:self.conn.execute(sql.SQL("SELECT * FROM {} ORDER BY 1").format(
+                sql.Identifier(self.schema, actual))).fetchall() for t,actual in mapping["tables"].items()}
+        before = snapshot()
+        result = M.check_schema(self.conn, self.schema, probes=True, name_map=mapping)
+        checks = {c["check"]:c for c in result["checks"]}
+        self.assertGreater(len(checks), 109)
+        for name,check in checks.items():
+            if not name.endswith((".columns", ".name_mapping")):
+                self.assertEqual(check["status"], "PASS", check)
+        self.assertEqual(checks["room_id.foreign_key"]["status"], "PASS")
+        self.assertEqual(checks["booking.cancelled.starts_at.None"]["status"], "PASS")
+        self.assertEqual(checks["final.booking_pattern"]["status"], "PASS")
+        self.assertEqual(result["rows"], before)
+        self.assertEqual(before, snapshot())
+        self.assertEqual({r["name"] for r in result["inventory"]}, set(mapping["tables"].values()))
+        self.assertEqual(checks["escape_team.contact_email.null"]["detail"]["column"],
+                         mapping["columns"]["escape_team"]["contact_email"])
+        self.assertIn('Actual "escape_booking starts_at',
+                      checks["booking.cancelled.starts_at.None"]["detail"]["column"])
+        # Mapping a foreign-key field must still reveal an actual missing FK.
+        self.conn.execute(sql.SQL("ALTER TABLE {} DROP CONSTRAINT escape_booking_room_id_fkey").format(
+            sql.Identifier(mapping["tables"]["escape_booking"])))
+        checks = self.checks(probes=True, name_map=mapping)
+        self.assertEqual(checks["booking.missing_room_id"]["status"], "FAIL")
+        self.assertEqual(checks["escape_room.delete_with_cancelled_booking"]["status"], "FAIL")
+
+    def test_stale_table_mapping_blocks_probes_and_inventory_still_shows_names(self):
+        self.conn.execute("CREATE TABLE rooms (example text)")
+        result = M.check_schema(self.conn, self.schema, probes=True,
+                                name_map={"tables":{"escape_room":"rooms"}})
+        checks = {c["check"]:c for c in result["checks"]}
+        self.assertEqual(checks["escape_room.name_mapping"]["status"], "ERROR")
+        self.assertEqual(checks["behavior.preflight"]["status"], "SKIP")
+        self.assertNotIn("booking.valid_seed", checks)
+        self.assertIn("rooms", {r["name"] for r in result["inventory"]})
+
+    def test_roster_mapping_is_scoped_to_one_student(self):
+        other = self.schema + '_other'
+        self.conn.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(other)))
+        try:
+            self.conn.execute(sql.SQL("SET search_path TO {}, pg_catalog").format(sql.Identifier(other)))
+            self.conn.execute(DDL)
+            self.conn.execute(sql.SQL("ALTER TABLE {}.escape_team RENAME COLUMN contact_email TO email").format(sql.Identifier(self.schema)))
+            with tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                names = root/'names.toml'
+                names.write_text('[schemas.'+json.dumps(self.schema)+'.columns.escape_team]\ncontact_email="email"\n')
+                params = psycopg.conninfo.conninfo_to_dict(os.environ["A3_TEST_DSN"])
+                env = {"PG"+k.upper():v for k,v in params.items() if k in ("host","port","user","password")}
+                env["PGDATABASE"] = params.get("dbname","postgres")
+                with patch.dict(os.environ,env):
+                    code = M.main(["--schema",self.schema,"--schema",other,"--name-map",str(names),
+                                   "--probe-writes","--output",str(root/'report')])
+                self.assertEqual(code,0)
+                results = json.loads((root/'report/results.json').read_text())["schemas"]
+                self.assertEqual(results[0]["column_overrides"], {"escape_team.contact_email":"email"})
+                self.assertEqual(results[1]["column_overrides"], {})
+                self.assertTrue(all(c['status']=='PASS' for c in results[1]['checks']))
+                self.assertNotIn('SKIP',{c['status'] for c in results[0]['checks']})
+        finally:
+            self.conn.execute(sql.SQL("DROP SCHEMA {} CASCADE").format(sql.Identifier(other)))
 
     def test_read_only_does_not_advance_sequences(self):
         before = self.conn.execute("SELECT last_value FROM escape_room_room_id_seq").fetchone()

@@ -59,9 +59,11 @@ Practice with [Activity 4 — ER relationships](activities/week-07-er-relationsh
 
 Continue with [Relationship keys and mapping ER models to relations](lectures/week-07-er-keys-and-cardinality.qmd): derive each relationship's key and use it to choose a separate relation or foreign-key columns in an entity relation. Preserve cardinality and participation with primary keys, foreign keys, uniqueness, and nullability, then apply the same reasoning to Activity 4. Reserve minimum–maximum notation and weak entities for a later lecture on ER extensions.
 
-### Week 8 (October 12-16) - Dependencies and normalization
+### Week 8 (October 12-16) - ER extensions, dependencies, and normalization
 
-Introduce functional dependencies, candidate keys, anomalies, 3NF, BCNF, lossless decomposition, and dependency preservation. No class Monday, October 12, because of Indigenous Peoples' Day.
+Complete ER modeling with [Finishing the ER model](lectures/week-08-er-extensions.qmd): weak entities, specialization, higher-order relationships, and aggregation. Compare textbook aggregation with an explicit entity representing an association, and preserve the original constraints when changing representations.
+
+Then introduce functional dependencies, candidate keys, anomalies, 3NF, BCNF, lossless decomposition, and dependency preservation. No class Monday, October 12, because of Indigenous Peoples' Day.
 
 ### Week 9 (October 19-23) - Review and midterm examination
 

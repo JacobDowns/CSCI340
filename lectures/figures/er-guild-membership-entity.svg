@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="510" viewBox="0 0 1000 510" role="img" aria-labelledby="title desc"><title id="title">Guild membership as an explicit entity</title><desc id="desc">Guild Membership has its own membership_id and exactly one Character and Guild. Every Guild has at least one membership. Each Membership Review concerns exactly one membership; a membership may have zero or many reviews. The character–guild pair remains unique.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d}.name{font-size:21px;font-weight:700}.attr{font-family:Consolas,monospace;font-size:20px}.rel{font-size:19px}.note{font-size:19px;fill:#475569}</style>
+<rect width="1000" height="510" fill="white"/>
+<rect x="365" y="100" width="270" height="78" fill="white" stroke="#344955" stroke-width="2"/><rect x="366" y="101" width="268" height="43" fill="#eaf4f7"/>
+<text x="500.0" y="129" class="name" text-anchor="middle" >Guild Membership</text>
+<path d="M365 144 L635 144" fill="none" stroke="#344955" stroke-width="2"/>
+<text x="383" y="171" class="attr" text-anchor="start" text-decoration="underline">membership_id</text>
+<rect x="25" y="112" width="175" height="48" fill="white" stroke="#344955" stroke-width="2"/><rect x="26" y="113" width="173" height="43" fill="#eaf4f7"/>
+<text x="112.5" y="141" class="name" text-anchor="middle" >Character</text>
+<rect x="800" y="112" width="175" height="48" fill="white" stroke="#344955" stroke-width="2"/><rect x="801" y="113" width="173" height="43" fill="#eaf4f7"/>
+<text x="887.5" y="141" class="name" text-anchor="middle" >Guild</text>
+<polygon points="245.0,139 295,106.5 345.0,139 295,171.5" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="295" y="145" class="rel" text-anchor="middle" >of</text>
+<polygon points="655.0,139 705,106.5 755.0,139 705,171.5" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="705" y="145" class="rel" text-anchor="middle" >in</text>
+<path d="M245 139 L214 139" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="200,139 214,132 214,146" fill="#344955"/>
+<path d="M345 135 L365 135" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M345 143 L365 143" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M635 135 L655 135" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M635 143 L655 143" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M755 135 L786 135" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M755 143 L786 143" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="800,139 786,132 786,146" fill="#344955"/>
+<polygon points="400.0,270 500,235.0 600.0,270 500,305.0" fill="#f7f3ea" stroke="#344955" stroke-width="2"/>
+<text x="500" y="276" class="rel" text-anchor="middle" >reviews</text>
+<path d="M500 235 L500 192" fill="none" stroke="#344955" stroke-width="2"/>
+<polygon points="500,178 493,192 507,192" fill="#344955"/>
+<path d="M496 305 L496 355" fill="none" stroke="#344955" stroke-width="2"/>
+<path d="M504 305 L504 355" fill="none" stroke="#344955" stroke-width="2"/>
+<rect x="345" y="355" width="310" height="78" fill="white" stroke="#344955" stroke-width="2"/><rect x="346" y="356" width="308" height="43" fill="#eaf4f7"/>
+<text x="500.0" y="384" class="name" text-anchor="middle" >Membership Review</text>
+<path d="M345 399 L655 399" fill="none" stroke="#344955" stroke-width="2"/>
+<text x="363" y="426" class="attr" text-anchor="start" text-decoration="underline">review_id</text>
+<text x="500" y="482" class="attr" text-anchor="middle" >UNIQUE (character_id, guild_id)</text>
+</svg>
