@@ -230,11 +230,6 @@ JOIN player_character AS p USING (character_id);
 - Use it when the join columns have the **same name in both relations**; use `ON` for different names or other conditions.
 - With `SELECT *`, `USING` returns one copy of the shared join column; `ON` retains both. Our explicit column list above gives the same result with either form.
 
-**Still needs enforcement:**
-
-- **Total:** every parent ID must occur in a subtype.
-- **Disjoint:** no ID may occur in both subtype relations.
-
 ## 3. Higher-order relationships preserve facts about combinations
 
 A **ternary relationship** connects three participants in one fact. More generally, an **n-ary relationship** has n participating roles.
