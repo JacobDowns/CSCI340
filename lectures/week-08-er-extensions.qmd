@@ -414,49 +414,28 @@ Replace the composite reference with `membership_id NOT NULL REFERENCES guild_me
 - **Relationship attributes suffice:** one `joined_at` value can stay on `member_of`.
 - **Other facts reference the association:** separate reviews motivate treating membership as an object.
 
-**Check:** If Mira leaves a guild and later rejoins, can this model keep two separate membership periods for her in that guild?
+**Check:** We now want to keep each separate period of guild membership. Mira joins the Lantern Watch, leaves, and later rejoins. How should the `membership_id` design change to store both periods and keep each review attached to the correct period?
 
 <details class="practice-solution">
 <summary>Possible answer</summary>
 
-No: the pair is unique. Model separate membership periods with their own identity and dates, then attach reviews to the appropriate period. A generated ID alone does not define these rules.
+Model **each membership period as an entity**:
+
+```text
+guild_membership(membership_id, character_id, guild_id, joined_at, left_at)
+Primary key: membership_id
+Foreign keys: character_id → game_character; guild_id → guild
+```
+
+- **One ID per period:** Mira's two periods have different `membership_id` values but the same character and guild IDs.
+- **Remove `UNIQUE (character_id, guild_id)`:** the pair must be allowed to repeat. Keep both foreign keys non-null.
+- **Record the period:** `joined_at` is required; `left_at` may be null for a current membership.
+- **Keep reviews tied to `membership_id`:** each review refers to the relevant period.
+
+The earlier associative entity already had its own ID, but its pair-uniqueness rule still allowed only one membership per character and guild. The change is to identify **membership periods** and permit repeated pairs. Any rule against overlapping periods needs separate enforcement.
 
 </details>
 
-## 5. Choose the construct from the requirement
-
-| Requirement | Consider | Ask before choosing |
-|---|---|---|
-| A local number identifies an object only within its owner or owners. | **Weak entity** | Which owner keys complete the identity? |
-| Some members have additional properties or relationships. | **Specialization** | Are they subtypes of the same entity? Disjoint or overlapping? Total or partial? |
-| A fact depends on three or more participants together. | **Higher-order relationship** | Would keeping only pairs lose the actual combinations? |
-| Another fact concerns a particular association. | **Aggregation / associative entity** | What identifies the association, and which constraints must survive? |
-| A simple property or binary association captures the requirement. | **Existing basic ER constructs** | Does an extension add useful meaning? |
-
-**Before mapping:**
-
-- Identify each entity and define each relationship's meaning.
-- State participation and uniqueness rules.
-- Try edge cases: repeated local numbers, overlapping subtypes, or a membership with no reviews.
-
-**Next:** use functional dependencies and normalization to examine redundancy and anomalies in the resulting relations.
-
-<details class="practice-solution">
-<summary>Optional notation reference: minimum–maximum ranges</summary>
-
-A range `a..b` beside an entity counts the associations involving **one entity of that set**.
-
-| Range | Meaning |
-|---|---|
-| `0..1` | Optional, at most one |
-| `1..1` | Exactly one |
-| `0..*` | Zero or more |
-| `1..*` | At least one |
-| `2..8` | Between two and eight, inclusive |
-
-![Equivalent current-location constraints in two notations.](figures/er-location-cardinality-ranges.svg){fig-alt="In arrow notation, Character has total participation and located_in points to Location. With ranges, 1..1 is beside Character and 0..* is beside Location."}
-
-The range beside **Character** counts its associations; the arrow toward **Location** identifies its single partner. Ranges replace arrow and single/double-line markings. Follow the notation's legend when switching conventions.
 
 </details>
 
