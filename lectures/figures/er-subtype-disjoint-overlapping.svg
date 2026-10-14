@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="370" viewBox="0 0 1100 370" role="img" aria-labelledby="title desc">
+<title id="title">Disjoint and overlapping subtype notation</title>
+<desc id="desc">PlayerCharacter and NonplayerCharacter share one hollow arrow toward Character: disjoint membership. Student and Employee have separate hollow arrows toward Person: overlapping membership is allowed.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#173b4d;text-anchor:middle;font-size:20px}.heading{font-size:24px;font-weight:700}.entity{font-weight:700}.note{font-size:19px;fill:#475569}.edge{fill:none;stroke:#344955;stroke-width:2}.box{fill:#eaf4f7;stroke:#344955;stroke-width:2}.arrow{fill:white;stroke:#344955;stroke-width:2}</style>
+<rect width="1100" height="370" fill="white"/>
+<path d="M550 20 V350" stroke="#cbd5e1"/>
+<text x="275" y="38" class="heading">Disjoint</text>
+<text x="825" y="38" class="heading">Overlapping</text>
+<rect x="165" y="70" width="220" height="50" class="box"/>
+<text x="275" y="102" class="entity">Character</text>
+<rect x="25" y="245" width="240" height="50" class="box"/>
+<text x="145" y="277" class="entity">PlayerCharacter</text>
+<rect x="285" y="245" width="240" height="50" class="box"/>
+<text x="405" y="277" class="entity">NonplayerCharacter</text>
+<path d="M145 245 V200 H405 V245 M275 200 V152" class="edge"/>
+<polygon points="275,120 258,152 292,152" class="arrow"/>
+<text x="275" y="332" class="note">One shared arrow: at most one subtype.</text>
+<rect x="675" y="70" width="300" height="50" class="box"/>
+<text x="825" y="102" class="entity">Person</text>
+<rect x="585" y="245" width="220" height="50" class="box"/>
+<text x="695" y="277" class="entity">Student</text>
+<rect x="845" y="245" width="220" height="50" class="box"/>
+<text x="955" y="277" class="entity">Employee</text>
+<path d="M695 245 V200 H745 V152 M955 245 V200 H905 V152" class="edge"/>
+<polygon points="745,120 728,152 762,152" class="arrow"/>
+<polygon points="905,120 888,152 922,152" class="arrow"/>
+<text x="825" y="332" class="note">Separate arrows: membership in both is allowed.</text>
+</svg>

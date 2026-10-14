@@ -147,7 +147,7 @@ Suppose **Character** has two kinds with additional properties:
 
 Both produce an ISA hierarchy.
 
-![Two character subtypes share the identity and properties of Character.](figures/er-character-specialization.svg){fig-alt="PlayerCharacter and NonplayerCharacter connect through a shared hollow ISA arrow toward Character. Character has underlined character_id and name. The subclasses add input_profile and dialogue_script. The shared arrow indicates disjoint subtypes; total is explicitly labeled."}
+![Two character subtypes share the identity and properties of Character.](figures/er-character-specialization.svg){fig-alt="PlayerCharacter and NonplayerCharacter connect through a shared hollow ISA arrow toward Character. Character has underlined character_id and name. The subclasses add input_profile and dialogue_script. The shared arrow indicates disjoint subtypes."}
 
 ### A subtype is the same entity in a narrower set
 
@@ -168,7 +168,8 @@ This differs from a relationship such as **Character carries Item**: the charact
 
 - **Shared hollow arrow:** disjoint subtypes.
 - **Separate hollow arrows:** overlapping subtypes.
-- **`total` annotation:** every parent entity belongs to a subtype.
+
+![Disjoint subtypes share one hollow arrow; overlapping subtypes have separate hollow arrows.](figures/er-subtype-disjoint-overlapping.svg){fig-alt="Left: PlayerCharacter and NonplayerCharacter merge into one hollow arrow toward Character, indicating disjoint subtypes. Right: Student and Employee each have a separate hollow arrow toward Person, allowing a person to belong to both subtypes."}
 
 ISA arrows express inheritance, not relationship cardinality.
 
@@ -222,6 +223,12 @@ SELECT c.character_id, c.name, p.input_profile
 FROM game_character AS c
 JOIN player_character AS p USING (character_id);
 ```
+
+**New syntax: `USING`**
+
+- `USING (character_id)` matches rows with equal `character_id` values. Here, it replaces `ON c.character_id = p.character_id`.
+- Use it when the join columns have the **same name in both relations**; use `ON` for different names or other conditions.
+- With `SELECT *`, `USING` returns one copy of the shared join column; `ON` retains both. Our explicit column list above gives the same result with either form.
 
 **Still needs enforcement:**
 
