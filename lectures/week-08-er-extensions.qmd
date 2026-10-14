@@ -27,8 +27,7 @@ WEEK 8 · ER DESIGN CHOICES
 
 ## 1. Weak entities need an owner for identification
 
-**Question:** Which quest's “stage 1” do we mean?
-
+- Suppose we want to represent quest stages. 
 - Every **Quest Stage** belongs to exactly one **Quest**.
 - `stage_no` is unique within a quest; other quests reuse the numbers.
 - A quest may have no stages yet while it is being designed.
