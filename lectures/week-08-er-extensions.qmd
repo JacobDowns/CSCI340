@@ -475,37 +475,6 @@ The earlier associative entity already had its own ID, but its pair-uniqueness r
 
 </details>
 
-## PostgreSQL tools for other ER requirements
-
-Most ER concepts map to ordinary relations and constraints. PostgreSQL also offers useful tools for more specific rules:
-
-| Requirement | Useful feature | Game-world application |
-|---|---|---|
-| Identify a weak entity and require its owner | Composite primary key and foreign key | `(quest_id, stage_no)`; optionally use `ON DELETE CASCADE` if deleting a quest should delete its stages. |
-| Reference an association | Composite foreign key, or an associative entity with an identity column | A review references a membership. An identity column generates values; a primary key enforces uniqueness. |
-| Make uniqueness conditional | Partial unique index | Allow membership history, but only one open membership per character–guild pair. |
-| Prevent overlapping periods | Range types and exclusion constraints | Reject overlapping membership periods for the same pair; scalar IDs can be combined with range exclusion using `btree_gist`. |
-| Reuse an attribute's validation rules | Domain type with a `CHECK` | A nonnegative gold amount used in several relations. |
-
-Sources: [keys and foreign keys](https://www.postgresql.org/docs/current/ddl-constraints.html), [identity columns](https://www.postgresql.org/docs/current/ddl-identity-columns.html), [partial indexes](https://www.postgresql.org/docs/current/indexes-partial.html), [range constraints](https://www.postgresql.org/docs/current/rangetypes.html#RANGETYPES-CONSTRAINT), and [domains](https://www.postgresql.org/docs/current/sql-createdomain.html).
-
-<details class="practice-solution">
-<summary>Example: one open membership per character and guild</summary>
-
-For the membership-period model, keep both participant IDs non-null and replace unconditional pair uniqueness with:
-
-```sql
-CREATE UNIQUE INDEX one_open_membership
-ON guild_membership (character_id, guild_id)
-WHERE left_at IS NULL;
-```
-
-- Rows with a leave date can repeat the character–guild pair.
-- Only one row per pair may have `left_at IS NULL`.
-- This does not detect overlapping completed periods; a range exclusion constraint can address that broader rule.
-
-</details>
-
 ## Reference and reading
 
 Based on Silberschatz, Korth, and Sudarshan, *Database System Concepts*, 7th edition, Chapter 6, “Database Design Using the E-R Model,” including extended ER features and design choices.
