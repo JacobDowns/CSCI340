@@ -257,13 +257,28 @@ SELECT * FROM ONLY character_base;  -- No rows: excludes child tables
 - Mira is **stored in the child table**; no separate parent row or join is needed.
 - A parent query includes child rows, but exposes the parent's columns. Query the child for `input_profile`.
 
-::: {.callout-important appearance="simple"}
-### Inheritance does not enforce the whole ER model
+<details class="practice-solution">
+<summary>Why might we avoid table inheritance? Keys and references behave differently from queries.</summary>
 
-- **Keys are local:** primary-key, unique, and foreign-key constraints are not inherited. We declared the child's primary key explicitly; IDs can still collide across tables.
-- **References do not span descendants:** a foreign key to `character_base` cannot reference Mira's child-only row.
-- **Subtype coverage is not enforced:** inheritance alone guarantees neither total nor disjoint membership by character ID.
-:::
+**The surprise:** parent queries include child rows, but parent keys and foreign-key references do not cover those rows.
+
+**Example: Mira joins a guild.** In the example above, Mira exists only in `player_character_inh`:
+
+- `SELECT * FROM character_base` returns her inherited columns.
+- A membership column declared `REFERENCES character_base(character_id)` cannot reference her ID 101: there is no matching row stored in the parent table.
+- In our shared-key mapping, Mira has an actual `game_character` row, giving memberships and other relationships a common reference target.
+
+**Other limitations:**
+
+- **Uniqueness is local:** ID 101 can occur in both parent and child tables even if each has its own primary key. A parent query then returns both rows.
+- **Constraints are not all inherited:** primary keys, unique constraints, and foreign keys must be declared separately. Columns, `NOT NULL`, and inheritable `CHECK` constraints do carry over.
+- **Total and disjoint rules need more work:** inheritance does not require every character to be in a subtype or prevent the same ID from appearing in different subtype tables.
+
+**Useful when:** sharing columns and querying related tables together is the main goal. For our game, references to characters throughout the database favor the shared-key mapping. That mapping still needs additional enforcement for total and disjoint specialization.
+
+[PostgreSQL inheritance limitations](https://www.postgresql.org/docs/current/ddl-inherit.html#DDL-INHERIT-CAVEATS).
+
+</details>
 
 For our game relationships, retain the shared-key mapping above. It gives foreign keys one parent relation containing every character. [PostgreSQL inheritance documentation](https://www.postgresql.org/docs/current/ddl-inherit.html).
 
