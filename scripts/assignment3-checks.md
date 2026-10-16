@@ -121,11 +121,47 @@ Mappings for unselected schemas are ignored with a console notice.
 
 For grading, evaluate the naming requirement once rather than treating dependent
 skips as separate failed rules. Award behavior credit from the adapted tests that
-actually ran. Mapping does not normalize data values, timestamp types, text activity
-states or different key designs. For example, Koen's column mapping alone does not
-resolve the checker's boolean fixture versus his text `is_active` values. Such
-cases still need manual review. This option does not change any proposed grades or
-retroactively revise earlier reports.
+actually ran. Name mapping does not normalize data values, timestamp types, text
+activity states or different key designs. A separate reviewed activity-value
+override, described below, can adapt the boolean fixtures to equivalent text
+states. These options do not change proposed grades or earlier reports.
+
+### Reviewed text activity states
+
+If a student's `is_active` uses meaningful text states instead of booleans, use
+`--room-active-value active --room-inactive-value retired --room-inactive-value unavailable`
+with **one explicit `--schema`**. Choose the actual values after reviewing that
+student's definition; the script never guesses them or applies them to a roster.
+Both an active value and at least one distinct inactive value are required.
+Repeat the inactive option to test multiple permitted closed/retired states.
+
+This changes the temporary room fixtures, the expected omitted-column default,
+and accepted inactive-value probes. It does not change student tables or stored
+assignment rows. The default probe still omits `is_active` and checks that the
+database returns the specified active value; a missing or wrong default still
+fails. NULL rejection and all other tests remain in place, including missing
+references and reserved/cancelled booking-history protection. Keep `--name-map`
+when column aliases also need mapping.
+
+For example, after authenticating, run:
+
+```bash
+.venv/bin/python scripts/check_assignment3.py \
+  --config instructor-solutions/student-account-provisioning.toml \
+  --schema student_schema \
+  --name-map instructor-solutions/assignment3-name-map.toml \
+  --room-active-value active \
+  --room-inactive-value retired \
+  --room-inactive-value unavailable \
+  --probe-writes
+```
+
+Reports record the chosen states in `activity_value_mapping`, alongside raw
+column types and data. The text-type REVIEW and exact-name findings remain
+visible as evidence; interpret accepted equivalents separately from actual rule
+failures. A successful run does not establish that an ambiguous label such as
+`occupied` means inactive/closed. Semantic review remains necessary. Behavioral
+rollback and sequence-advance caveats are unchanged.
 
 The default output is a new dated directory under `instructor-solutions/`, which is excluded from Git and the course website. `--output PATH` selects a different **new** directory. Reports contain student records: keep them private. The directory is created with mode 700 and files with mode 600. Existing output directories are never overwritten.
 

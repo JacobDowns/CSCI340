@@ -132,7 +132,8 @@ def read_name_map(path):
 
 
 class Checker:
-    def __init__(self, conn, schema, student="", row_limit=1000, name_map=None):
+    def __init__(self, conn, schema, student="", row_limit=1000, name_map=None,
+                 room_active_value=None, room_inactive_values=None):
         self.conn, self.schema = conn, schema
         self.result = {"schema": schema, "student": student, "checks": [],
                        "columns": {}, "constraints": {}, "rows": {}}
@@ -143,6 +144,19 @@ class Checker:
         self.result["table_overrides"] = self.name_map["tables"]
         self.result["column_overrides"] = {f"{t}.{k}":v for t,cols in self.name_map["columns"].items()
                                            for k,v in cols.items()}
+        if (room_active_value is None) != (room_inactive_values is None):
+            raise ValueError("Provide both the active value and at least one inactive value.")
+        self.active_value, self.inactive_values = True, [False]
+        if room_active_value is not None:
+            if not isinstance(room_inactive_values, (list, tuple)) or not room_inactive_values:
+                raise ValueError("Provide at least one inactive value.")
+            values = [room_active_value, *room_inactive_values]
+            if any(not isinstance(v, str) or not v.strip() or "\x00" in v for v in values) or len(set(values)) != len(values):
+                raise ValueError("Activity values must be nonempty, distinct text values without NUL characters.")
+            self.active_value, self.inactive_values = room_active_value, list(room_inactive_values)
+            self.result["activity_value_mapping"] = {
+                "active": self.active_value, "inactive": self.inactive_values,
+                "note": "Explicit fixture/default expectations only. Raw data/types are unchanged; instructor reviews semantic equivalence."}
 
     def table_name(self, table):
         return self.name_map["tables"].get(table, table)
@@ -365,7 +379,7 @@ class Checker:
             return
         tag = uuid.uuid4().hex[:4].upper()
         rv = dict(room_code="I" + tag + "A", room_name="Check " + tag, capacity=8,
-                  difficulty="standard", is_active=True)
+                  difficulty="standard", is_active=self.active_value)
         tv = dict(team_name="Check " + tag, contact_email=tag.lower() + "@example.com")
         seeds = {}
         for table, values in (("escape_room", rv), ("escape_team", tv)):
@@ -382,7 +396,7 @@ class Checker:
             # A distinct name avoids mixing the default and duplicate-name tests.
             omitted["room_name"] = "Other " + tag
             self.probe(GROUP_DEFAULT, "room.default_active", lambda: self.insert("escape_room", omitted),
-                       verify=lambda r: r["is_active"] is True)
+                       verify=lambda r: type(r["is_active"]) is type(self.active_value) and r["is_active"] == self.active_value)
             self.probe(GROUP_DEFAULT, "room.duplicate_name", lambda: self.insert("escape_room", {**rv, "room_code": "I" + tag + "B"}))
             self.probe(GROUP_INVALID, "room.duplicate_code", lambda: self.insert("escape_room", {**rv, "room_name": "Other " + tag}), reject={"23505"})
         if "escape_team" in seeds:
@@ -422,7 +436,7 @@ class Checker:
         cases = [
             ("escape_room", "capacity", [(2, True), (8, True), (1, False), (9, False)]),
             ("escape_room", "difficulty", [("introductory", True), ("standard", True), ("challenging", True), ("expert", False)]),
-            ("escape_room", "is_active", [(False, True)]),
+            ("escape_room", "is_active", [(v, True) for v in self.inactive_values]),
             ("escape_booking", "party_size", [(1, True), (8, True), (0, False), (9, False)]),
             ("escape_booking", "total_price", [("0.00", True), ("79.50", True), ("9999.99", True), ("-0.01", False), ("10000.00", False)]),
             ("escape_booking", "status", [("reserved", True), ("completed", True), ("cancelled", True), ("pending", False)]),
@@ -484,7 +498,8 @@ def db_error(exc):
 
 
 def check_schema(conn, schema, student="", *, probes=False, row_limit=1000, timeout_ms=5000,
-                 team_email_column="contact_email", name_map=None):
+                 team_email_column="contact_email", name_map=None,
+                 room_active_value=None, room_inactive_values=None):
     if not team_email_column or "\x00" in team_email_column or team_email_column in ("team_id", "team_name"):
         raise ValueError("Choose a nonempty team email column distinct from team_id/team_name.")
     mapping = validate_name_map(name_map or {})
@@ -493,7 +508,7 @@ def check_schema(conn, schema, student="", *, probes=False, row_limit=1000, time
         if "contact_email" in team and team["contact_email"] != team_email_column:
             raise ValueError("Conflicting team email mapping options.")
         team["contact_email"] = team_email_column
-    checker = Checker(conn, schema, student, row_limit, mapping)
+    checker = Checker(conn, schema, student, row_limit, mapping, room_active_value, room_inactive_values)
     try:
         with conn.transaction(force_rollback=True):
             conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ" + ("" if probes else " READ ONLY"))
@@ -545,8 +560,8 @@ def write_reports(directory, results, mode):
     sections = []
     for r in results:
         counts = Counter(c["status"] for c in r["checks"])
-        mappings = {k:r[k] for k in ("table_overrides", "column_overrides") if r.get(k)}
-        mapping_html = ('<p><strong>Explicit name mappings applied for this schema:</strong></p><pre>'
+        mappings = {k:r[k] for k in ("table_overrides", "column_overrides", "activity_value_mapping") if r.get(k)}
+        mapping_html = ('<p><strong>Explicit name/activity mappings applied for this schema:</strong></p><pre>'
                         + esc(json.dumps(mappings, indent=2)) + '</pre>') if mappings else ''
         inventory_html = ('<details><summary>Actual tables and columns in this schema</summary><pre>'
                           + esc(json.dumps(r.get("inventory", []), indent=2)) + '</pre></details>')
@@ -575,6 +590,9 @@ def main(argv=None):
                         help="Alternate escape_team email column; requires one explicit --schema. Does not rename columns.")
     parser.add_argument("--name-map", type=Path,
                         help="TOML with explicit table/column mappings keyed by schema; works with roster runs")
+    parser.add_argument("--room-active-value", help="Reviewed text equivalent of active; requires one explicit --schema and inactive value(s)")
+    parser.add_argument("--room-inactive-value", action="append", dest="room_inactive_values",
+                        help="Reviewed text equivalent of inactive; repeat for multiple states; requires --room-active-value")
     parser.add_argument("--output", type=Path, default=Path("instructor-solutions") / ("assignment3-checks-" + datetime.now().strftime("%Y%m%d-%H%M%S")))
     parser.add_argument("--row-limit", type=int, default=1000)
     parser.add_argument("--timeout-ms", type=int, default=5000)
@@ -587,6 +605,14 @@ def main(argv=None):
         parser.error("Choose --service or --config, not both.")
     if args.team_email_column != "contact_email" and (not args.schema or len(args.schema) != 1):
         parser.error("--team-email-column requires exactly one explicit --schema.")
+    if args.room_active_value is not None or args.room_inactive_values is not None:
+        if not args.schema or len(args.schema) != 1:
+            parser.error("Activity-value overrides require exactly one explicit --schema.")
+        try:
+            Checker(None, args.schema[0], room_active_value=args.room_active_value,
+                    room_inactive_values=args.room_inactive_values)
+        except ValueError as exc:
+            parser.error(str(exc))
     if not args.team_email_column or "\x00" in args.team_email_column or args.team_email_column in ("team_id", "team_name"):
         parser.error("Choose a nonempty team email column distinct from team_id/team_name.")
     os.umask(0o077)
@@ -616,7 +642,8 @@ def main(argv=None):
                 result = check_schema(conn, schema, student, probes=args.probe_writes,
                                       row_limit=args.row_limit, timeout_ms=args.timeout_ms,
                                       team_email_column=args.team_email_column,
-                                      name_map=name_maps.get(schema))
+                                      name_map=name_maps.get(schema), room_active_value=args.room_active_value,
+                                      room_inactive_values=args.room_inactive_values)
                 results.append(result)
                 print(f"[{i}/{len(schemas)}] {schema}: {dict(Counter(c['status'] for c in result['checks']))}", flush=True)
         write_reports(args.output, results, "behavioral probes" if args.probe_writes else "read-only")

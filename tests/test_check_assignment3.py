@@ -56,6 +56,22 @@ INSERT INTO escape_booking(room_id,team_id,starts_at,ends_at,party_size,total_pr
 
 
 class FileTests(unittest.TestCase):
+    def test_activity_override_rejects_incomplete_ambiguous_or_batch_options(self):
+        invalid = [
+            ['--schema', 'one', '--room-active-value', 'active'],
+            ['--schema', 'one', '--room-inactive-value', 'retired'],
+            ['--schema', 'one', '--room-active-value', 'active', '--room-inactive-value', 'active'],
+            ['--schema', 'one', '--room-active-value', '', '--room-inactive-value', 'retired'],
+            ['--schema', 'one', '--schema', 'two', '--room-active-value', 'active', '--room-inactive-value', 'retired'],
+            ['--schema-prefix', 'csci340_', '--room-active-value', 'active', '--room-inactive-value', 'retired'],
+        ]
+        with tempfile.TemporaryDirectory() as temp, patch.object(M.psycopg, 'connect') as connect:
+            for args in invalid:
+                with self.subTest(args=args), self.assertRaises(SystemExit) as raised:
+                    M.main([*args, '--output', str(Path(temp)/'report')])
+                self.assertEqual(raised.exception.code, 2)
+            connect.assert_not_called()
+
     def test_manifest_drops_password_and_reports_escape_html(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -106,6 +122,61 @@ class FileTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("A3_TEST_DSN"), "Set A3_TEST_DSN to an isolated test database")
 class DatabaseTests(unittest.TestCase):
+    def text_activity(self):
+        self.conn.execute("ALTER TABLE escape_room ALTER COLUMN is_active DROP DEFAULT")
+        self.conn.execute("ALTER TABLE escape_room ALTER COLUMN is_active TYPE text USING CASE WHEN is_active THEN 'active' ELSE 'retired' END")
+        self.conn.execute("ALTER TABLE escape_room ALTER COLUMN is_active SET DEFAULT 'active'")
+        self.conn.execute("ALTER TABLE escape_room ADD CHECK (is_active IN ('active','retired','unavailable'))")
+
+    def test_activity_mapping_and_column_mapping_unblock_full_suite(self):
+        self.text_activity()
+        self.conn.execute('ALTER TABLE escape_booking RENAME COLUMN special_requests TO special_request')
+        before = self.snapshot()
+        mapping = {'columns': {'escape_booking': {'special_requests': 'special_request'}}}
+        blocked = self.checks(probes=True, name_map=mapping)
+        self.assertEqual(blocked['escape_room.valid_seed']['status'], 'FAIL')
+        self.assertEqual(blocked['booking.dependent_probes']['status'], 'SKIP')
+        result = M.check_schema(self.conn, self.schema, probes=True, name_map=mapping,
+                                room_active_value='active', room_inactive_values=['retired','unavailable'])
+        checks = {c['check']:c for c in result['checks']}
+        expected_findings = {'escape_booking.columns','escape_booking.special_requests.name_mapping','escape_room.is_active.type'}
+        self.assertEqual({k for k,c in checks.items() if c['status']!='PASS'}, expected_findings)
+        for k in ['room.default_active','escape_room.is_active.retired','escape_room.is_active.unavailable',
+                  'booking.valid_seed','booking.repeat_visit','booking.optional_requests',
+                  'escape_room.delete_with_reserved_booking','escape_room.delete_with_cancelled_booking',
+                  'escape_team.delete_with_reserved_booking','escape_team.delete_with_cancelled_booking']:
+            self.assertEqual(checks[k]['status'],'PASS',k)
+        self.assertEqual(result['activity_value_mapping']['active'], 'active')
+        self.assertIn('special_request', result['rows']['escape_booking'][0])
+        self.assertEqual(before,self.snapshot())
+
+    def test_activity_mapping_does_not_hide_bad_default_or_missing_time_rule(self):
+        self.text_activity()
+        self.conn.execute("ALTER TABLE escape_room ALTER COLUMN is_active SET DEFAULT 'retired'")
+        self.conn.execute('ALTER TABLE escape_booking DROP CONSTRAINT escape_booking_check')
+        checks = self.checks(probes=True,room_active_value='active',room_inactive_values=['retired','unavailable'])
+        self.assertEqual(checks['room.default_active']['status'],'FAIL')
+        self.assertEqual(checks['booking.ends_at.equal']['status'],'FAIL')
+        self.assertEqual(checks['booking.ends_at.earlier']['status'],'FAIL')
+        self.assertEqual(checks['escape_room.is_active.null']['status'],'PASS')
+        self.assertEqual(checks['escape_team.delete_with_cancelled_booking']['status'],'PASS')
+
+    def test_activity_override_cli_exports_choices(self):
+        self.text_activity()
+        with tempfile.TemporaryDirectory() as temp:
+            params = psycopg.conninfo.conninfo_to_dict(os.environ['A3_TEST_DSN'])
+            env = {'PG'+k.upper():v for k,v in params.items() if k in ('host','port','user','password')}
+            env['PGDATABASE'] = params.get('dbname','postgres')
+            out=Path(temp)/'checks'
+            with patch.dict(os.environ,env):
+                code=M.main(['--schema',self.schema,'--probe-writes','--room-active-value','active',
+                             '--room-inactive-value','retired','--room-inactive-value','unavailable','--output',str(out)])
+            self.assertEqual(code,0)
+            data=json.loads((out/'results.json').read_text())['schemas'][0]
+            self.assertEqual(data['activity_value_mapping']['inactive'],['retired','unavailable'])
+            self.assertFalse(any(c['status'] in ('FAIL','ERROR','SKIP') for c in data['checks']))
+            self.assertIn('activity_value_mapping',(out/'report.html').read_text())
+
     def setUp(self):
         self.conn = psycopg.connect(os.environ["A3_TEST_DSN"], autocommit=True, row_factory=dict_row)
         # Embedded quote proves identifiers are quoted rather than interpolated.

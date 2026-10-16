@@ -230,6 +230,43 @@ JOIN player_character AS p USING (character_id);
 - Use it when the join columns have the **same name in both relations**; use `ON` for different names or other conditions.
 - With `SELECT *`, `USING` returns one copy of the shared join column; `ON` retains both. Our explicit column list above gives the same result with either form.
 
+### PostgreSQL option: table inheritance
+
+PostgreSQL supports **`INHERITS`**. This standalone example uses different names from our shared-key mapping:
+
+```sql
+CREATE TABLE character_base (
+    character_id integer PRIMARY KEY,
+    name text NOT NULL
+);
+
+CREATE TABLE player_character_inh (
+    input_profile text,
+    PRIMARY KEY (character_id)
+) INHERITS (character_base);
+
+INSERT INTO player_character_inh
+    (character_id, name, input_profile)
+VALUES (101, 'Mira', 'keyboard');
+
+SELECT * FROM character_base;       -- Includes Mira's inherited columns
+SELECT * FROM ONLY character_base;  -- No rows: excludes child tables
+```
+
+- The child inherits columns, `NOT NULL`, and inheritable `CHECK` constraints.
+- Mira is **stored in the child table**; no separate parent row or join is needed.
+- A parent query includes child rows, but exposes the parent's columns. Query the child for `input_profile`.
+
+::: {.callout-important appearance="simple"}
+### Inheritance does not enforce the whole ER model
+
+- **Keys are local:** primary-key, unique, and foreign-key constraints are not inherited. We declared the child's primary key explicitly; IDs can still collide across tables.
+- **References do not span descendants:** a foreign key to `character_base` cannot reference Mira's child-only row.
+- **Subtype coverage is not enforced:** inheritance alone guarantees neither total nor disjoint membership by character ID.
+:::
+
+For our game relationships, retain the shared-key mapping above. It gives foreign keys one parent relation containing every character. [PostgreSQL inheritance documentation](https://www.postgresql.org/docs/current/ddl-inherit.html).
+
 ## 3. Higher-order relationships preserve facts about combinations
 
 A **ternary relationship** connects three participants in one fact. More generally, an **n-ary relationship** has n participating roles.
@@ -438,6 +475,34 @@ The earlier associative entity already had its own ID, but its pair-uniqueness r
 
 </details>
 
+## PostgreSQL tools for other ER requirements
+
+Most ER concepts map to ordinary relations and constraints. PostgreSQL also offers useful tools for more specific rules:
+
+| Requirement | Useful feature | Game-world application |
+|---|---|---|
+| Identify a weak entity and require its owner | Composite primary key and foreign key | `(quest_id, stage_no)`; optionally use `ON DELETE CASCADE` if deleting a quest should delete its stages. |
+| Reference an association | Composite foreign key, or an associative entity with an identity column | A review references a membership. An identity column generates values; a primary key enforces uniqueness. |
+| Make uniqueness conditional | Partial unique index | Allow membership history, but only one open membership per character–guild pair. |
+| Prevent overlapping periods | Range types and exclusion constraints | Reject overlapping membership periods for the same pair; scalar IDs can be combined with range exclusion using `btree_gist`. |
+| Reuse an attribute's validation rules | Domain type with a `CHECK` | A nonnegative gold amount used in several relations. |
+
+Sources: [keys and foreign keys](https://www.postgresql.org/docs/current/ddl-constraints.html), [identity columns](https://www.postgresql.org/docs/current/ddl-identity-columns.html), [partial indexes](https://www.postgresql.org/docs/current/indexes-partial.html), [range constraints](https://www.postgresql.org/docs/current/rangetypes.html#RANGETYPES-CONSTRAINT), and [domains](https://www.postgresql.org/docs/current/sql-createdomain.html).
+
+<details class="practice-solution">
+<summary>Example: one open membership per character and guild</summary>
+
+For the membership-period model, keep both participant IDs non-null and replace unconditional pair uniqueness with:
+
+```sql
+CREATE UNIQUE INDEX one_open_membership
+ON guild_membership (character_id, guild_id)
+WHERE left_at IS NULL;
+```
+
+- Rows with a leave date can repeat the character–guild pair.
+- Only one row per pair may have `left_at IS NULL`.
+- This does not detect overlapping completed periods; a range exclusion constraint can address that broader rule.
 
 </details>
 
