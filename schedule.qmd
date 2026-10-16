@@ -67,7 +67,7 @@ Then introduce functional dependencies, candidate keys, anomalies, 3NF, BCNF, lo
 
 ### Week 9 (October 19-23) - Review and midterm examination
 
-Synthesize SQL, relational algebra, ER modeling, relational mapping, keys, constraints, dependencies, and normalization. Midterm examination: Friday, October 23, during the regular class meeting.
+Review the relational model, relational algebra, basic SQL, keys, constraints, ER diagrams, and relational mapping. The [midterm study guide](midterm-study-guide.qmd) provides the topic checklist and quick references, with PDF and Word downloads. Midterm examination: Friday, October 23, during the regular class meeting.
 
 ### Week 10 (October 26-30) - Advanced SQL
 

@@ -9,10 +9,13 @@ project:
     - "activities/week-07-er-modeling-activity.docx"
     - "activities/week-07-er-modeling-activity.pdf"
     - "activities/week-07-project-brainstorming.docx"
+    - "study-guides/csci340-midterm-study-guide.pdf"
+    - "study-guides/csci340-midterm-study-guide.docx"
   render:
     - "index.qmd"
     - "schedule.qmd"
     - "resources.qmd"
+    - "midterm-study-guide.qmd"
     - "activities/*.qmd"
     - "lectures/*.qmd"
     - "assignments/*.qmd"
@@ -50,6 +53,7 @@ website:
         contents:
           - schedule.qmd
           - resources.qmd
+          - midterm-study-guide.qmd
       - section: Lectures
         contents:
           - lectures/index.qmd

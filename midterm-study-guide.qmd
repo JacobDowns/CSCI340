@@ -1,0 +1,26 @@
+---
+title: "Midterm study guide"
+subtitle: "CSCI 340 Database Design"
+description: "A checklist of midterm topics and a quick reference for relational algebra, SQL, constraints, and ER diagrams."
+toc: false
+---
+
+Use this guide to review the topics that are fair game for the midterm. It includes a topic checklist and quick references for key definitions, relational-algebra notation, PostgreSQL syntax, constraints, and ER diagrams.
+
+[Download the study guide (PDF)](study-guides/csci340-midterm-study-guide.pdf){.btn .btn-primary download="csci340-midterm-study-guide.pdf"}
+
+[Download the study guide (Word)](study-guides/csci340-midterm-study-guide.docx){.btn .btn-outline-primary download="csci340-midterm-study-guide.docx"}
+
+## Exam format
+
+The exam is **50 minutes** and **60 points**, with multiple-choice questions, short answers, and longer query and modeling questions. You may use **one standard letter-size sheet of notes, front and back**, for syntax or definitions.
+
+## Topics
+
+- The relational model, schemas and instances, keys, and referential integrity.
+- Relational algebra: selection, projection, rename, products, joins, and set operations.
+- Basic SQL queries, joins, duplicate handling, ordering, and `NULL`.
+- Table definitions and changes, data types, and constraints, including `ON DELETE RESTRICT` and `ON DELETE CASCADE`. **DDL** means **Data Definition Language**, the SQL commands used to define or change database structures.
+- ER diagrams, cardinality, participation, and basic relational mapping.
+
+See Canvas for exam announcements and the [course schedule](schedule.qmd) for the review week.

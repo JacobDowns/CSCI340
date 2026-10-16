@@ -5,6 +5,7 @@ subtitle: "Primary references for the course toolchain and curriculum"
 
 ## Course quick references
 
+- [Midterm study guide](midterm-study-guide.qmd) — topic checklist, key definitions, and syntax references, available as PDF and Word downloads.
 - [CREATE TABLE and ALTER TABLE cheat sheet](lectures/sql-table-syntax-cheat-sheet.qmd) — PostgreSQL syntax for table definitions, keys, constraints, and schema changes.
 
 ## Curriculum and foundations
