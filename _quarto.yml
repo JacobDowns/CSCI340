@@ -11,14 +11,11 @@ project:
     - "activities/week-07-project-brainstorming.docx"
     - "study-guides/csci340-midterm-study-guide.pdf"
     - "study-guides/csci340-midterm-study-guide.docx"
-    - "review-game/game.css"
-    - "review-game/game.js"
   render:
     - "index.qmd"
     - "schedule.qmd"
     - "resources.qmd"
     - "midterm-study-guide.qmd"
-    - "midterm-review-jeopardy.qmd"
     - "activities/*.qmd"
     - "lectures/*.qmd"
     - "assignments/*.qmd"
@@ -57,7 +54,6 @@ website:
           - schedule.qmd
           - resources.qmd
           - midterm-study-guide.qmd
-          - midterm-review-jeopardy.qmd
       - section: Lectures
         contents:
           - lectures/index.qmd

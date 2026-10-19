@@ -55,7 +55,6 @@ Examples rotate among three settings so that no single application style becomes
 
 - See the [dated Autumn 2026 course map](schedule.qmd).
 - Review the [midterm study guide](midterm-study-guide.qmd), with PDF and Word downloads.
-- Play the [midterm review Jeopardy game](midterm-review-jeopardy.qmd) in class.
 - Follow the [lecture notes](lectures/index.qmd).
 - Find [labs and activities](activities/index.qmd) and their deliverables.
 - Explore the [semester project](projects/capstone.qmd).
