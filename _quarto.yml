@@ -105,6 +105,9 @@ website:
             contents:
               - activities/week-07-er-relationship-practice.qmd
               - activities/week-07-project-brainstorming.qmd
+          - section: Week 9
+            contents:
+              - activities/week-09-project-er-draft.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd

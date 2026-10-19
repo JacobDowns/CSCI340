@@ -67,6 +67,8 @@ Then introduce functional dependencies, candidate keys, anomalies, 3NF, BCNF, lo
 
 ### Week 9 (October 19-23) - Review and midterm examination
 
+Use [Activity 6 — Project ER diagram: first draft](activities/week-09-project-er-draft.qmd) for a project workday. Each group develops and submits a draft diagram with a short explanation of its purpose, one design decision, and an open question for feedback.
+
 Review the relational model, relational algebra, basic SQL, keys, constraints, ER diagrams, and relational mapping. The [midterm study guide](midterm-study-guide.qmd) provides the topic checklist and quick references, with PDF and Word downloads. Midterm examination: Friday, October 23, during the regular class meeting.
 
 ### Week 10 (October 26-30) - Advanced SQL

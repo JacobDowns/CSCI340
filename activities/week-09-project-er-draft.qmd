@@ -1,0 +1,72 @@
+---
+title: "Activity 6 - Project ER diagram: first draft"
+subtitle: "Make your group's design concrete enough to discuss and revise"
+description: "A project workday to develop and submit a first-draft ER diagram, record modeling decisions, and identify questions for later feedback."
+toc: true
+---
+
+Work with your project group to turn your [brainstorming notes](week-07-project-brainstorming.qmd) into a draft entity–relationship diagram.
+
+::: {.callout-note}
+## This is a first draft
+
+Your diagram **does not need to be final or polished**. Make a thoughtful attempt, record your assumptions, and flag anything you have not resolved. The submission is a checkpoint to keep your project moving and provide something concrete to revisit. Plan to revise your model after feedback; a later class session may include reviewing diagrams with other groups.
+:::
+
+## Get started
+
+Spend approximately **5–10 minutes** reviewing your project's purpose, intended users, and scope. Agree on what information the database needs to represent before dividing up the drawing work.
+
+Everyone should contribute to the modeling decisions and be able to explain the overall diagram.
+
+## Develop your diagram
+
+Use most of the class period to build your model. Aim for **5–7 meaningful entity types and at least 4 meaningful relationships** forming a connected design. Keep the scope manageable; avoid adding features solely to reach a count.
+
+Your draft should show:
+
+- Clearly named entities, a proposed primary key for each, and several useful attributes.
+- Named relationships connecting the entities.
+- Cardinality and participation constraints showing how entities may or must participate.
+- Relationship attributes, if your design needs them.
+
+Use the [ER notation from class](../lectures/week-06-introduction-to-er-diagrams.qmd): entity rectangles with attributes inside, underlined keys, relationship diamonds, arrows for “at most one,” and single or double lines for partial or total participation. Mark uncertain choices with a note or question so they are easy to revisit.
+
+As you work, discuss:
+
+- Is this concept best represented as an entity, an attribute, or a relationship?
+- Can the same pair of entities participate in this relationship repeatedly, such as through multiple bookings or purchases? How will you distinguish those occurrences?
+- Does an attribute describe an entity itself or its involvement in a relationship?
+- Which constraints follow from the requirements, and which are assumptions your group is making?
+
+Use [weak entities, specialization, or other extensions](../lectures/week-08-er-extensions.qmd) when they help express your requirements. You do not need to include every feature we have studied. SQL implementation can wait; focus on the concepts and rules your model needs to represent.
+
+## Choose a drawing tool
+
+Choose a tool that lets you express the notation used in class. Some database templates use different symbols, so check that the diagram communicates the intended constraints.
+
+- **[draw.io / diagrams.net](https://app.diagrams.net/)** is a good starting point for drawing rectangles, diamonds, and connectors. For simultaneous editing, store the diagram in Google Drive or OneDrive, share it with edit access, and have everyone open that same file. See the [collaboration instructions](https://www.drawio.com/docs/manual/collaboration/concurrent-editing/).
+- **[Lucidchart](https://lucid.co/lucidchart/use-cases/education)** supports simultaneous editing and offers free education accounts. It is a useful option if your group already has access; check your account's available features before committing to it.
+- **[Excalidraw](https://excalidraw.com/)** works well for a shared sketch. Its [free version](https://plus.excalidraw.com/pricing) supports collaborators, PNG export, and saving the editable drawing to a file. Save a copy your group can reopen later.
+
+A clear photograph of a paper diagram is also acceptable. Keep tool setup brief so you have time to discuss the design.
+
+## Review before submitting
+
+Reserve approximately **10 minutes at the end** to walk through one ordinary example and one boundary case, such as an entity with no related records or a repeated event. Can your model represent both correctly?
+
+Choose two relationships and explain their rules aloud in both directions. Check whether the arrows and participation lines match what you mean. Record any questions that remain; you do not need to settle every issue today.
+
+## Submit your first draft
+
+By the end of class, submit **one readable PDF or image of your draft ER diagram per group** to the Canvas activity submission. Label it with your group number and members' names.
+
+Include three brief notes in the submission comments or alongside the diagram:
+
+1. **Purpose:** What will this database help its users do?
+2. **Design decision:** Explain one modeling choice and the reason for it.
+3. **Open question:** Identify one unresolved issue or assumption you would like feedback on.
+
+Keep the editable original somewhere all group members can access. Submit an exported file or photograph so the draft can be reviewed without opening your editing workspace.
+
+**A readable first draft with explicit decisions and questions is the goal for today.** You will have opportunities to revise it.
