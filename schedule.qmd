@@ -71,6 +71,8 @@ Use [Activity 6 — Project ER diagram: first draft](activities/week-09-project-
 
 Review the relational model, relational algebra, basic SQL, keys, constraints, ER diagrams, and relational mapping. The [midterm study guide](midterm-study-guide.qmd) provides the topic checklist and quick references, with PDF and Word downloads. Midterm examination: Friday, October 23, during the regular class meeting.
 
+For the in-class review, use the [midterm review Jeopardy board](midterm-review-jeopardy.qmd).
+
 ### Week 10 (October 26-30) - Advanced SQL
 
 Develop common table expressions, window functions, conditional aggregation, views, and recursive queries as time permits.
