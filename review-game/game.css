@@ -16,14 +16,18 @@
 .review-game * { box-sizing: border-box; }
 .review-game button { cursor: pointer; }
 .review-game button:focus-visible,
-.review-game input:focus-visible { outline: 3px solid var(--game-gold); outline-offset: 3px; }
-.game-topline, .game-teams-heading, .clue-header, .clue-footer, .clue-timer-row {
+.review-game [tabindex="-1"]:focus-visible { outline: 3px solid var(--game-gold); outline-offset: 3px; }
+.game-topline, .clue-header, .clue-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 .game-topline { margin-bottom: 1.2rem; }
+.game-top-controls { display: flex; align-items: center; gap: 1rem; }
+.class-score-card { background: rgba(255, 213, 107, .13); border: 1px solid rgba(255, 213, 107, .45); border-radius: 12px; min-width: 9rem; padding: .5rem .9rem; text-align: center; }
+.class-score-card span { display: block; color: var(--game-muted); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.class-score-card strong { display: block; color: var(--game-gold); font-size: clamp(1.5rem, 2.5vw, 2.25rem); line-height: 1.1; font-variant-numeric: tabular-nums; }
 .game-kicker { color: var(--game-gold); font-size: .82rem; font-weight: 800; letter-spacing: .14em; margin: 0 0 .15rem; }
 .game-topline h2 { color: white; font-size: clamp(1.8rem, 3.4vw, 3rem); line-height: 1.1; margin: 0; }
 .game-status { color: var(--game-muted); margin: .45rem 0 0; }
@@ -40,7 +44,8 @@
 .game-secondary:disabled { opacity: .45; cursor: not-allowed; }
 .game-primary { background: var(--game-gold); border-color: var(--game-gold); color: #10224c; }
 .game-primary:hover { background: #ffe5a0; }
-.game-board { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(.3rem, .8vw, .7rem); }
+.game-board-scroll { overflow-x: auto; padding-bottom: .25rem; }
+.game-board { display: grid; grid-template-columns: repeat(var(--category-count, 7), minmax(0, 1fr)); min-width: 770px; gap: clamp(.3rem, .8vw, .7rem); }
 .game-category, .game-tile {
   min-width: 0;
   border-radius: 9px;
@@ -71,37 +76,46 @@
 .game-tile:hover { background: linear-gradient(155deg, #2357c5, #163e9d); transform: translateY(-2px); }
 .game-tile.played { background: #162b57; color: #7f95bb; text-shadow: none; }
 .game-tile.played:hover { background: #1c376b; }
-.game-teams { margin-top: 1.25rem; border-top: 1px solid var(--game-line); padding-top: 1rem; }
-.game-teams h3 { color: white; margin: 0; }
-.team-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: .7rem; margin-top: .85rem; }
-.team-card { background: rgba(255,255,255,.08); border: 1px solid var(--game-line); border-radius: 10px; padding: .8rem; }
-.team-card label { display: block; color: var(--game-muted); font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-.team-card input { display: block; width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--game-line); color: white; font-size: 1.05rem; font-weight: 700; padding: .25rem 0; }
-.team-score { color: var(--game-gold); font-size: 2rem; font-weight: 900; line-height: 1.25; margin-top: .35rem; }
 .clue-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(3,11,31,.92); padding: clamp(.5rem, 2vw, 2rem); display: grid; place-items: center; }
-.clue-overlay[hidden], .clue-answer-wrap[hidden] { display: none; }
+.clue-overlay[hidden] { display: none; }
 .clue-dialog { background: radial-gradient(circle at 50% 0%, #2452aa, #10255b 70%); border: 1px solid #6988ca; border-radius: 18px; box-shadow: 0 24px 70px rgba(0,0,0,.55); width: min(100%, 1100px); max-height: 96vh; overflow: auto; padding: clamp(1.15rem, 3vw, 2.6rem); color: white; }
+.daily-double-banner { margin: 0 0 1rem; padding: .7rem 1rem; border: 2px solid var(--game-gold); border-radius: 12px; background: rgba(255, 213, 107, .14); color: var(--game-gold); text-align: center; text-transform: uppercase; letter-spacing: .1em; font-size: clamp(1.4rem, 3vw, 2.5rem); font-weight: 900; }
+.daily-double-banner[hidden] { display: none; }
 .clue-header { color: var(--game-gold); text-transform: uppercase; font-weight: 800; letter-spacing: .1em; }
 .clue-dialog h2 { color: white; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .12em; margin: 1rem 0 .3rem; }
 .clue-prompt { white-space: pre-wrap; font-size: clamp(1.45rem, 3.2vw, 2.55rem); font-weight: 750; line-height: 1.35; margin: 0 0 1.2rem; }
-.clue-timer-row { justify-content: flex-start; padding: .8rem 0; border-top: 1px solid var(--game-line); border-bottom: 1px solid var(--game-line); }
-.clue-timer { color: var(--game-gold); font-size: 1.5rem; font-variant-numeric: tabular-nums; font-weight: 800; min-width: 3.6rem; }
-.clue-timer.expired { color: #ff9c9c; }
-.clue-answer-wrap { margin-top: 1.1rem; padding: 1rem 1.15rem; border-radius: 12px; background: rgba(255,213,107,.1); border: 1px solid rgba(255,213,107,.3); }
-.clue-answer-wrap h3 { color: var(--game-gold); font-size: .95rem; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 .35rem; }
-.clue-answer { white-space: pre-wrap; font-size: clamp(1.25rem, 2.3vw, 1.8rem); line-height: 1.35; font-weight: 750; margin: 0; }
-.clue-explanation { color: #dbe5ff; margin: .55rem 0 0; }
+.review-game .clue-prompt code {
+  color: #10224c;
+  background: #eaf1ff;
+  border: 1px solid #a9c2ef;
+  border-radius: .3em;
+  padding: .05em .2em;
+  font-size: .8em;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.review-game .clue-prompt pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  margin: .65em 0;
+  padding: .65em .8em;
+  border: 1px solid #a9c2ef;
+  border-radius: 10px;
+  color: #10224c;
+  background: #eaf1ff;
+  font-size: clamp(1rem, 2vw, 1.55rem);
+  line-height: 1.45;
+}
+.review-game .clue-prompt pre code { padding: 0; border: 0; color: inherit; background: transparent; font-size: 1em; overflow-wrap: normal; }
 .clue-scoring { border-top: 1px solid var(--game-line); margin-top: 1rem; padding-top: .85rem; }
 .clue-scoring > p { color: #dbe5ff; font-size: .9rem; margin: 0 0 .7rem; }
-.clue-team-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
-.clue-team { border: 1px solid var(--game-line); border-radius: 9px; padding: .5rem .7rem; background: rgba(255,255,255,.08); }
-.clue-team-name { display: block; font-weight: 700; margin-bottom: .35rem; }
-.clue-team button { background: transparent; border: 1px solid #aabddd; border-radius: 6px; color: white; font-weight: 800; min-width: 2.5rem; padding: .2rem .45rem; margin-right: .25rem; }
-.clue-team button:hover, .clue-team button.selected { background: var(--game-gold); border-color: var(--game-gold); color: #10224c; }
+.clue-score-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .8rem; }
+.clue-score-actions span { color: var(--game-gold); font-weight: 800; font-variant-numeric: tabular-nums; }
 .clue-footer { justify-content: flex-start; flex-wrap: wrap; margin-top: 1.3rem; }
 .review-game:fullscreen { overflow: auto; max-width: none; min-height: 100vh; border-radius: 0; padding: 2vw; }
 @media (max-width: 700px) {
-  .game-topline, .game-teams-heading { align-items: flex-start; flex-direction: column; }
+  .game-topline, .game-top-controls { align-items: flex-start; flex-direction: column; }
   .game-category { min-height: 3.6rem; font-size: .62rem; overflow-wrap: anywhere; }
   .game-tile { min-height: 3.4rem; font-size: 1.25rem; }
   .review-game { padding: .75rem; }

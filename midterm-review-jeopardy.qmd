@@ -10,7 +10,9 @@ toc: false
 <link rel="stylesheet" href="review-game/game.css">
 ```
 
-Use this board for an in-class review. The instructor chooses a clue, starts the optional timer, reveals the expected response, and awards or deducts points. Students can answer aloud or discuss in teams; the game does not require accounts or student devices. The 25 clues are new practice questions aligned with the [midterm study guide](midterm-study-guide.qmd), not copies of the exam.
+Use this board for an in-class review. The instructor chooses a clue, decides whether the response is correct, and awards points to the class. Students work together and answer aloud; the game does not require accounts or student devices. The 42 clues are new practice questions aligned with the [midterm study guide](midterm-study-guide.qmd), not copies of the exam. Choose as many as fit the class period; you do not need to clear the board. Some higher-value clues may take several minutes.
+
+Relational-algebra clues use the course notation, including $\pi$, $\sigma$, $\bowtie$, $\cap$, and $\cup$.
 
 ```{=html}
 <div id="review-game" class="review-game">
@@ -20,58 +22,49 @@ Use this board for an in-class review. The instructor chooses a clue, starts the
       <h2>Jeopardy board</h2>
       <p class="game-status" id="game-status" aria-live="polite"></p>
     </div>
-    <div class="game-actions">
-      <button type="button" id="game-fullscreen" class="game-secondary">Full screen</button>
-      <button type="button" id="game-reset" class="game-secondary">Reset game</button>
+    <div class="game-top-controls">
+      <div class="class-score-card">
+        <span>Class total</span>
+        <strong id="class-score" aria-live="polite">$0</strong>
+      </div>
+      <div class="game-actions">
+        <button type="button" id="game-fullscreen" class="game-secondary">Full screen</button>
+        <button type="button" id="game-reset" class="game-secondary">Reset game</button>
+      </div>
     </div>
   </div>
 
-  <div id="game-board" class="game-board" aria-label="Jeopardy categories and clues"></div>
-
-  <section class="game-teams" aria-labelledby="teams-heading">
-    <div class="game-teams-heading">
-      <h3 id="teams-heading">Teams</h3>
-      <div class="game-actions">
-        <button type="button" id="game-add-team" class="game-secondary">Add team</button>
-        <button type="button" id="game-remove-team" class="game-secondary">Remove last team</button>
-      </div>
-    </div>
-    <div id="team-list" class="team-list"></div>
-  </section>
+  <div class="game-board-scroll">
+    <div id="game-board" class="game-board" aria-label="Jeopardy categories and clues"></div>
+  </div>
 
   <div id="clue-overlay" class="clue-overlay" hidden>
     <section class="clue-dialog" role="dialog" aria-modal="true" aria-labelledby="clue-heading">
+      <p id="daily-double-banner" class="daily-double-banner" hidden>Daily Double!</p>
       <div class="clue-header">
         <span id="clue-category"></span>
         <span id="clue-value"></span>
       </div>
-      <h2 id="clue-heading">Clue</h2>
-      <p id="clue-prompt" class="clue-prompt"></p>
-      <div class="clue-timer-row">
-        <span id="clue-timer" class="clue-timer" aria-live="off">0:30</span>
-        <button type="button" id="timer-toggle" class="game-secondary">Start timer</button>
-        <button type="button" id="timer-reset" class="game-secondary">Reset timer</button>
-      </div>
-      <div id="clue-answer-wrap" class="clue-answer-wrap" hidden>
-        <h3>Expected response</h3>
-        <p id="clue-answer" class="clue-answer"></p>
-        <p id="clue-explanation" class="clue-explanation"></p>
-        <div class="clue-scoring">
-          <h3>Score this clue</h3>
-          <p>Use + for a correct response and − for an incorrect response. Click the same choice again to undo it.</p>
-          <div id="clue-team-actions" class="clue-team-actions"></div>
+      <h2 id="clue-heading" tabindex="-1">Clue</h2>
+      <div id="clue-prompt" class="clue-prompt"></div>
+      <div class="clue-scoring">
+        <h3>Class score</h3>
+        <p>Award this clue if the class solves it. You can undo an award before or after finishing the clue.</p>
+        <div class="clue-score-actions">
+          <button type="button" id="clue-award" class="game-primary" aria-pressed="false">Award points to class</button>
+          <span id="clue-class-total" aria-live="polite">Class total: $0</span>
         </div>
       </div>
       <div class="clue-footer">
-        <button type="button" id="clue-reveal" class="game-primary">Reveal response</button>
-        <button type="button" id="clue-close" class="game-secondary">Back to board</button>
+        <button type="button" id="clue-finish" class="game-primary">Finish clue</button>
+        <button type="button" id="clue-close" class="game-secondary">Back without finishing</button>
       </div>
     </section>
   </div>
 </div>
 ```
 
-The board saves team names, scores, and played clues in this browser. A played tile can be reopened to review its response or correct its scoring. Use **Reset game** to start a new class session.
+The board saves the class score and played clues in this browser. A played tile can be reopened to correct its scoring. **Back without finishing** leaves a new clue available; **Finish clue** marks it played. Use **Reset game** to start a new class session.
 
 Clue topics draw on the [relations and keys activity](activities/week-02-relations-and-keys.qmd), [relational algebra assignment](assignments/assignment-02-relational-algebra-practice.qmd), [SQL joins lab](activities/week-03-query-reasoning-lab.qmd), [table-definition activity](activities/week-04-escape-room-schema.qmd), and [ER relationship activity](activities/week-07-er-relationship-practice.qmd).
 

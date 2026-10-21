@@ -1,93 +1,120 @@
 (() => {
   "use strict";
 
+  // Clues support \(math\), `inline code`, and fenced code blocks.
   const categories = [
     {
       title: "Relations & keys",
       clues: [
-        ["The structure and rules of a relation, rather than its rows at one moment.", "What is the schema?", "The current rows form an instance of that schema."],
-        ["Because a relation is a set, it cannot contain two identical ones of these.", "What are tuples?", "Tuple order also has no meaning in the relational model."],
-        ["A superkey with no attribute you can remove while keeping it a superkey.", "What is a candidate key?", "Minimal means no proper subset is a superkey; it does not mean shortest among all possible keys."],
-        ["A player can have two saves for one game. Can (player_id, game_id) identify every save?", "No. The pair is not a superkey for saves.", "Two valid saves can share both values, so the pair cannot uniquely identify a row."],
-        ["A non-NULL child foreign key contains 42, but the referenced parent has no key 42. Name the violated rule.", "What is referential integrity?", "Every non-NULL foreign-key value must match an existing referenced key."],
+        "`Member(member_id, name)` describes the columns; today's Member rows are (1, Ada) and (2, Ben). Which is the schema, and which is the instance?",
+        "A username happens to be unique in today's rows, but the rules permit repeats. Is username a candidate key?",
+        "`Loan.member_id` contains 42, but Member has no `member_id` 42. Which relational integrity rule is violated?",
+        "Every checkout has a unique `checkout_id`. Is \\(\\{\\mathrm{checkout\\_id},\\mathrm{member\\_id}\\}\\) a candidate key? Explain.",
+        "Member has `member_id PRIMARY KEY` and `email UNIQUE NOT NULL`. Which of \\(\\{\\mathrm{member\\_id}\\}\\), \\(\\{\\mathrm{email}\\}\\), and \\(\\{\\mathrm{member\\_id},\\mathrm{email}\\}\\) are candidate keys?",
+        "`Attendance(student_id, section_id, meeting_date)` allows a student to attend the same section on many dates, at most once per date. Give a plausible composite key.",
       ],
     },
     {
       title: "Relational algebra",
       clues: [
-        ["This operator keeps rows that satisfy a condition, without changing the attributes.", "What is selection (σ)?", "Projection (π) chooses attributes instead."],
-        ["Player has region values MT, MT, and WA. What tuples does π_region(Player) return?", "{(MT), (WA)}", "Projection removes duplicate output tuples under relational set semantics."],
-        ["A natural join R ⋈ S compares values in which attributes?", "Every attribute name shared by R and S.", "It does not look only at declared primary or foreign keys."],
-        ["What does π_member_id(Member) − π_member_id(Loan) describe, assuming both IDs have the same domain?", "Members with no loan.", "Set difference keeps tuples in the left input that are absent from the right input."],
-        ["R(a,b) contains (1,x), (2,y). S(b,c) contains (x,9), (z,8). What is π_a(R ⋈ S)?", "{(1)}", "The natural join matches the shared b value x, then projection retains only a."],
+        "Which relational-algebra operator keeps selected attributes and removes duplicate output tuples?",
+        "What does \\(\\rho_{\\mathrm{Recent}}(\\mathrm{Checkout})\\) change about the relation Checkout?",
+        "R has 3 tuples and S has 4 tuples. How many tuples are in \\(R \\times S\\)? Can a theta join of R and S have more tuples?",
+        "Which of union, intersection, and difference need compatible schemas? Why are `R(a, b)` and `S(a, b, c)` incompatible?",
+        "Using `Member(member_id, region)` and `Loan(member_id, item_id)`, write an algebra expression for IDs of MT members with no loans.",
+        String.raw`R(a,b) = \(\{(1,\mathrm{x}), (1,\mathrm{y}), (2,\mathrm{x})\}\)
+S(b,c) = \(\{(\mathrm{x},9), (\mathrm{y},8)\}\)
+
+Give the output schema and every tuple of \(\pi_{a,c}(R \bowtie S)\).`,
       ],
     },
     {
       title: "SQL queries",
       clues: [
-        ["Write a query returning usernames from player_account rows whose account_status is 'active'.", "SELECT username FROM player_account WHERE account_status = 'active';", "SELECT chooses output columns; WHERE filters rows."],
-        ["Which WHERE predicate finds saves whose slot_label is missing?", "WHERE slot_label IS NULL", "An equality comparison with NULL evaluates to unknown."],
-        ["Complete the intended join: FROM player_account p JOIN save_file s ON ____", "s.player_id = p.player_id", "The condition links the save's foreign key to its player."],
-        ["A player has several saves. Which SELECT keyword returns the player ID only once after a join?", "DISTINCT", "DISTINCT removes repeated complete output rows."],
-        ["Using video_game(game_id,title) and save_file(save_id,player_id,game_id), return each game title saved by player 7 once, alphabetically.", "SELECT DISTINCT g.title\nFROM video_game AS g\nJOIN save_file AS s ON s.game_id = g.game_id\nWHERE s.player_id = 7\nORDER BY g.title;", "The join finds each saved game; DISTINCT removes titles repeated by multiple saves."],
+        "In `ORDER BY created_at DESC`, do older or newer timestamps come first?",
+        "Write the `WHERE` condition for active accounts in either MT or WY. Columns: `status` and `region`.",
+        "`SELECT DISTINCT member_id, checkout_id` returns two rows for one member's two checkouts. Why?",
+        "Complete the join: `FROM escape_room r JOIN escape_booking b ON ____`",
+        "Using these tables:\n\n```sql\nmember(member_id, name)\ncheckout(checkout_id, member_id, item_id, returned_on)\nitem(item_id, label)\n```\n\nReturn each member_id and name once for members with an unreturned checkout of an item labeled 'Camera'.",
+        "Write a query returning each username once for active players with a save whose `completion_percent` is `NULL` in a game by 'Juniper Byte'.\n\nUse these tables and order by username:\n\n```sql\nplayer_account(player_id, username, account_status)\nsave_file(player_id, game_id, completion_percent)\nvideo_game(game_id, studio_name)\n```",
       ],
     },
     {
       title: "Tables & constraints",
       clues: [
-        ["These SQL commands define or change database structures; CREATE TABLE and ALTER TABLE are examples.", "What is Data Definition Language (DDL)?", "DDL changes the schema."],
-        ["A PRIMARY KEY enforces these two properties on its columns.", "Uniqueness and no NULL values.", "A primary key may contain more than one column."],
-        ["CHECK (quantity > 0) rejects negative values but permits NULL. What additional constraint makes quantity required?", "NOT NULL", "A CHECK condition that evaluates to unknown passes."],
-        ["If a foreign key says ON DELETE CASCADE, what happens when its referenced parent row is deleted?", "The referencing child rows are deleted automatically.", "Deleting a child row does not delete its parent."],
-        ["A save must reference an existing player, and deleting that player while saves remain must be blocked. Give the player_id column definition.", "player_id integer NOT NULL REFERENCES player_account(player_id) ON DELETE RESTRICT", "NOT NULL makes the reference required; RESTRICT blocks deletion of a referenced player."],
+        "Write an `ALTER TABLE` statement that adds an optional text note to a table named `booking`.",
+        "Which constraint prevents repeated non-`NULL` email values but does not make email required?",
+        "Define a required text `status` column whose only allowed values are 'open' and 'closed'.",
+        "`Booking.room_id` references `Room(room_id)`. What differs between `ON DELETE RESTRICT` and `ON DELETE CASCADE` when a room with bookings is deleted?",
+        "`party_size integer DEFAULT 2 CHECK (party_size BETWEEN 1 AND 8)`: Is an explicit `NULL` rejected? Revise the column definition to make `party_size` required.",
+        "Write `CREATE TABLE loan` with:\n• generated integer primary key `loan_id`\n• required `member_id` referencing `member(member_id)` `ON DELETE RESTRICT`\n• required `days` from 1 through 14",
       ],
     },
     {
       title: "ER diagrams",
       clues: [
-        ["In our ER notation, this shape represents an entity set; a diamond represents a relationship.", "What is a rectangle?", "An entity set groups distinguishable objects of the same kind."],
-        ["An arrow from a relationship toward an entity set means this maximum number of partners on that side.", "At most one.", "An arrow alone does not say participation is required."],
-        ["A double line between an entity set and a relationship means what for every entity in that set?", "It must participate in the relationship.", "This is total participation; a single line means participation is optional."],
-        ["Each employee–project assignment records hours_worked. Where does hours_worked belong in the ER diagram?", "On the employee–project relationship.", "The hours describe that particular assignment, not the employee or project alone."],
-        ["Each quest has exactly one sponsor guild; a guild may sponsor many quests. Where does the foreign key go, and must it be UNIQUE?", "Put a NOT NULL guild_id foreign key in quest; it should not be UNIQUE.", "Quest is the many side. NOT NULL requires a sponsor, while repeated guild IDs allow one guild to sponsor many quests."],
+        "A guild may sponsor no quests. Is its participation in Sponsors total or partial, and which line style shows it?",
+        "In our ER notation, how are an entity set, a relationship set, and a primary key attribute drawn?",
+        "An arrow points from Teaches toward Instructor, and Section participates totally in Teaches. How many instructors teach each section?",
+        "Each quest has exactly one sponsor guild; a guild may sponsor many quests. Which relation gets the foreign key?",
+        "Artist and Festival are many-to-many; each pair appears once, and fee belongs to that appearance.\n\nFor `appearance(artist_id, festival_id, fee)`, give its primary key and foreign keys. Where does fee belong in the ER diagram?",
+        "A member may borrow the same item multiple times, creating a new loan row each time.\n\nWhy can't `(member_id, item_id)` be the primary key of `loan`? Name a suitable primary key.",
+      ],
+    },
+    {
+      title: "Trace & debug",
+      clues: [
+        "Which predicate keeps rows whose progress has not been recorded: `progress = NULL` or `progress IS NULL`?",
+        "A `SELECT` query has no `ORDER BY`. Is the row order guaranteed?",
+        "Player has IDs 1, 2, 3. Save has `player_id` values 1, 1, 3 (with different save IDs). How many rows result from an inner join on `player_id`?",
+        "Each locker is assigned exactly one student; each student has at most one locker. `locker.student_id` is a foreign key. Which two constraints are still needed?",
+        "`WHERE region = 'MT' OR region = 'WA' AND progress >= 80`: Which region bypasses the progress test? Rewrite so the test applies to both regions.",
+        "`Player(id,name)` = \\(\\{(1,\\mathrm{Ada}),(2,\\mathrm{Ben}),(3,\\mathrm{Cy})\\}\\)\n`Save(save_id,player_id,progress)` = \\(\\{(10,1,80),(11,1,\\mathrm{NULL}),(12,2,80)\\}\\)\n\nWhich names does this query return?\n\n```sql\nSELECT DISTINCT p.name\nFROM Player p JOIN Save s ON p.id = s.player_id\nWHERE s.progress >= 80 OR s.progress IS NULL\nORDER BY p.name;\n```",
+      ],
+    },
+    {
+      title: "Mixed review",
+      clues: [
+        "In the relational model, what is an attribute's domain?",
+        "`Booking(status, shipped_at)` has a required status. Write a `WHERE` condition for bookings that are not 'cancelled' and have a known `shipped_at`. Use `NOT` in your condition.",
+        "`R(id)` = \\(\\{(1), (2), (3)\\}\\)\n`S(id)` = \\(\\{(2), (3), (4)\\}\\)\n\nGive both \\(R \\cap S\\) and \\(R \\cup S\\).",
+        "Choose PostgreSQL types for a price stored exactly to cents, a calendar-only birthday, and the instant a payment was received with time-zone-aware handling.",
+        "`Member(mid, region)` and `Loan(lid, borrower_mid)` have no shared attribute names. Write a theta join that pairs each loan with its member (`Member.mid = Loan.borrower_mid`), and give the output attributes.",
+        "Each lab has exactly one supervisor; each supervisor oversees at most one lab and may oversee none. For Supervises, give the ER arrows and participation lines. If `Lab.supervisor_id` references `Supervisor(id)`, which further constraints on `supervisor_id` enforce these rules?",
       ],
     },
   ];
 
-  const points = [100, 200, 300, 400, 500];
-  const storageKey = "csci340-midterm-review-jeopardy-v1";
+  const points = [100, 200, 300, 400, 500, 600];
+  const dailyDoubleId = "6-2";
+  const storageKey = "csci340-midterm-review-jeopardy-v3";
   const game = document.getElementById("review-game");
   if (!game) return;
 
   const board = document.getElementById("game-board");
   const status = document.getElementById("game-status");
-  const teamList = document.getElementById("team-list");
+  const scoreDisplay = document.getElementById("class-score");
   const overlay = document.getElementById("clue-overlay");
+  const dailyDoubleBanner = document.getElementById("daily-double-banner");
   const prompt = document.getElementById("clue-prompt");
-  const answer = document.getElementById("clue-answer");
-  const explanation = document.getElementById("clue-explanation");
-  const answerWrap = document.getElementById("clue-answer-wrap");
-  const scoring = document.getElementById("clue-team-actions");
-  const timerDisplay = document.getElementById("clue-timer");
-  const timerToggle = document.getElementById("timer-toggle");
-  const revealButton = document.getElementById("clue-reveal");
+  const awardButton = document.getElementById("clue-award");
+  const clueClassTotal = document.getElementById("clue-class-total");
+  const finishButton = document.getElementById("clue-finish");
   const fullscreenButton = document.getElementById("game-fullscreen");
   let activeId = null;
   let priorFocus = null;
-  let timerHandle = null;
-  let secondsLeft = 30;
   let state = loadState();
 
   function initialState() {
-    return { teams: ["Team 1", "Team 2", "Team 3"], used: [], marks: {} };
+    return { used: [], awarded: [] };
   }
 
   function loadState() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
-      if (saved && Array.isArray(saved.teams) && saved.teams.length >= 2 && saved.teams.length <= 4 &&
-          saved.teams.every(name => typeof name === "string") && Array.isArray(saved.used) &&
-          saved.marks && typeof saved.marks === "object") return saved;
+      if (saved && Array.isArray(saved.used) && Array.isArray(saved.awarded) &&
+          saved.used.every(id => typeof id === "string") &&
+          saved.awarded.every(id => typeof id === "string")) return saved;
     } catch (_) { /* Private browsing may disable storage. */ }
     return initialState();
   }
@@ -97,20 +124,28 @@
   }
 
   function clueId(categoryIndex, rowIndex) { return `${categoryIndex}-${rowIndex}`; }
+  function awardValue(id) {
+    const value = points[Number(id.split("-")[1])] || 0;
+    return id === dailyDoubleId ? value * 2 : value;
+  }
   function activeClue() {
     const [categoryIndex, rowIndex] = activeId.split("-").map(Number);
     return { category: categories[categoryIndex], rowIndex, clue: categories[categoryIndex].clues[rowIndex] };
   }
 
-  function teamScore(teamIndex) {
-    return Object.entries(state.marks).reduce((total, [id, marks]) => {
-      const row = Number(id.split("-")[1]);
-      return total + (points[row] || 0) * (Number(marks[teamIndex]) || 0);
-    }, 0);
+  function totalScore() {
+    return state.awarded.reduce((total, id) => total + awardValue(id), 0);
+  }
+
+  function renderScore() {
+    const total = totalScore();
+    scoreDisplay.textContent = `$${total}`;
+    clueClassTotal.textContent = `Class total: $${total}`;
   }
 
   function renderBoard() {
     board.replaceChildren();
+    board.style.setProperty("--category-count", String(categories.length));
     categories.forEach(category => {
       const heading = document.createElement("div");
       heading.className = "game-category";
@@ -123,110 +158,63 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = `game-tile${played ? " played" : ""}`;
-      button.textContent = played ? "✓" : String(value);
-      button.setAttribute("aria-label", `${category.title}, ${value} points${played ? ", played; reopen clue" : ""}`);
+      button.textContent = played ? "✓" : `$${value}`;
+      button.setAttribute("aria-label", `${category.title}, $${value}${played ? ", played; reopen clue" : ""}`);
       button.addEventListener("click", () => openClue(id));
       board.append(button);
     }));
-    status.textContent = `${state.used.length} of 25 clues played`;
-  }
-
-  function renderTeams() {
-    teamList.replaceChildren();
-    state.teams.forEach((name, index) => {
-      const card = document.createElement("div");
-      card.className = "team-card";
-      const label = document.createElement("label");
-      label.textContent = `Team ${index + 1}`;
-      const input = document.createElement("input");
-      input.type = "text";
-      input.maxLength = 28;
-      input.value = name;
-      input.setAttribute("aria-label", `Name for team ${index + 1}`);
-      input.addEventListener("input", () => { state.teams[index] = input.value; saveState(); });
-      const score = document.createElement("div");
-      score.className = "team-score";
-      score.textContent = String(teamScore(index));
-      score.setAttribute("aria-label", `${name || `Team ${index + 1}`} score ${teamScore(index)}`);
-      card.append(label, input, score);
-      teamList.append(card);
-    });
-    document.getElementById("game-add-team").disabled = state.teams.length >= 4;
-    document.getElementById("game-remove-team").disabled = state.teams.length <= 2;
+    status.textContent = `${state.used.length} of ${categories.length * points.length} clues played`;
   }
 
   function renderScoring() {
-    scoring.replaceChildren();
-    const marks = state.marks[activeId] || {};
-    state.teams.forEach((name, index) => {
-      const card = document.createElement("div");
-      card.className = "clue-team";
-      const label = document.createElement("span");
-      label.className = "clue-team-name";
-      label.textContent = name || `Team ${index + 1}`;
-      card.append(label);
-      [[1, "+"], [-1, "−"]].forEach(([mark, symbol]) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = symbol;
-        button.className = Number(marks[index]) === mark ? "selected" : "";
-        button.setAttribute("aria-label", `${mark === 1 ? "Award" : "Deduct"} ${points[activeClue().rowIndex]} points ${mark === 1 ? "to" : "from"} ${name || `Team ${index + 1}`}`);
-        button.setAttribute("aria-pressed", Number(marks[index]) === mark ? "true" : "false");
-        button.addEventListener("click", () => {
-          state.marks[activeId] ||= {};
-          if (Number(state.marks[activeId][index]) === mark) delete state.marks[activeId][index];
-          else state.marks[activeId][index] = mark;
-          saveState();
-          renderScoring();
-          renderTeams();
-        });
-        card.append(button);
-      });
-      scoring.append(card);
-    });
+    const awarded = state.awarded.includes(activeId);
+    const value = awardValue(activeId);
+    awardButton.textContent = awarded ? `Undo $${value} award` : `Award $${value} to class`;
+    awardButton.setAttribute("aria-pressed", String(awarded));
+    renderScore();
   }
 
-  function renderTimer() {
-    timerDisplay.textContent = `0:${String(secondsLeft).padStart(2, "0")}`;
-    timerDisplay.classList.toggle("expired", secondsLeft === 0);
-    timerToggle.textContent = timerHandle ? "Pause timer" : secondsLeft === 0 ? "Restart timer" : "Start timer";
-  }
-
-  function stopTimer() { if (timerHandle) clearInterval(timerHandle); timerHandle = null; renderTimer(); }
-  function toggleTimer() {
-    if (timerHandle) { stopTimer(); return; }
-    if (secondsLeft === 0) secondsLeft = 30;
-    timerHandle = setInterval(() => {
-      secondsLeft -= 1;
-      if (secondsLeft <= 0) { secondsLeft = 0; stopTimer(); }
-      renderTimer();
-    }, 1000);
-    renderTimer();
+  function renderClue(clue) {
+    prompt.replaceChildren();
+    const codePattern = /```(?:sql)?\n([\s\S]*?)\n```|`([^`\n]+)`/g;
+    let cursor = 0;
+    for (const match of clue.matchAll(codePattern)) {
+      if (match.index > cursor) prompt.append(document.createTextNode(clue.slice(cursor, match.index)));
+      const code = document.createElement("code");
+      code.textContent = match[1] ?? match[2];
+      if (match[1] === undefined) prompt.append(code);
+      else {
+        const block = document.createElement("pre");
+        block.append(code);
+        prompt.append(block);
+      }
+      cursor = match.index + match[0].length;
+    }
+    if (cursor < clue.length) prompt.append(document.createTextNode(clue.slice(cursor)));
   }
 
   function openClue(id) {
     priorFocus = document.activeElement;
     activeId = id;
-    const { category, rowIndex, clue } = activeClue();
+    const { category, clue } = activeClue();
     document.getElementById("clue-category").textContent = category.title;
-    document.getElementById("clue-value").textContent = `${points[rowIndex]} points`;
-    prompt.textContent = clue[0];
-    answer.textContent = clue[1];
-    explanation.textContent = clue[2];
-    answerWrap.hidden = !state.used.includes(id);
-    revealButton.hidden = !answerWrap.hidden;
-    secondsLeft = 30;
-    stopTimer();
+    document.getElementById("clue-value").textContent = `$${awardValue(id)}`;
+    dailyDoubleBanner.hidden = id !== dailyDoubleId;
+    renderClue(clue);
     renderScoring();
     overlay.hidden = false;
     document.body.style.overflow = "hidden";
-    (revealButton.hidden ? document.getElementById("clue-close") : revealButton).focus();
+    window.MathJax?.typesetPromise?.([prompt]);
+    document.getElementById("clue-heading").focus();
   }
 
-  function closeClue() {
+  function closeClue(markPlayed) {
     if (!activeId) return;
-    stopTimer();
-    if (!answerWrap.hidden && !state.used.includes(activeId)) state.used.push(activeId);
+    if (markPlayed && !state.used.includes(activeId)) state.used.push(activeId);
+    if (!markPlayed && !state.used.includes(activeId)) {
+      state.awarded = state.awarded.filter(id => id !== activeId);
+      renderScore();
+    }
     saveState();
     overlay.hidden = true;
     document.body.style.overflow = "";
@@ -239,28 +227,18 @@
     }
   }
 
-  revealButton.addEventListener("click", () => {
-    stopTimer();
-    answerWrap.hidden = false;
-    revealButton.hidden = true;
-    document.getElementById("clue-close").focus();
+  awardButton.addEventListener("click", () => {
+    if (!activeId) return;
+    if (state.awarded.includes(activeId)) state.awarded = state.awarded.filter(id => id !== activeId);
+    else state.awarded.push(activeId);
+    saveState();
+    renderScoring();
   });
-  document.getElementById("clue-close").addEventListener("click", closeClue);
-  timerToggle.addEventListener("click", toggleTimer);
-  document.getElementById("timer-reset").addEventListener("click", () => { stopTimer(); secondsLeft = 30; renderTimer(); });
-  document.getElementById("game-add-team").addEventListener("click", () => {
-    if (state.teams.length < 4) { state.teams.push(`Team ${state.teams.length + 1}`); saveState(); renderTeams(); }
-  });
-  document.getElementById("game-remove-team").addEventListener("click", () => {
-    if (state.teams.length <= 2) return;
-    const index = state.teams.length - 1;
-    state.teams.pop();
-    Object.values(state.marks).forEach(marks => delete marks[index]);
-    saveState(); renderTeams();
-  });
+  finishButton.addEventListener("click", () => closeClue(true));
+  document.getElementById("clue-close").addEventListener("click", () => closeClue(false));
   document.getElementById("game-reset").addEventListener("click", () => {
-    if (!window.confirm("Clear all team names, scores, and played clues for a new game?")) return;
-    state = initialState(); saveState(); renderBoard(); renderTeams();
+    if (!window.confirm("Clear the class score and played clues for a new game?")) return;
+    state = initialState(); saveState(); renderBoard(); renderScore();
   });
   fullscreenButton.addEventListener("click", () => {
     if (document.fullscreenElement) document.exitFullscreen();
@@ -269,17 +247,16 @@
   document.addEventListener("fullscreenchange", () => { fullscreenButton.textContent = document.fullscreenElement ? "Exit full screen" : "Full screen"; });
   document.addEventListener("keydown", event => {
     if (!activeId) return;
-    if (event.key === "Escape") { event.preventDefault(); closeClue(); }
+    if (event.key === "Escape") { event.preventDefault(); closeClue(false); }
     if (event.key === "Tab") {
       const focusable = [...overlay.querySelectorAll("button:not([hidden]):not(:disabled)")].filter(button => button.offsetParent !== null);
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement.id === "clue-heading")) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }
   });
 
   renderBoard();
-  renderTeams();
-  renderTimer();
+  renderScore();
 })();
