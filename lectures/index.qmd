@@ -48,3 +48,12 @@ Lecture pages provide the course narrative. Related practice and submissions app
 ## Week 8
 
 - [Finishing the ER model](week-08-er-extensions.qmd) — Choose weak entities, specialization, and higher-order relationships; connect textbook aggregation to modeling an association as an entity while preserving its constraints.
+
+## Week 10
+
+- [Summarizing rows with SQL](week-10-aggregation-ctes-views.qmd) — Use aggregates, CTEs, and views to turn save-file rows into reusable summaries.
+- [Lab 3 — Translate SQL questions into Polars](../activities/week-10-polars-query-lab.qmd) — Start with supplied DataFrames, practice SQL-equivalent filters, aggregates, and joins, then compare results.
+
+## Week 11
+
+- [Compare rows with window functions](week-11-window-functions.qmd) — Keep individual saves while calculating and ranking within groups in SQL and Polars.

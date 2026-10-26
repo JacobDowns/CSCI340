@@ -114,8 +114,8 @@ Milestone instructions will identify both shared and individual responsibilities
 | 7: Oct 5-9 | ER-to-relational mapping and constraints | Map models to schemas and test integrity rules | Requirements, ER model, and mapping review |
 | 8: Oct 12-16 | Dependencies and normalization; no class Oct 12 | Diagnose anomalies and decompose schemas | Relational design review |
 | 9: Oct 19-23 | Review and midterm examination | Midterm Friday, October 23 | - |
-| 10: Oct 26-30 | Advanced SQL | CTEs, windows, and reusable views | PostgreSQL implementation |
-| 11: Nov 2-6 | Storage, indexes, and query plans | Predict, measure, and explain index effects | Performance hypothesis |
+| 10: Oct 26-30 | SQL summaries and a Polars lab | Aggregation, CTEs, views, and SQL-equivalent DataFrame expressions | PostgreSQL implementation |
+| 11: Nov 2-6 | Windows and query performance | Compare per-row windows; begin indexes and plans | Performance hypothesis |
 | 12: Nov 9-13 | Transactions and concurrency; no class Nov 11 | Reproduce anomalies and reason about schedules | Correctness and transaction memo |
 | 13: Nov 16-20 | Analytical systems and cross-engine comparison | DuckDB, Parquet, Polars, and data-movement tradeoffs | Cross-engine analysis |
 | 14: Nov 23-27 | Spatial foundations; travel day Nov 25 and Thanksgiving Nov 26-27 | Spatial types, CRS, and predicates | Spatial question |

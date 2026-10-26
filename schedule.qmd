@@ -73,13 +73,19 @@ Review the relational model, relational algebra, basic SQL, keys, constraints, E
 
 For the in-class review, use the [midterm review Jeopardy board](midterm-review-jeopardy.qmd).
 
-### Week 10 (October 26-30) - Advanced SQL
+### Week 10 (October 26-30) - SQL summaries and a Polars lab
 
-Develop common table expressions, window functions, conditional aggregation, views, and recursive queries as time permits.
+- **SQL:** [Summarizing rows with SQL](lectures/week-10-aggregation-ctes-views.qmd) develops aggregation, CTEs, and views.
+- **Lab 3:** [Translate SQL questions into Polars](activities/week-10-polars-query-lab.qmd) starts with supplied DataFrames and practices equivalent filters, grouped summaries, and joins. A short extension shows how to read a PostgreSQL result into Polars.
+- **Project workday:** apply a grouped query to the project dataset and check its expected result.
 
-### Week 11 (November 2-6) - Storage, indexes, and query plans
+Recursive queries can wait until a later class if the project work needs more time.
 
-Introduce pages, records, B-trees, hashing, composite indexes, selectivity, scans, join algorithms, cardinality estimates, and plan choices.
+### Week 11 (November 2-6) - Window functions and query performance
+
+- [Compare rows with window functions](lectures/week-11-window-functions.qmd) in PostgreSQL and Polars.
+- Begin storage, indexes, and query plans: pages and records, B-trees, scans, selectivity, and reading `EXPLAIN` output. Continue this thread later with join algorithms and more detailed plan choices.
+- Reserve one meeting for project work.
 
 ### Week 12 (November 9-13) - Transactions and concurrency
 

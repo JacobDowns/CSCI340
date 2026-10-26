@@ -6,6 +6,7 @@ project:
     - "assignments/week-05-escape-room-data-changes.docx"
     - "activities/lab-02-video-game-setup.sql"
     - "activities/lab-02-sql-joins-response-template.docx"
+    - "activities/lab-03-polars-starter.py"
     - "activities/week-07-er-modeling-activity.docx"
     - "activities/week-07-er-modeling-activity.pdf"
     - "activities/week-07-project-brainstorming.docx"
@@ -89,6 +90,12 @@ website:
           - section: Week 8
             contents:
               - lectures/week-08-er-extensions.qmd
+          - section: Week 10
+            contents:
+              - lectures/week-10-aggregation-ctes-views.qmd
+          - section: Week 11
+            contents:
+              - lectures/week-11-window-functions.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd
@@ -112,6 +119,9 @@ website:
           - section: Week 9
             contents:
               - activities/week-09-project-er-draft.qmd
+          - section: Week 10
+            contents:
+              - activities/week-10-polars-query-lab.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd

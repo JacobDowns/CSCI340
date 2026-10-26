@@ -1,0 +1,294 @@
+---
+title: "Summarizing rows with SQL"
+subtitle: "Aggregation, CTEs, and views"
+description: "Use PostgreSQL aggregates to answer questions across rows, then give a summary a query-local or reusable name."
+author: "CSCI 340"
+toc: true
+toc-depth: 2
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 10 · SQL SUMMARIES
+:::
+
+# How do we turn rows into answers?
+
+- **Aggregate:** combine values from several rows into a summary.
+- **CTE:** name an intermediate result within one statement.
+- **View:** save a query definition for use in later statements.
+:::
+
+**Previous:** [Joining tables with SQL](week-06-joining-tables-with-sql.qmd). **Next:** [Lab 3 — Translate SQL questions into Polars](../activities/week-10-polars-query-lab.qmd).
+
+## 1. Why aggregate?
+
+A row-level query lists individual saves. An aggregate combines rows to answer questions such as **how many saves exist** or **what the average completion is**.
+
+- **One overall summary:** use an aggregate without `GROUP BY`. `SELECT COUNT(*) FROM save_file;` returns one row.
+- **One summary per category:** add `GROUP BY`. The query returns one row for each distinct grouping value present in the input.
+
+### General query shape
+
+```sql
+SELECT category, COUNT(*) AS row_count, AVG(measure) AS mean_measure
+FROM source_table
+WHERE row_condition
+GROUP BY category
+HAVING COUNT(*) >= 2
+ORDER BY category;
+```
+
+This is a **pattern**, with placeholder names:
+
+- `WHERE` selects input rows **before** grouping.
+- `GROUP BY` creates one group for each `category` value.
+- `HAVING` selects whole groups **after** aggregation.
+
+`WHERE` and `HAVING` are optional. A selected expression such as `category` must normally be grouped unless it is inside an aggregate.
+
+In PostgreSQL, `HAVING` cannot use the `SELECT` alias `row_count`; write `HAVING COUNT(*) >= 2` as shown. An outer query can use `row_count` after a CTE gives that result a name.
+
+### Common PostgreSQL aggregates
+
+| Function | What it does |
+|---|---|
+| `COUNT(*)` | Counts all rows. |
+| `COUNT(column)` | Counts non-null values in a column. |
+| `COUNT(DISTINCT column)` | Counts distinct non-null values. |
+| `SUM(column)` | Adds non-null values. |
+| `AVG(column)` | Averages non-null values. |
+| `MIN(column)` | Returns the smallest non-null value. |
+| `MAX(column)` | Returns the largest non-null value. |
+
+Other PostgreSQL aggregates include:
+
+- `BOOL_AND` is true when all non-null values are true.
+- `BOOL_OR` is true when at least one non-null value is true.
+- `STRING_AGG` joins strings with a chosen delimiter.
+- `ARRAY_AGG` collects values into an array.
+
+Choose an aggregate that fits the question: summing completion percentages is usually less meaningful than averaging or finding the maximum. See the [full aggregate catalog](https://www.postgresql.org/docs/current/functions-aggregate.html).
+
+## 2. Summarize familiar data
+
+Use the eight rows in the [Lab 2 video-game setup](../activities/lab-02-video-game-setup.sql):
+
+- Each `save_file` row is **one save**; a player may have several saves for one game.
+- Save 7 has no recorded `completion_percent`.
+
+| save_id | player_id | game_id | completion_percent |
+|---:|---:|---:|---:|
+| 1 | 1 | 1 | 25.00 |
+| 2 | 1 | 1 | 50.00 |
+| 3 | 2 | 1 | 49.99 |
+| 4 | 1 | 1 | 75.00 |
+| 5 | 3 | 2 | 80.00 |
+| 6 | 3 | 2 | 100.00 |
+| 7 | 2 | 3 | `NULL` |
+| 8 | 2 | 3 | 80.00 |
+
+**Question:** For each game, how many saves exist, how many have a completion percentage, and how many reached at least 80%?
+
+```sql
+SELECT game_id,
+       COUNT(*) AS saves,
+       COUNT(completion_percent) AS measured_saves,
+       COUNT(*) FILTER (WHERE completion_percent >= 80) AS saves_at_80
+FROM save_file
+GROUP BY game_id
+ORDER BY game_id;
+```
+
+| game_id | saves | measured_saves | saves_at_80 |
+|---:|---:|---:|---:|
+| 1 | 4 | 4 | 0 |
+| 2 | 2 | 2 | 2 |
+| 3 | 2 | 1 | 1 |
+
+- `COUNT(*)` counts rows; `COUNT(completion_percent)` skips `NULL`.
+- `FILTER` changes the input to **only its aggregate**. Save 7 still contributes to `saves`.
+- `WHERE completion_percent >= 80` before grouping would remove other saves from **all** counts.
+
+**Check together:** Why are there three result rows? What would `HAVING COUNT(*) >= 3` leave in the result?
+
+### When would we group by two attributes?
+
+When the question is about **each player's saves in each game**, the group is a `(player_id, game_id)` pair, not just a player or a game:
+
+```sql
+SELECT player_id, game_id,
+       COUNT(*) AS saves,
+       MAX(completion_percent) AS best_completion
+FROM save_file
+GROUP BY player_id, game_id
+ORDER BY player_id, game_id;
+```
+
+| player_id | game_id | saves | best_completion |
+|---:|---:|---:|---:|
+| 1 | 1 | 3 | 75.00 |
+| 2 | 1 | 1 | 49.99 |
+| 2 | 3 | 2 | 80.00 |
+| 3 | 2 | 2 | 100.00 |
+
+Grouping only by `game_id` would combine different players' saves. Grouping only by `player_id` would combine their different games.
+
+### Collect values from a group
+
+`STRING_AGG` produces text; `ARRAY_AGG` produces a PostgreSQL array. Here they collect game titles for each studio:
+
+```sql
+SELECT studio_name,
+       STRING_AGG(title, ', ' ORDER BY title) AS title_list,
+       ARRAY_AGG(title ORDER BY title) AS title_array
+FROM video_game
+GROUP BY studio_name
+ORDER BY studio_name;
+```
+
+| studio_name | title_list | title_array |
+|---|---|---|
+| Juniper Byte | Mosslight | `{Mosslight}` |
+| Northline Studio | Circuit Garden, Starfall Cartographers | `{"Circuit Garden","Starfall Cartographers"}` |
+
+The `ORDER BY title` **inside each aggregate** fixes the order of titles in its result. The final `ORDER BY studio_name` sorts the two result rows.
+
+### What should a missing value mean?
+
+`COALESCE(value, fallback)` uses the fallback when `value` is `NULL`; it is **not an aggregate**. Its placement changes the question:
+
+```sql
+SELECT AVG(completion_percent) AS recorded_only,
+       AVG(COALESCE(completion_percent, 0)) AS missing_as_zero
+FROM save_file
+WHERE game_id = 3;
+```
+
+Game 3's two saves produce **80** when the missing value is skipped, but **40** when it is treated as zero. By contrast, `COALESCE(AVG(completion_percent), 0)` substitutes zero only if the **whole average** is `NULL`. Use that fallback only if zero conveys the intended meaning.
+
+<details class="practice-example">
+<summary>Practice 1: count recorded values and filter groups</summary>
+
+Write a query that returns each game's `game_id`, number of **recorded** completion percentages, and average completion percentage. Keep only games with at least two recorded percentages; sort by `game_id`. Which games remain?
+
+<details class="practice-solution">
+<summary>Possible answer</summary>
+
+```sql
+SELECT game_id,
+       COUNT(completion_percent) AS measured_saves,
+       AVG(completion_percent) AS average_completion
+FROM save_file
+GROUP BY game_id
+HAVING COUNT(completion_percent) >= 2
+ORDER BY game_id;
+```
+
+Games **1 and 2** remain. Game 3 has two saves, but only one recorded percentage. `HAVING` tests the grouped count; `AVG` also skips the `NULL` value.
+
+</details>
+</details>
+
+## 3. Name the intermediate result with a CTE
+
+Suppose we want **only games with at least three saves**. A common table expression (CTE) gives the grouped result a name for the rest of this statement:
+
+```sql
+WITH game_summary AS (
+    SELECT game_id,
+           COUNT(*) AS saves,
+           COUNT(*) FILTER (WHERE completion_percent >= 80) AS saves_at_80
+    FROM save_file
+    GROUP BY game_id
+)
+SELECT game_id, saves, saves_at_80
+FROM game_summary
+WHERE saves >= 3
+ORDER BY game_id;
+```
+
+- **Result:** game 1, with 4 saves and 0 at 80%.
+- The outer `WHERE` filters the grouped rows from the CTE. `HAVING COUNT(*) >= 3` inside the grouped query would give the same result here.
+- A CTE exists only within its statement. It does not create a stored table, and PostgreSQL does not necessarily materialize it separately.
+
+<details class="practice-example">
+<summary>Practice 2: name a player summary</summary>
+
+Use a CTE named `player_totals` to count saves for each `player_id`. In the outer query, return only players with at least three saves, ordered by `player_id`. Predict the result.
+
+<details class="practice-solution">
+<summary>Possible answer</summary>
+
+```sql
+WITH player_totals AS (
+    SELECT player_id, COUNT(*) AS saves
+    FROM save_file
+    GROUP BY player_id
+)
+SELECT player_id, saves
+FROM player_totals
+WHERE saves >= 3
+ORDER BY player_id;
+```
+
+Players **1 and 2** each have three saves; player 3 has two. The outer `WHERE` filters the CTE's grouped rows.
+
+</details>
+</details>
+
+## 4. Reuse a query with a view
+
+If several queries or programs need the same definition of the game summary, save that **query definition** as a view in your personal schema:
+
+```sql
+CREATE OR REPLACE VIEW game_save_summary AS
+SELECT game_id,
+       COUNT(*) AS saves,
+       COUNT(completion_percent) AS measured_saves,
+       COUNT(*) FILTER (WHERE completion_percent >= 80) AS saves_at_80
+FROM save_file
+GROUP BY game_id;
+
+SELECT game_id, saves, measured_saves, saves_at_80
+FROM game_save_summary
+ORDER BY game_id;
+```
+
+| Name | Available for | Stores result rows? |
+|---|---|---|
+| CTE (`WITH`) | The current statement | Not necessarily |
+| Ordinary view (`CREATE VIEW`) | Later statements, until dropped | No; PostgreSQL runs its query when referenced |
+
+- **Current results:** adding another save changes the next query of the view.
+- **Repeated definition:** later queries and programs can use the same named summary.
+
+In [Lab 3](../activities/week-10-polars-query-lab.qmd), we will express the same summary with Polars and briefly see how Python could read the view.
+
+<details class="practice-example">
+<summary>Practice 3: query a view after the data changes</summary>
+
+Write a query using `game_save_summary` to show `game_id` and `saves` for games with at least two saves, ordered by `game_id`. Then suppose a new save for game 2 records **60% completion**. What will the view show for game 2 the next time it is queried? Must we recreate the view?
+
+<details class="practice-solution">
+<summary>Possible answer</summary>
+
+```sql
+SELECT game_id, saves
+FROM game_save_summary
+WHERE saves >= 2
+ORDER BY game_id;
+```
+
+Initially, all three games appear. After the insert, game 2 has **3 saves**, **3 measured saves**, and still **2 saves at 80% or more**. The next query of the view reflects the new row; no recreation is needed.
+
+</details>
+</details>
+
+::: {.takeaway-panel}
+## Choose the question and the name
+
+Use an **aggregate** when the answer combines rows. Use a **CTE** to make one statement easier to read; use a **view** when the same query definition should be available to later statements.
+:::
+
+**Reading:** *Database System Concepts*, 7th ed., [Introduction to SQL slides](https://www.db-book.com/slides-dir/PDF-dir/ch3.pdf) (aggregates and `WITH`). PostgreSQL details: [aggregates](https://www.postgresql.org/docs/current/functions-aggregate.html), [grouping](https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUP), [COALESCE](https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-COALESCE-NVL-IFNULL), [CTEs](https://www.postgresql.org/docs/current/queries-with.html), and [views](https://www.postgresql.org/docs/current/sql-createview.html).

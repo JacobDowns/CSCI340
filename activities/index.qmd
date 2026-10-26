@@ -32,6 +32,10 @@ Labs and activities are short exercises that make the course ideas concrete. Eac
 
 - [Activity 6 — Project ER diagram: first draft](week-09-project-er-draft.qmd): use a project workday to develop a draft ER diagram, check it against examples, and submit one diagram with three brief notes per group. The draft is a starting point for feedback and revision.
 
+## Week 10
+
+- [Lab 3 — Translate SQL questions into Polars](week-10-polars-query-lab.qmd): use supplied game and save DataFrames to translate filtering, grouped aggregation, and a join into Polars, then explain how you checked the result.
+
 ## Submission principle
 
 Lab submissions are deliberately small. They should preserve enough reasoning that the instructor can see what you tried, what you concluded, and which assumptions remain unresolved. The detailed submission location and deadline will be announced with each offering.

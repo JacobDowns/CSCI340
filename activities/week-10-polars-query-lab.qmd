@@ -1,0 +1,157 @@
+---
+title: "Lab 3 — Translate SQL questions into Polars"
+subtitle: "Start with supplied DataFrames, then build equivalent results"
+description: "A guided introduction to Polars syntax using familiar game and save data, followed by three SQL-to-DataFrame tasks."
+toc: true
+toc-depth: 2
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 10 LAB · SQL AND POLARS
+:::
+
+# One question, two ways to express it
+
+You already know the SQL questions. Use the supplied `saves` and `games` DataFrames to express the same queries in Polars and check that the result means the same thing.
+:::
+
+This guided lab should take about **35–45 minutes**. Work alone or with others, then compare a result and one design choice with someone who used a different approach. Keep your code and a brief explanation of how you checked it; Canvas will specify any submission details.
+
+## 1. Start with the supplied DataFrames
+
+[Download the Polars starter script](lab-03-polars-starter.py){download="lab-03-polars-starter.py" .btn .btn-primary}
+
+The starter script creates two DataFrames from the familiar [Lab 2 game data](lab-02-video-game-setup.sql). Run it in a Python environment with `polars` installed. It needs **no PostgreSQL connection** for the main exercises.
+
+```python
+import polars as pl
+
+games = pl.DataFrame({
+    "game_id": [1, 2, 3],
+    "title": ["Starfall Cartographers", "Mosslight", "Circuit Garden"],
+})
+
+saves = pl.DataFrame({
+    "save_id": [1, 2, 3, 4, 5, 6, 7, 8],
+    "player_id": [1, 1, 2, 1, 3, 3, 2, 2],
+    "game_id": [1, 1, 1, 1, 2, 2, 3, 3],
+    "completion_percent": [25.0, 50.0, 49.99, 75.0, 80.0, 100.0, None, 80.0],
+})
+```
+
+Each `saves` row is **one save**. `None` is the missing completion value for save 7, corresponding to SQL `NULL`.
+
+## 2. Read the basic syntax
+
+| SQL idea | Polars expression | Result |
+|---|---|---|
+| `SELECT columns` | `.select("a", "b")` | Keep named columns |
+| `WHERE condition` | `.filter(condition)` | Keep matching rows |
+| `GROUP BY ...` | `.group_by(...).agg(...)` | One row per group |
+| `ORDER BY` | `.sort(...)` | Display rows in order |
+| `JOIN ... ON` | `.join(other, on=..., how="inner")` | Match rows by key |
+| `WITH name AS (...)` | `name = ...` | Name an intermediate DataFrame |
+
+`pl.col("completion_percent")` refers to a column when building an expression. Methods can be chained: the output of one step becomes the input to the next. For this first lab, these are ordinary, **eager** DataFrames; each operation produces its result immediately.
+
+### Worked example: select saves at 80% or more
+
+```sql
+SELECT save_id, game_id, completion_percent
+FROM save_file
+WHERE completion_percent >= 80
+ORDER BY save_id;
+```
+
+```python
+high_saves = (
+    saves.filter(pl.col("completion_percent") >= 80)
+    .select("save_id", "game_id", "completion_percent")
+    .sort("save_id")
+)
+```
+
+The result contains saves **5, 6, and 8**. Save 7 has no percentage, so its comparison is not true and the filter does not keep it.
+
+## 3. Your turn: one row per game
+
+For **A–C**, write Polars code and check the number and meaning of the output rows before comparing exact values.
+
+### A. Count saves and recorded percentages
+
+Translate this query. Name the result `by_game` and sort it by `game_id`.
+
+```sql
+SELECT game_id,
+       COUNT(*) AS saves,
+       COUNT(completion_percent) AS measured_saves
+FROM save_file
+GROUP BY game_id
+ORDER BY game_id;
+```
+
+Use `.group_by("game_id").agg(...)`. Within `agg`, `pl.len()` counts **all rows** and `pl.col("completion_percent").count()` counts **non-null values**. Add `.alias(...)` to match the SQL column names.
+
+**Check:** expect three game rows. Game 3 has two saves but only one measured save.
+
+### B. Add a conditional count, then filter groups
+
+Extend your grouped result to count saves with `completion_percent >= 80`. Name the **unfiltered** result `game_summary`. Then keep only games with at least three saves.
+
+```sql
+WITH game_summary AS (
+    SELECT game_id, COUNT(*) AS saves,
+           COUNT(completion_percent) AS measured_saves,
+           COUNT(*) FILTER (WHERE completion_percent >= 80) AS saves_at_80
+    FROM save_file
+    GROUP BY game_id
+)
+SELECT game_id, saves, measured_saves, saves_at_80
+FROM game_summary
+WHERE saves >= 3
+ORDER BY game_id;
+```
+
+Inside Polars' `agg`, `(pl.col("completion_percent") >= 80).sum()` counts true values in each group. Then use `.filter(pl.col("saves") >= 3)` on `game_summary`.
+
+**Check:** the filtered result has one row: game 1. Which step changed the number of rows from three to one?
+
+### C. Put titles beside the full summary
+
+Use the **unfiltered** `game_summary` from B. Join it to `games` on `game_id`, then show `title`, `saves`, `measured_saves`, and `saves_at_80`, sorted by title. You need only the supplied DataFrames for this task. The equivalent SQL uses the view from the preceding lecture:
+
+```sql
+SELECT g.title, s.saves, s.measured_saves, s.saves_at_80
+FROM game_save_summary AS s
+JOIN video_game AS g ON s.game_id = g.game_id
+ORDER BY g.title;
+```
+
+**Check:** all three titles should appear. Why would joining the **filtered** result from B give only one title?
+
+## 4. Compare and explain
+
+Compare your output with someone else's. For one difference, check whether it comes from the **rows selected**, the **grouping**, a **missing value**, or the **display order**. Record one sentence about how you checked equivalence with the SQL result.
+
+<details>
+<summary>Where would these DataFrames come from in a real analysis?</summary>
+
+The supplied frames keep today's focus on query expressions. Later, you can replace a hand-written frame with a PostgreSQL query result:
+
+```python
+import os
+import psycopg
+
+with psycopg.connect(os.environ["CSCI340_DB_URL"]) as conn:
+    game_summary = pl.read_database(
+        query="SELECT * FROM game_save_summary ORDER BY game_id",
+        connection=conn,
+    )
+```
+
+`pl.read_database` reads the SQL result into a DataFrame. This uses a database connection, not an ORM; the grouping in the view runs in PostgreSQL. See the [Polars database guide](https://docs.pola.rs/user-guide/io/database/) for other connection options.
+
+</details>
+
+**References:** [Summarizing rows with SQL](../lectures/week-10-aggregation-ctes-views.qmd); [Polars aggregation](https://docs.pola.rs/user-guide/expressions/aggregation/) and [joins](https://docs.pola.rs/user-guide/transformations/joins/).

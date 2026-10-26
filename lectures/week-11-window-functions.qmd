@@ -1,0 +1,115 @@
+---
+title: "Compare rows with window functions"
+subtitle: "Keep individual saves while calculating across related saves"
+description: "Use PostgreSQL windows and Polars over-expressions to compute per-row group values and rankings."
+author: "CSCI 340"
+toc: true
+toc-depth: 2
+---
+
+::: {.lesson-hero}
+::: {.lesson-kicker}
+WEEK 11 · WINDOW FUNCTIONS
+:::
+
+# Can we summarize related rows without losing each row?
+
+`GROUP BY` gives one row per group. A window function attaches a result computed over related rows to **each original row**.
+:::
+
+**Previous:** [Lab 3 — Translate SQL questions into Polars](../activities/week-10-polars-query-lab.qmd). Use the same eight-row [save-file dataset](../activities/lab-02-video-game-setup.sql).
+
+## 1. Choose the result shape
+
+The grouped query `SELECT game_id, MAX(completion_percent) FROM save_file GROUP BY game_id` gives **three rows**, one per game. But what if we need to keep all eight saves and show each save alongside that player's best completion for the same game?
+
+| Question | One result row means | Number of rows in our data |
+|---|---|---:|
+| Best completion **by game** | One game | 3 |
+| Best completion beside **each save** | One save | 8 |
+
+## 2. Compute within partitions in PostgreSQL
+
+```sql
+SELECT save_id, player_id, game_id, completion_percent,
+       MAX(completion_percent) OVER (
+           PARTITION BY player_id, game_id
+       ) AS best_completion,
+       ROW_NUMBER() OVER (
+           PARTITION BY player_id, game_id
+           ORDER BY save_id
+       ) AS save_number
+FROM save_file
+ORDER BY save_id;
+```
+
+| save_id | completion_percent | best_completion | save_number |
+|---:|---:|---:|---:|
+| 1 | 25.00 | 75.00 | 1 |
+| 2 | 50.00 | 75.00 | 2 |
+| 3 | 49.99 | 49.99 | 1 |
+| 4 | 75.00 | 75.00 | 3 |
+| 5 | 80.00 | 100.00 | 1 |
+| 6 | 100.00 | 100.00 | 2 |
+| 7 | `NULL` | 80.00 | 1 |
+| 8 | 80.00 | 80.00 | 2 |
+
+- `PARTITION BY` defines the related rows for each calculation; here the pair `(player_id, game_id)`.
+- `MAX(...) OVER (...)` repeats the partition's best completion on each save. `MAX` ignores save 7's missing value.
+- `ROW_NUMBER()` uses `ORDER BY save_id` **inside** the window to number saves. Unique `save_id` values avoid ties.
+- The final `ORDER BY save_id` sorts the displayed result; it does not set the numbering order.
+
+**Check together:** If we partitioned only by `game_id`, what would change for save 3? If player 1 saved game 1 again at 90%, which existing rows would change?
+
+## 3. Use `.over()` on the loaded DataFrame
+
+Start with the `saves` DataFrame supplied in [Lab 3](../activities/week-10-polars-query-lab.qmd). It has the IDs needed to define the partitions:
+
+```python
+import polars as pl
+
+save_detail = (
+    saves.lazy()
+    .with_columns(
+        pl.col("completion_percent")
+          .max().over("player_id", "game_id")
+          .alias("best_completion"),
+        pl.col("save_id")
+          .rank("ordinal").over("player_id", "game_id")
+          .alias("save_number"),
+    )
+    .sort("save_id")
+    .collect()
+)
+```
+
+Polars' `.over(...)` plays the role of SQL's `PARTITION BY`. Ranking the **unique** `save_id` gives the same numbers as `ROW_NUMBER() ... ORDER BY save_id` in this example. `saves.lazy()` builds a query plan, and `.collect()` runs it. If `saves` came from a PostgreSQL query, this Polars calculation would run on rows already brought into Python.
+
+## 4. Filter after the window calculation
+
+Window functions cannot go directly in PostgreSQL's `WHERE` clause. To show only the most recent save by each player for each game, number first, then filter the CTE result:
+
+```sql
+WITH numbered_saves AS (
+    SELECT save_id, player_id, game_id,
+           ROW_NUMBER() OVER (
+               PARTITION BY player_id, game_id
+               ORDER BY save_id DESC
+           ) AS newest_first
+    FROM save_file
+)
+SELECT player_id, game_id, save_id
+FROM numbered_saves
+WHERE newest_first = 1
+ORDER BY player_id, game_id;
+```
+
+Expected save IDs: **4, 3, 8, 6** in `(player_id, game_id)` order. `save_id` stands in for recency here; in a real application, order by `saved_at` and use `save_id` to break ties.
+
+::: {.takeaway-panel}
+## Group or window?
+
+Use `GROUP BY` when one result row should represent a group. Use `OVER (PARTITION BY ...)` or Polars `.over(...)` when each original row needs a value derived from its group.
+:::
+
+**Reading:** *Database System Concepts*, 7th ed., [Advanced SQL slides](https://www.db-book.com/slides-dir/PDF-dir/ch5.pdf); [PostgreSQL window tutorial](https://www.postgresql.org/docs/current/tutorial-window.html); [Polars window guide](https://docs.pola.rs/user-guide/expressions/window-functions/).
