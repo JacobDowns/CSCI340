@@ -45,9 +45,20 @@ This is a **pattern**, with placeholder names:
 - `GROUP BY` creates one group for each `category` value.
 - `HAVING` selects whole groups **after** aggregation.
 
-`WHERE` and `HAVING` are optional. A selected expression such as `category` must normally be grouped unless it is inside an aggregate.
+`WHERE` and `HAVING` are optional.
 
-In PostgreSQL, `HAVING` cannot use the `SELECT` alias `row_count`; write `HAVING COUNT(*) >= 2` as shown. An outer query can use `row_count` after a CTE gives that result a name.
+::: {.callout-important appearance="simple"}
+### One value per group
+
+For a grouped query, ask whether each expression has **one value per group**:
+
+- In `SELECT`, `HAVING`, and `ORDER BY`, a raw column must normally be grouped or used inside an aggregate. For example, `completion_percent` cannot appear alone when grouping saves by `game_id`; each game has several percentages.
+- `WHERE` can use row-level columns because it runs **before** grouping.
+- `ORDER BY` chooses how to sort the result; it does **not** need to repeat every selected column. It can use a grouped column, an aggregate, or a `SELECT` alias such as `row_count`.
+
+:::
+
+In PostgreSQL, `HAVING` cannot use that `SELECT` alias: write `HAVING COUNT(*) >= 2` as shown. One exception to the grouping rule is a column determined by a grouped primary key; the key already fixes its value within each group.
 
 ### Common PostgreSQL aggregates
 
@@ -165,7 +176,9 @@ FROM save_file
 WHERE game_id = 3;
 ```
 
-Game 3's two saves produce **80** when the missing value is skipped, but **40** when it is treated as zero. By contrast, `COALESCE(AVG(completion_percent), 0)` substitutes zero only if the **whole average** is `NULL`. Use that fallback only if zero conveys the intended meaning.
+::: {.callout-note appearance="simple"}
+**Where `COALESCE` goes matters.** Game 3's two saves produce **80** when the missing value is skipped, but **40** when it is treated as zero. `COALESCE(AVG(completion_percent), 0)` substitutes zero only if the **whole average** is `NULL`. Use that fallback only if zero conveys the intended meaning.
+:::
 
 <details class="practice-example">
 <summary>Practice 1: count recorded values and filter groups</summary>
@@ -260,8 +273,15 @@ ORDER BY game_id;
 | CTE (`WITH`) | The current statement | Not necessarily |
 | Ordinary view (`CREATE VIEW`) | Later statements, until dropped | No; PostgreSQL runs its query when referenced |
 
-- **Current results:** adding another save changes the next query of the view.
-- **Repeated definition:** later queries and programs can use the same named summary.
+::: {.callout-note appearance="simple"}
+**A view stores a query definition, not a snapshot.** A CTE name lasts for one statement; the view name remains available until dropped. Adding another save changes the result of the next query of this ordinary view.
+:::
+
+### Inspect or remove the view
+
+- In `psql`, `\sv game_save_summary` shows its `CREATE OR REPLACE VIEW` definition. `\d+ game_save_summary` also shows its columns and definition. These are `psql` commands, so they do not need semicolons.
+- In SQL, `SELECT pg_get_viewdef('game_save_summary'::regclass);` returns the underlying `SELECT`. PostgreSQL reconstructs the definition, so its formatting may differ from what you typed.
+- `DROP VIEW IF EXISTS game_save_summary;` removes the view definition, **not** the rows in `save_file` or `video_game`. Use `DROP VIEW`, not `DROP TABLE`. If another object depends on the view, PostgreSQL refuses the drop by default.
 
 In [Lab 3](../activities/week-10-polars-query-lab.qmd), we will express the same summary with Polars and briefly see how Python could read the view.
 
@@ -291,4 +311,4 @@ Initially, all three games appear. After the insert, game 2 has **3 saves**, **3
 Use an **aggregate** when the answer combines rows. Use a **CTE** to make one statement easier to read; use a **view** when the same query definition should be available to later statements.
 :::
 
-**Reading:** *Database System Concepts*, 7th ed., [Introduction to SQL slides](https://www.db-book.com/slides-dir/PDF-dir/ch3.pdf) (aggregates and `WITH`). PostgreSQL details: [aggregates](https://www.postgresql.org/docs/current/functions-aggregate.html), [grouping](https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUP), [COALESCE](https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-COALESCE-NVL-IFNULL), [CTEs](https://www.postgresql.org/docs/current/queries-with.html), and [views](https://www.postgresql.org/docs/current/sql-createview.html).
+**Reading:** *Database System Concepts*, 7th ed., [Introduction to SQL slides](https://www.db-book.com/slides-dir/PDF-dir/ch3.pdf) (aggregates and `WITH`). PostgreSQL details: [aggregates](https://www.postgresql.org/docs/current/functions-aggregate.html), [grouping](https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUP), [COALESCE](https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-COALESCE-NVL-IFNULL), [CTEs](https://www.postgresql.org/docs/current/queries-with.html), [view definitions in `psql`](https://www.postgresql.org/docs/current/app-psql.html), and [`DROP VIEW`](https://www.postgresql.org/docs/current/sql-dropview.html).
