@@ -2,8 +2,6 @@
 title: "Lab 3 — Explore bakery sales with SQL and Polars"
 subtitle: "Ask the same question in two query languages"
 description: "A guided notebook using synthetic bakery sales data from Kaggle to practice filtering and aggregation in SQL and Polars."
-toc: true
-toc-depth: 2
 ---
 
 ::: {.lesson-hero}
@@ -13,35 +11,11 @@ WEEK 10 LAB · SQL AND POLARS
 
 # One dataset, two ways to query it
 
-Use a bakery sales dataset to answer each question in **SQL** and with **Polars expressions**. Check that both approaches return the same results.
+Answer bakery sales questions in **SQL** and with **Polars expressions**, then compare the results.
 :::
-
-Work on the notebook for about **40–45 minutes**. Work alone or with others; if you work alone, compare a result with a classmate. Turn in the notebook with what you finish. Canvas will specify any submission details.
-
-## Get the notebook
 
 [Download the bakery SQL + Polars notebook](../notebooks/lab-03-bakery-sql-polars.ipynb){download="lab-03-bakery-sql-polars.ipynb" .btn .btn-primary}
 
-Open it in Jupyter or another Python notebook environment and run the setup cells. The notebook installs missing packages or updates Polars if it is too old for the SQL `FILTER` example, then uses KaggleHub to fetch the CSV directly from the [bakery dataset on Kaggle](https://www.kaggle.com/datasets/sdcloud/historical-bakery-sales-dataset). You need internet access for the first run; KaggleHub caches the file for later runs. If a package update occurs in a running notebook, restart its kernel and run the cells again. If Kaggle asks for authentication, follow the instructions in the notebook.
+Open it in Jupyter or another Python notebook environment. The first run needs internet access to download the synthetic dataset and any missing packages; setup details are in the notebook.
 
-The publisher labels this dataset **synthetic**. It is useful for practicing queries, but its patterns are not evidence about real bakery customers. The original file has 40 columns; the notebook keeps seven relevant fields so the first questions stay focused.
-
-## Work through the questions
-
-| Step | Worked example | Your question |
-|---|---|---|
-| 1. Filter and select | Find ten large-quantity lines | Which ten lines have the largest recorded discounts? |
-| 2. Group and summarize | Count lines and units by category | How do line and unit counts compare across stores? |
-| 3. Combine filters and groups | Summarize discounted lines by category | Which products have the most units on discounted lines? |
-| 4. Filter one aggregate | Count all lines and discounted lines by category | Which stores have more large-quantity lines? |
-| 5. Reuse a query result | Query the category summary again | What share of each store's lines are large? |
-
-For each question you reach, write both versions and compare their columns, rows, values, and order. If they differ, check the filter, grouping key, and sort order. The later questions provide more to explore if time allows.
-
-::: {.callout-note}
-## Check the unit of analysis
-
-An `Order_ID` can appear on more than one row. Each row describes a product line within an order. The notebook starts by comparing `COUNT(*)` with `COUNT(DISTINCT Order_ID)` so a line count is not mistaken for an order count.
-:::
-
-**References:** [Summarizing rows with SQL](../lectures/week-10-aggregation-ctes-views.qmd); [Polars SQL guide](https://docs.pola.rs/user-guide/sql/intro/); [Polars aggregation guide](https://docs.pola.rs/user-guide/expressions/aggregation/); [KaggleHub download guide](https://github.com/Kaggle/kagglehub#download-dataset).
+Work alone or with others. Compare your SQL and Polars results as you go, and if you work alone, compare a result with a classmate. Turn in the notebook with what you finish; Canvas will specify submission details.
