@@ -17,7 +17,7 @@ WEEK 11 · WINDOW FUNCTIONS
 `GROUP BY` gives one row per group. A window function attaches a result computed over related rows to **each original row**.
 :::
 
-**Previous:** [Lab 3 — Translate SQL questions into Polars](../activities/week-10-polars-query-lab.qmd). Use the same eight-row [save-file dataset](../activities/lab-02-video-game-setup.sql).
+**Previous:** [Lab 3 — Explore bakery sales with SQL and Polars](../activities/week-10-polars-query-lab.qmd). This lecture returns to the eight-row [save-file dataset](../activities/lab-02-video-game-setup.sql) so the window calculations are easy to inspect.
 
 ## 1. Choose the result shape
 
@@ -63,10 +63,17 @@ ORDER BY save_id;
 
 ## 3. Use `.over()` on the loaded DataFrame
 
-Start with the `saves` DataFrame supplied in [Lab 3](../activities/week-10-polars-query-lab.qmd). It has the IDs needed to define the partitions:
+Create the eight-row `saves` DataFrame. Its IDs define the partitions:
 
 ```python
 import polars as pl
+
+saves = pl.DataFrame({
+    "save_id": [1, 2, 3, 4, 5, 6, 7, 8],
+    "player_id": [1, 1, 2, 1, 3, 3, 2, 2],
+    "game_id": [1, 1, 1, 1, 2, 2, 3, 3],
+    "completion_percent": [25.0, 50.0, 49.99, 75.0, 80.0, 100.0, None, 80.0],
+})
 
 save_detail = (
     saves.lazy()

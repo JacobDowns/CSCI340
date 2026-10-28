@@ -3,10 +3,10 @@ project:
   output-dir: _site
   resources:
     - "notebooks/assignment-01-relational-operators-starter.ipynb"
+    - "notebooks/lab-03-bakery-sql-polars.ipynb"
     - "assignments/week-05-escape-room-data-changes.docx"
     - "activities/lab-02-video-game-setup.sql"
     - "activities/lab-02-sql-joins-response-template.docx"
-    - "activities/lab-03-polars-starter.py"
     - "activities/week-07-er-modeling-activity.docx"
     - "activities/week-07-er-modeling-activity.pdf"
     - "activities/week-07-project-brainstorming.docx"

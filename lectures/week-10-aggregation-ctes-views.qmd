@@ -19,7 +19,7 @@ WEEK 10 · SQL SUMMARIES
 - **View:** save a query definition for use in later statements.
 :::
 
-**Previous:** [Joining tables with SQL](week-06-joining-tables-with-sql.qmd). **Next:** [Lab 3 — Translate SQL questions into Polars](../activities/week-10-polars-query-lab.qmd).
+**Previous:** [Joining tables with SQL](week-06-joining-tables-with-sql.qmd). **Next:** [Lab 3 — Explore bakery sales with SQL and Polars](../activities/week-10-polars-query-lab.qmd).
 
 ## 1. Why aggregate?
 

@@ -1,6 +1,7 @@
 duckdb
 jupyter
-polars
+kagglehub
+polars>=1.41.0
 pyarrow
 psycopg[binary]
 python-docx

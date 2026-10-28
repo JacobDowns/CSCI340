@@ -76,7 +76,7 @@ For the in-class review, use the [midterm review Jeopardy board](midterm-review-
 ### Week 10 (October 26-30) - SQL summaries and a Polars lab
 
 - **SQL:** [Summarizing rows with SQL](lectures/week-10-aggregation-ctes-views.qmd) develops aggregation, CTEs, and views.
-- **Lab 3:** [Translate SQL questions into Polars](activities/week-10-polars-query-lab.qmd) starts with supplied DataFrames and practices equivalent filters, grouped summaries, and joins. A short extension shows how to read a PostgreSQL result into Polars.
+- **Lab 3:** [Explore bakery sales with SQL and Polars](activities/week-10-polars-query-lab.qmd) uses a downloadable notebook and a synthetic bakery dataset to practice equivalent filters and grouped summaries in both query styles.
 - **Project workday:** apply a grouped query to the project dataset and check its expected result.
 
 Recursive queries can wait until a later class if the project work needs more time.

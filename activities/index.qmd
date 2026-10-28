@@ -34,7 +34,7 @@ Labs and activities are short exercises that make the course ideas concrete. Eac
 
 ## Week 10
 
-- [Lab 3 — Translate SQL questions into Polars](week-10-polars-query-lab.qmd): use supplied game and save DataFrames to translate filtering, grouped aggregation, and a join into Polars, then explain how you checked the result.
+- [Lab 3 — Explore bakery sales with SQL and Polars](week-10-polars-query-lab.qmd): download a notebook that fetches the bakery dataset, answer filtering and aggregation questions in both SQL and Polars, and compare the results.
 
 ## Submission principle
 
