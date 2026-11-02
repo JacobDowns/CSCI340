@@ -286,7 +286,37 @@ The result is **ST01: October 10, 16 units; ST02: October 12, 9 units; ST03: Oct
 </details>
 </details>
 
-## 5. Common window patterns
+## 5. Divide rows into buckets with `NTILE`
+
+`NTILE(4)` splits each store's ordered days into **four roughly equal buckets** (quartiles). Here, bucket 1 contains the highest-sales days:
+
+```sql
+SELECT store_id, sale_date, units,
+       NTILE(4) OVER (
+           PARTITION BY store_id
+           ORDER BY units DESC, sale_date
+       ) AS sales_quartile
+FROM daily_sales
+ORDER BY store_id, sales_quartile, sale_date;
+```
+
+For **ST03**, the result includes:
+
+| sale_date | units | sales_quartile |
+|---|---:|---:|
+| Oct 3 | 13 | 1 |
+| Oct 5 | 13 | 1 |
+| Oct 15 | 11 | 2 |
+| Oct 1 | 9 | 3 |
+| Oct 2 | 9 | 4 |
+
+Each store has five rows, so the first bucket gets two and the other three buckets get one each. The calculation starts over for each `store_id`.
+
+::: {.callout-note appearance="simple"}
+**Buckets, not sales ranges.** `NTILE(4)` balances the *number of rows*, not the span of unit values. Tied values can land in different buckets, as ST03's two 9-unit days do; `sale_date` makes their order predictable. `NTILE` uses the partition and order, not a frame.
+:::
+
+## 6. Common window patterns
 
 PostgreSQL has no fixed list of partition types. The question determines whether `OVER (...)` uses all rows or starts a new partition for each value of one or more columns or expressions.
 
@@ -299,6 +329,7 @@ PostgreSQL has no fixed list of partition types. The question determines whether
 | Units since seven days before each date | `store_id` | Date; seven-day `RANGE` through current row | `SUM(units)` |
 | Compare with previous record | `store_id` | Date | `LAG(units)` |
 | Choose a top row per store | `store_id` | Units descending, then date | `ROW_NUMBER()` |
+| Quartile bucket for each store day | `store_id` | Units descending, then date; no frame | `NTILE(4)` |
 
 - **Neighbors and ranks:** `LAG` and `ROW_NUMBER` use the window order.
 - **Running or rolling aggregates:** these use the order and a frame.
