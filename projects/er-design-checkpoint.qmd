@@ -1,0 +1,61 @@
+---
+title: "Project milestone 1 - Database purpose and ER design"
+subtitle: "Finish your ER diagram and describe the database"
+description: "A 50-point group project checkpoint: finalized ER diagram, brief database description, relationship cardinalities, and rubric."
+toc: true
+---
+
+Finish your diagram from [Activity 6](../activities/week-09-project-er-draft.qmd) and prepare a brief description of the database. This **50-point project milestone** is graded for the quality of the model and clarity of the explanation. Finalize the design for this checkpoint; you can revise it after instructor feedback.
+
+[Download the assignment and rubric (PDF)](er-design-checkpoint.pdf){download="er-design-checkpoint.pdf" .btn .btn-primary}
+
+## During class
+
+Use the period to finish the diagram and description together. Everyone should contribute and be able to explain the model. Reserve time at the end to confirm that the diagram and description agree and that the exported document is readable.
+
+## Include in your submission
+
+Include your project title, group number, and members' names, followed by:
+
+### 1. Brief database description
+
+Write **a couple of paragraphs, up to one page maximum, plus the diagram**. Cover:
+
+- **Purpose:** What does the database represent, who will use it, and what will it help them do?
+- **Entities and relationships:** Clarify what each entity type represents and what the relationships mean in your application.
+- **Cardinality:** Briefly state each relationship's cardinality in both directions, including whether participation is optional or required. A short list is fine.
+
+For example: “Each registration belongs to exactly one event; an event may have zero or more registrations.”
+
+### 2. Finalized ER diagram
+
+Use a connected design with **at least 5 meaningful entity types and 4 meaningful relationships**; aim for 5–7 entities to keep the scope manageable. Show:
+
+- Named entities and useful attributes; underline each strong entity's primary key, including all parts of a composite key.
+- Named relationship diamonds with correct cardinality and participation on every connection.
+- Relationship attributes where appropriate, and brief notes for rules the diagram cannot express.
+
+Follow the [course notation](../lectures/week-06-introduction-to-er-diagrams.qmd): attributes inside entity rectangles; arrows for “at most one”; single/double lines for partial/total participation; relationship attributes in a box connected to the diamond by a dashed line. An arrow alone does not mean “exactly one.” Foreign-key columns belong to the later relational mapping.
+
+Use [ER extensions](../lectures/week-08-er-extensions.qmd) only when useful, with correct notation. If using a weak entity, identify its owner, identifying relationship, partial key, and full identity. Extensions are not required for full credit.
+
+## Submit
+
+Upload **one PDF per group** to the Canvas assignment by the posted deadline. Include the brief description and a readable diagram; a separate landscape diagram page is fine. Check key underlines, arrows, and double lines after export. Acknowledge sources and material assistance under course policies, and keep the editable original.
+
+## Rubric — 50 points
+
+The model and description should communicate the same database and rules clearly.
+
+| Criterion | Points | Evidence for full credit |
+|---|---:|---|
+| **Database description** | **10** | Briefly explains the database's purpose and users, what each entity type represents, and the meaning of its relationships. The model supports the stated purpose. |
+| **Entities, attributes, and identification** | **10** | At least five meaningful entities in a connected model; suitable attributes and keys; correct composite or dependent identification where used. Attributes belong to the appropriate entity or relationship. |
+| **Relationships and cardinalities** | **14** | At least four meaningful relationships. Cardinality and participation are correct and briefly explained in both directions, consistently with the diagram. Relevant rules beyond the notation are stated. |
+| **ER notation and conventions** | **10** | Consistent course notation: rectangles, diamonds, key underlines, arrows, and single/double lines. Relationship attributes and any extensions are drawn correctly. |
+| **Clarity and completeness** | **6** | One organized PDF with group identification, a brief description of no more than one page, a readable diagram, consistent names, and acknowledgments where needed. |
+| **Total** | **50** | |
+
+Partial credit reflects the quality and completeness of the work in each category.
+
+Use instructor feedback to revise the model for the next project milestone.

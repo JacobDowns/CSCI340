@@ -1,7 +1,7 @@
 ---
-title: "Compare rows with window functions"
-subtitle: "Keep individual saves while calculating across related saves"
-description: "Use PostgreSQL windows and Polars over-expressions to compute per-row group values and rankings."
+title: "Follow a time series with window functions"
+subtitle: "Running totals, rolling averages, and changes between rows"
+description: "Use PostgreSQL window functions to analyze daily sales without collapsing the original rows."
 author: "CSCI 340"
 toc: true
 toc-depth: 2
@@ -12,111 +12,166 @@ toc-depth: 2
 WEEK 11 · WINDOW FUNCTIONS
 :::
 
-# Can we summarize related rows without losing each row?
+# How can each row show what happened before it?
 
-`GROUP BY` gives one row per group. A window function attaches a result computed over related rows to **each original row**.
+`GROUP BY` combines rows into summaries. A **window function** calculates across related rows while keeping each original row in the result.
 :::
 
-**Previous:** [Lab 3 — Explore bakery sales with SQL and Polars](../activities/week-10-polars-query-lab.qmd). This lecture returns to the eight-row [save-file dataset](../activities/lab-02-video-game-setup.sql) so the window calculations are easy to inspect.
+**Previous:** [Lab 3 — Explore bakery sales with SQL and Polars](../activities/week-10-polars-query-lab.qmd). We will use a small, synthetic daily-sales table so the order of the rows and the calculations are easy to see.
 
-## 1. Choose the result shape
+## 1. Start with one row per store and date
 
-The grouped query `SELECT game_id, MAX(completion_percent) FROM save_file GROUP BY game_id` gives **three rows**, one per game. But what if we need to keep all eight saves and show each save alongside that player's best completion for the same game?
+`daily_sales` records the number of units sold at each store on each recorded date. The pair `(store_id, sale_date)` is unique. Store ST02 has **no row for October 3**.
 
-| Question | One result row means | Number of rows in our data |
+| store_id | sale_date | units |
 |---|---|---:|
-| Best completion **by game** | One game | 3 |
-| Best completion beside **each save** | One save | 8 |
+| ST01 | Oct 1 | 10 |
+| ST01 | Oct 2 | 14 |
+| ST01 | Oct 3 | 12 |
+| ST01 | Oct 4 | 18 |
+| ST02 | Oct 1 | 6 |
+| ST02 | Oct 2 | 10 |
+| ST02 | Oct 4 | 8 |
+| ST02 | Oct 5 | 12 |
 
-## 2. Compute within partitions in PostgreSQL
+<details class="practice-example">
+<summary>Load the example in PostgreSQL</summary>
+
+Run this once in a PostgreSQL session. The temporary table lasts only for that session.
 
 ```sql
-SELECT save_id, player_id, game_id, completion_percent,
-       MAX(completion_percent) OVER (
-           PARTITION BY player_id, game_id
-       ) AS best_completion,
-       ROW_NUMBER() OVER (
-           PARTITION BY player_id, game_id
-           ORDER BY save_id
-       ) AS save_number
-FROM save_file
-ORDER BY save_id;
+CREATE TEMP TABLE daily_sales (
+    store_id text NOT NULL,
+    sale_date date NOT NULL,
+    units integer NOT NULL,
+    PRIMARY KEY (store_id, sale_date)
+);
+
+INSERT INTO daily_sales (store_id, sale_date, units) VALUES
+    ('ST01', DATE '2026-10-01', 10),
+    ('ST01', DATE '2026-10-02', 14),
+    ('ST01', DATE '2026-10-03', 12),
+    ('ST01', DATE '2026-10-04', 18),
+    ('ST02', DATE '2026-10-01',  6),
+    ('ST02', DATE '2026-10-02', 10),
+    ('ST02', DATE '2026-10-04',  8),
+    ('ST02', DATE '2026-10-05', 12);
 ```
 
-| save_id | completion_percent | best_completion | save_number |
-|---:|---:|---:|---:|
-| 1 | 25.00 | 75.00 | 1 |
-| 2 | 50.00 | 75.00 | 2 |
-| 3 | 49.99 | 49.99 | 1 |
-| 4 | 75.00 | 75.00 | 3 |
-| 5 | 80.00 | 100.00 | 1 |
-| 6 | 100.00 | 100.00 | 2 |
-| 7 | `NULL` | 80.00 | 1 |
-| 8 | 80.00 | 80.00 | 2 |
+</details>
 
-- `PARTITION BY` defines the related rows for each calculation; here the pair `(player_id, game_id)`.
-- `MAX(...) OVER (...)` repeats the partition's best completion on each save. `MAX` ignores save 7's missing value.
-- `ROW_NUMBER()` uses `ORDER BY save_id` **inside** the window to number saves. Unique `save_id` values avoid ties.
-- The final `ORDER BY save_id` sorts the displayed result; it does not set the numbering order.
+### Grouped result or row-level result?
 
-**Check together:** If we partitioned only by `game_id`, what would change for save 3? If player 1 saved game 1 again at 90%, which existing rows would change?
+```sql
+SELECT store_id, SUM(units) AS store_total
+FROM daily_sales
+GROUP BY store_id
+ORDER BY store_id;
+```
 
-## 3. Use `.over()` on the loaded DataFrame
+This returns **two rows**: ST01 has 54 units, and ST02 has 36. To show each day's units *beside* its store total, use `OVER`:
 
-Create the eight-row `saves` DataFrame. Its IDs define the partitions:
+```sql
+SELECT store_id, sale_date, units,
+       SUM(units) OVER (PARTITION BY store_id) AS store_total
+FROM daily_sales
+ORDER BY store_id, sale_date;
+```
 
-```python
-import polars as pl
+This returns **eight rows**. The total 54 appears on every ST01 row; 36 appears on every ST02 row. `PARTITION BY` chooses the related rows, and omitting a window `ORDER BY` lets the aggregate see the whole store partition.
 
-saves = pl.DataFrame({
-    "save_id": [1, 2, 3, 4, 5, 6, 7, 8],
-    "player_id": [1, 1, 2, 1, 3, 3, 2, 2],
-    "game_id": [1, 1, 1, 1, 2, 2, 3, 3],
-    "completion_percent": [25.0, 50.0, 49.99, 75.0, 80.0, 100.0, None, 80.0],
-})
+## 2. Add order and a frame
 
-save_detail = (
-    saves.lazy()
-    .with_columns(
-        pl.col("completion_percent")
-          .max().over("player_id", "game_id")
-          .alias("best_completion"),
-        pl.col("save_id")
-          .rank("ordinal").over("player_id", "game_id")
-          .alias("save_number"),
-    )
-    .sort("save_id")
-    .collect()
+For a **running total**, include the current row and every earlier row for that store. For a **three-record rolling average**, include the current row and up to two earlier rows:
+
+```sql
+SELECT store_id, sale_date, units,
+       SUM(units) OVER (
+           PARTITION BY store_id ORDER BY sale_date
+           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+       ) AS running_units,
+       ROUND(AVG(units) OVER (
+           PARTITION BY store_id ORDER BY sale_date
+           ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+       ), 1) AS last_three_avg
+FROM daily_sales
+ORDER BY store_id, sale_date;
+```
+
+| store_id | sale_date | units | running_units | last_three_avg |
+|---|---|---:|---:|---:|
+| ST01 | Oct 1 | 10 | 10 | 10.0 |
+| ST01 | Oct 2 | 14 | 24 | 12.0 |
+| ST01 | Oct 3 | 12 | 36 | 12.0 |
+| ST01 | Oct 4 | 18 | 54 | 14.7 |
+| ST02 | Oct 1 | 6 | 6 | 6.0 |
+| ST02 | Oct 2 | 10 | 16 | 8.0 |
+| ST02 | Oct 4 | 8 | 24 | 8.0 |
+| ST02 | Oct 5 | 12 | 36 | 10.0 |
+
+- **Partition:** the calculation restarts for each `store_id`.
+- **Order:** `sale_date` puts each store's records in sequence. The primary key guarantees one row per store and date, so there are no ties to break.
+- **Frame:** `ROWS BETWEEN ...` selects the rows the aggregate sees. Early rows use the observations available so far.
+- **Display:** the final `ORDER BY` sorts the output; the `ORDER BY` inside `OVER` controls the calculation.
+
+To average **all observations so far** instead, change the average's frame start from `2 PRECEDING` to `UNBOUNDED PRECEDING`.
+
+::: {.callout-note appearance="simple"}
+**Three records are not always three calendar days.** ST02's October 4 average uses October 1, 2, and 4 because October 3 has no row. `ROWS` counts observations. We specify the frame explicitly; PostgreSQL's default frame with a window `ORDER BY` can also include rows tied on the ordering value.
+:::
+
+## 3. Compare with the previous recorded row
+
+`LAG(units)` returns the prior value **within the same store**, in date order. The CTE names that value so we can subtract it in the outer query:
+
+```sql
+WITH previous_sale AS (
+    SELECT store_id, sale_date, units,
+           LAG(sale_date) OVER (
+               PARTITION BY store_id ORDER BY sale_date
+           ) AS previous_date,
+           LAG(units) OVER (
+               PARTITION BY store_id ORDER BY sale_date
+           ) AS previous_units
+    FROM daily_sales
 )
+SELECT store_id, sale_date, units, previous_date, previous_units,
+       units - previous_units AS change_in_units
+FROM previous_sale
+ORDER BY store_id, sale_date;
 ```
 
-Polars' `.over(...)` plays the role of SQL's `PARTITION BY`. Ranking the **unique** `save_id` gives the same numbers as `ROW_NUMBER() ... ORDER BY save_id` in this example. `saves.lazy()` builds a query plan, and `.collect()` runs it. If `saves` came from a PostgreSQL query, this Polars calculation would run on rows already brought into Python.
+- ST01's October 3 change is `12 - 14 = -2` units.
+- ST02's October 4 change is `8 - 10 = -2`; its previous **recorded** date is October 2.
+- The first row for each store has no previous row, so `previous_units` and the difference are `NULL`.
 
-## 4. Filter after the window calculation
+`LEAD` looks forward instead; `LAG(units, 2)` looks two recorded rows back. Neither implies a fixed amount of clock time when dates are missing.
 
-Window functions cannot go directly in PostgreSQL's `WHERE` clause. To show only the most recent save by each player for each game, number first, then filter the CTE result:
+## 4. Another use: choose one row per group
+
+To find each store's highest-sales date, number its rows from highest to lowest units. A date breaks any tie:
 
 ```sql
-WITH numbered_saves AS (
-    SELECT save_id, player_id, game_id,
+WITH ranked_days AS (
+    SELECT store_id, sale_date, units,
            ROW_NUMBER() OVER (
-               PARTITION BY player_id, game_id
-               ORDER BY save_id DESC
-           ) AS newest_first
-    FROM save_file
+               PARTITION BY store_id
+               ORDER BY units DESC, sale_date
+           ) AS position
+    FROM daily_sales
 )
-SELECT player_id, game_id, save_id
-FROM numbered_saves
-WHERE newest_first = 1
-ORDER BY player_id, game_id;
+SELECT store_id, sale_date, units
+FROM ranked_days
+WHERE position = 1
+ORDER BY store_id;
 ```
 
-Expected save IDs: **4, 3, 8, 6** in `(player_id, game_id)` order. `save_id` stands in for recency here; in a real application, order by `saved_at` and use `save_id` to break ties.
+The result is **ST01 on October 4 (18 units)** and **ST02 on October 5 (12 units)**. PostgreSQL cannot use a window function directly in `WHERE`; calculate it in a CTE, then filter the CTE's rows. `RANK()` and `DENSE_RANK()` are alternatives when tied values should share a rank.
 
 ::: {.takeaway-panel}
-## Group or window?
+## Choose the rows each calculation can see
 
-Use `GROUP BY` when one result row should represent a group. Use `OVER (PARTITION BY ...)` or Polars `.over(...)` when each original row needs a value derived from its group.
+Use `GROUP BY` for one row per group. Use a window when the original rows must remain: **partition** by the group, **order** time-sensitive calculations, and choose an explicit **frame** for running or rolling aggregates.
 :::
 
-**Reading:** *Database System Concepts*, 7th ed., [Advanced SQL slides](https://www.db-book.com/slides-dir/PDF-dir/ch5.pdf); [PostgreSQL window tutorial](https://www.postgresql.org/docs/current/tutorial-window.html); [Polars window guide](https://docs.pola.rs/user-guide/expressions/window-functions/).
+**Reading:** *Database System Concepts*, 7th ed., [Advanced SQL slides](https://www.db-book.com/slides-dir/PDF-dir/ch5.pdf); [PostgreSQL window tutorial](https://www.postgresql.org/docs/current/tutorial-window.html) and [window function reference](https://www.postgresql.org/docs/current/functions-window.html).

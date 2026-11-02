@@ -56,4 +56,4 @@ Lecture pages provide the course narrative. Related practice and submissions app
 
 ## Week 11
 
-- [Compare rows with window functions](week-11-window-functions.qmd) — Keep individual saves while calculating and ranking within groups in SQL and Polars.
+- [Follow a time series with window functions](week-11-window-functions.qmd) — Use daily sales to calculate running totals, rolling averages, previous-row changes, and rankings in PostgreSQL.

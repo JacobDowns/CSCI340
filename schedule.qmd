@@ -83,7 +83,7 @@ Recursive queries can wait until a later class if the project work needs more ti
 
 ### Week 11 (November 2-6) - Window functions and query performance
 
-- [Compare rows with window functions](lectures/week-11-window-functions.qmd) in PostgreSQL and Polars.
+- [Follow a time series with window functions](lectures/week-11-window-functions.qmd) in PostgreSQL.
 - Begin storage, indexes, and query plans: pages and records, B-trees, scans, selectivity, and reading `EXPLAIN` output. Continue this thread later with join algorithms and more detailed plan choices.
 - Reserve one meeting for project work.
 

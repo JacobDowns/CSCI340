@@ -36,6 +36,10 @@ Labs and activities are short exercises that make the course ideas concrete. Eac
 
 - [Lab 3 — Explore bakery sales with SQL and Polars](week-10-polars-query-lab.qmd): download a notebook that fetches the bakery dataset, answer filtering and aggregation questions in both SQL and Polars, and compare the results.
 
+## Project workdays
+
+- [Project milestone 1 — Database purpose and ER design](../projects/er-design-checkpoint.qmd): finish your group's ER model and briefly describe its purpose, entities, relationships, and cardinalities. This is a graded project checkpoint with a 50-point rubric and instructor feedback.
+
 ## Submission principle
 
 Lab submissions are deliberately small. They should preserve enough reasoning that the instructor can see what you tried, what you concluded, and which assumptions remain unresolved. The detailed submission location and deadline will be announced with each offering.

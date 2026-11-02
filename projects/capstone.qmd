@@ -9,6 +9,8 @@ The project revisits one authentic data problem throughout the semester. The goa
 
 Begin with [Activity 5 — Database project brainstorming](../activities/week-07-project-brainstorming.qmd) to choose a topic with your group and describe its purpose, users, entities, relationships, and open modeling questions.
 
+For the first graded design checkpoint, complete [Project milestone 1 — Database purpose and ER design](er-design-checkpoint.qmd): submit your finalized ER diagram with a brief description of the database, its entities and relationships, and relationship cardinalities. The milestone includes a 50-point rubric and instructor feedback for revision.
+
 ::: {.design-question}
 Your final claim should answer: Why is this representation and division of work appropriate for the stated users, rules, and workload?
 :::

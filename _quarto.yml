@@ -10,6 +10,7 @@ project:
     - "activities/week-07-er-modeling-activity.docx"
     - "activities/week-07-er-modeling-activity.pdf"
     - "activities/week-07-project-brainstorming.docx"
+    - "projects/er-design-checkpoint.pdf"
     - "study-guides/csci340-midterm-study-guide.pdf"
     - "study-guides/csci340-midterm-study-guide.docx"
     - "review-game/game.css"
@@ -129,6 +130,7 @@ website:
           - assignments/assignment-02-relational-algebra-practice.qmd
           - assignments/assignment-03-escape-room-data-changes.qmd
           - projects/capstone.qmd
+          - projects/er-design-checkpoint.qmd
   page-footer:
     left: "CSCI 340 | Database Systems and Data Management"
     right: "Built with Quarto"
