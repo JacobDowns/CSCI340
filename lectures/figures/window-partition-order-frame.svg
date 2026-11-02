@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="640" viewBox="0 0 1160 640" role="img" aria-labelledby="title desc">
+<title id="title">Partition, order, and frame in a sales window</title>
+<desc id="desc">Three store partitions each contain five sales rows ordered by date. The current row is ST02 on October 12. Within ST02, a three-row frame contains October 4, 5, and 12, while a seven-day range frame contains October 5 and 12. Neither frame includes rows from other stores.</desc>
+<rect x="1" y="1" width="1158" height="638" rx="12" fill="#ffffff" stroke="#d7e2e6" stroke-width="1"/>
+<text x="34" y="43" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" text-anchor="start">How a window selects rows</text>
+<text x="35" y="82" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" text-anchor="start">1  PARTITION BY store_id</text>
+<text x="300" y="82" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" text-anchor="start">2  ORDER BY sale_date: earlier  →  later</text>
+<rect x="35" y="99" width="1090" height="78" rx="10" fill="#f0f7f9" stroke="#b8cbd1" stroke-width="1.5"/>
+<text x="58" y="132" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" text-anchor="start">ST01</text>
+<text x="58" y="155" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" text-anchor="start">partition</text>
+<rect x="235" y="110" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="313.5" y="133" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 1</text>
+<text x="313.5" y="153" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">10 units</text>
+<rect x="409" y="110" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="487.5" y="133" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 2</text>
+<text x="487.5" y="153" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">14 units</text>
+<rect x="583" y="110" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="661.5" y="133" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 3</text>
+<text x="661.5" y="153" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">12 units</text>
+<rect x="757" y="110" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="835.5" y="133" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 4</text>
+<text x="835.5" y="153" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">18 units</text>
+<rect x="931" y="110" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="1009.5" y="133" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 10</text>
+<text x="1009.5" y="153" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">16 units</text>
+<rect x="35" y="191" width="1090" height="78" rx="10" fill="#fff9ec" stroke="#b7791f" stroke-width="2"/>
+<text x="58" y="224" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" text-anchor="start">ST02</text>
+<text x="58" y="247" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" text-anchor="start">partition</text>
+<rect x="235" y="202" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="313.5" y="225" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 1</text>
+<text x="313.5" y="245" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">6 units</text>
+<rect x="409" y="202" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="487.5" y="225" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 2</text>
+<text x="487.5" y="245" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">10 units</text>
+<rect x="583" y="202" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="661.5" y="225" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 4</text>
+<text x="661.5" y="245" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">8 units</text>
+<rect x="757" y="202" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="835.5" y="225" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 5</text>
+<text x="835.5" y="245" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">12 units</text>
+<rect x="931" y="202" width="157" height="55" rx="7" fill="#fff7e6" stroke="#a45a0a" stroke-width="2.5"/>
+<text x="1009.5" y="225" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" text-anchor="middle">Oct 12</text>
+<text x="1009.5" y="245" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">9 units</text>
+<rect x="35" y="283" width="1090" height="78" rx="10" fill="#f0f7f9" stroke="#b8cbd1" stroke-width="1.5"/>
+<text x="58" y="316" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" text-anchor="start">ST03</text>
+<text x="58" y="339" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" text-anchor="start">partition</text>
+<rect x="235" y="294" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="313.5" y="317" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 1</text>
+<text x="313.5" y="337" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">9 units</text>
+<rect x="409" y="294" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="487.5" y="317" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 2</text>
+<text x="487.5" y="337" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">9 units</text>
+<rect x="583" y="294" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="661.5" y="317" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 3</text>
+<text x="661.5" y="337" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">13 units</text>
+<rect x="757" y="294" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="835.5" y="317" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 5</text>
+<text x="835.5" y="337" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">13 units</text>
+<rect x="931" y="294" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="1009.5" y="317" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 15</text>
+<text x="1009.5" y="337" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">11 units</text>
+<text x="35" y="406" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700" text-anchor="start">3  Choose a frame for the current row: ST02 · Oct 12</text>
+<rect x="35" y="425" width="527" height="154" rx="10" fill="#f8fbfc" stroke="#b8cbd1" stroke-width="1.5"/>
+<text x="55" y="454" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" text-anchor="start">ROWS: current + two previous records</text>
+<rect x="55" y="468" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="133.5" y="491" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 4</text>
+<text x="133.5" y="511" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">8 units</text>
+<rect x="219" y="468" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="297.5" y="491" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 5</text>
+<text x="297.5" y="511" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">12 units</text>
+<rect x="383" y="468" width="157" height="55" rx="7" fill="#fff7e6" stroke="#a45a0a" stroke-width="2.5"/>
+<text x="461.5" y="491" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" text-anchor="middle">Oct 12</text>
+<text x="461.5" y="511" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">9 units</text>
+<text x="55" y="565" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" text-anchor="start">8 + 12 + 9 = 29 units</text>
+<rect x="578" y="425" width="547" height="154" rx="10" fill="#fffaf0" stroke="#b7791f" stroke-width="1.5"/>
+<text x="598" y="454" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" text-anchor="start">RANGE: current date back seven days</text>
+<rect x="598" y="468" width="157" height="55" rx="7" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.2"/>
+<text x="676.5" y="491" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Oct 5</text>
+<text x="676.5" y="511" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">12 units</text>
+<rect x="762" y="468" width="157" height="55" rx="7" fill="#fff7e6" stroke="#a45a0a" stroke-width="2.5"/>
+<text x="840.5" y="491" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" text-anchor="middle">Oct 12</text>
+<text x="840.5" y="511" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" text-anchor="middle">9 units</text>
+<text x="598" y="565" fill="#173b4d" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" text-anchor="start">12 + 9 = 21 units</text>
+<text x="35" y="612" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start">Both frames stay inside the ST02 partition; the frame changes when the current row changes.</text>
+</svg>
