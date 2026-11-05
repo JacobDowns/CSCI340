@@ -14,6 +14,10 @@ Assignments build on the week-by-week lecture material. Due dates and submission
 
 - [Assignment 3 - Escape room database changes](assignment-03-escape-room-data-changes.qmd): insert, update, and delete data in your Activity 3 tables, test constraints, and explain the results.
 
+## Week 11
+
+- [Assignment 4 — Coffee sales window-function puzzles](assignment-04-coffee-window-functions.qmd): complete window queries over daily sales and drink categories, then inspect the provided plots.
+
 ## Semester-long
 
 - [Semester project](../projects/capstone.qmd): develop a defensible data architecture around an authentic dataset and workload.

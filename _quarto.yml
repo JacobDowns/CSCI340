@@ -3,6 +3,7 @@ project:
   output-dir: _site
   resources:
     - "notebooks/assignment-01-relational-operators-starter.ipynb"
+    - "notebooks/assignment-04-coffee-window-functions.ipynb"
     - "notebooks/lab-03-bakery-sql-polars.ipynb"
     - "assignments/week-05-escape-room-data-changes.docx"
     - "activities/lab-02-video-game-setup.sql"
@@ -129,6 +130,7 @@ website:
           - assignments/assignment-01-relational-operators.qmd
           - assignments/assignment-02-relational-algebra-practice.qmd
           - assignments/assignment-03-escape-room-data-changes.qmd
+          - assignments/assignment-04-coffee-window-functions.qmd
           - projects/capstone.qmd
           - projects/er-design-checkpoint.qmd
   page-footer:

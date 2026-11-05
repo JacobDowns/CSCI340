@@ -1,0 +1,13 @@
+---
+title: "Assignment 4 — Coffee sales window-function puzzles"
+subtitle: "Complete SQL windows and inspect the resulting trends"
+description: "A notebook assignment using coffee vending-machine sales to practice running totals, rolling averages, LAG, and ranking."
+---
+
+Complete four window-function queries in the notebook. The setup downloads a fixed version of a [coffee vending-machine sales dataset](https://www.kaggle.com/datasets/ihelon/coffee-sales) and prepares daily and monthly summaries. Plotting code is provided so you can see what your queries reveal.
+
+[Download the assignment notebook](../notebooks/assignment-04-coffee-window-functions.ipynb){download="assignment-04-coffee-window-functions.ipynb" .btn .btn-primary}
+
+Begin during the class workday and finish independently. Run the completed queries and plots, write the brief observations requested in the notebook, and submit the notebook through Canvas. Puzzle 5 is an optional extension; see Canvas for the due date.
+
+The first run needs internet access to download the public dataset and any missing Python packages. The notebook contains all other setup instructions.
