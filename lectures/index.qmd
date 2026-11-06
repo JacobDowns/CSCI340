@@ -57,3 +57,7 @@ Lecture pages provide the course narrative. Related practice and submissions app
 ## Week 11
 
 - [Follow a time series with window functions](week-11-window-functions.qmd) — Use daily sales to calculate running totals, rolling averages, previous-row changes, and rankings in PostgreSQL.
+
+## Week 12
+
+- [Putting each fact in the right table](week-12-normalization.qmd) — Use functional dependencies and update anomalies to decide where facts belong, then check that a decomposition preserves information.

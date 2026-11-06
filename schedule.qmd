@@ -59,11 +59,11 @@ Practice with [Activity 4 — ER relationships](activities/week-07-er-relationsh
 
 Continue with [Relationship keys and mapping ER models to relations](lectures/week-07-er-keys-and-cardinality.qmd): derive each relationship's key and use it to choose a separate relation or foreign-key columns in an entity relation. Preserve cardinality and participation with primary keys, foreign keys, uniqueness, and nullability, then apply the same reasoning to Activity 4. Reserve minimum–maximum notation and weak entities for a later lecture on ER extensions.
 
-### Week 8 (October 12-16) - ER extensions, dependencies, and normalization
+### Week 8 (October 12-16) - ER extensions
 
 Complete ER modeling with [Finishing the ER model](lectures/week-08-er-extensions.qmd): weak entities, specialization, higher-order relationships, and aggregation. Compare textbook aggregation with an explicit entity representing an association, and preserve the original constraints when changing representations.
 
-Then introduce functional dependencies, candidate keys, anomalies, 3NF, BCNF, lossless decomposition, and dependency preservation. No class Monday, October 12, because of Indigenous Peoples' Day.
+Normalization follows in Week 12. No class Monday, October 12, because of Indigenous Peoples' Day.
 
 ### Week 9 (October 19-23) - Review and midterm examination
 
@@ -81,27 +81,27 @@ For the in-class review, use the [midterm review Jeopardy board](midterm-review-
 
 Recursive queries can wait until a later class if the project work needs more time.
 
-### Week 11 (November 2-6) - Window functions and query performance
+### Week 11 (November 2-6) - Window functions
 
 - [Follow a time series with window functions](lectures/week-11-window-functions.qmd) in PostgreSQL.
-- Begin storage, indexes, and query plans: pages and records, B-trees, scans, selectivity, and reading `EXPLAIN` output. Continue this thread later with join algorithms and more detailed plan choices.
+- Introduce [Assignment 4 — Coffee sales window-function puzzles](assignments/assignment-04-coffee-window-functions.qmd), with class time to begin the notebook.
 - Reserve one meeting for project work.
 
-### Week 12 (November 9-13) - Transactions and concurrency
+### Week 12 (November 9-13) - Normalization and project schema revision
 
-Develop atomicity, isolation, consistency, durability, schedules, anomalies, serializability, isolation levels, locking, and MVCC. No class Wednesday, November 11, because of Veterans Day observed.
+Use [Putting each fact in the right table](lectures/week-12-normalization.qmd) to identify functional dependencies and update anomalies, split a wide table, and check that joins recover its information. Apply the same questions to project schemas during a work meeting. No class Wednesday, November 11, because of Veterans Day observed.
 
-### Week 13 (November 16-20) - Analytical systems and cross-engine comparison
+### Week 13 (November 16-20) - Transactions and concurrency
 
-Compare OLTP and OLAP, row and column layouts, Parquet, DuckDB, Polars, projection/filter pushdown, and data-movement tradeoffs across systems.
+Develop transactions through a concrete multi-step update: `BEGIN`, `COMMIT`, `ROLLBACK`, ACID properties, concurrent changes, and the practical meaning of isolation. Use a second session or short exercise to observe a concurrency issue, and reserve a meeting for project work.
 
-### Week 14 (November 23-27) - Spatial database foundations
+### Week 14 (November 23-27) - Storage and indexes, part 1
 
-Introduce spatial types, geometry versus geography, coordinate reference systems, and spatial predicates. Instruction is limited this week because Wednesday, November 25 is a non-instructional travel day and November 26-27 is Thanksgiving holiday.
+Introduce pages, records, table scans, and the basic idea of a B-tree index. Instruction is limited this week because Wednesday, November 25 is a non-instructional travel day and November 26-27 is Thanksgiving holiday.
 
-### Week 15 (November 30-December 4) - Spatial joins, integration, and review
+### Week 15 (November 30-December 4) - Storage and indexes, part 2; integration and review
 
-Develop PostGIS spatial joins and indexes, selected broader database architectures, and final synthesis across correctness, query behavior, performance, and representation.
+Use PostgreSQL `EXPLAIN` to compare scans before and after adding an index, including when an index is not useful. Reserve time for project integration and final review. Analytical file formats or spatial examples can be revisited if time permits.
 
 ## Final examination
 

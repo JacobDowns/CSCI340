@@ -98,6 +98,9 @@ website:
           - section: Week 11
             contents:
               - lectures/week-11-window-functions.qmd
+          - section: Week 12
+            contents:
+              - lectures/week-12-normalization.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd

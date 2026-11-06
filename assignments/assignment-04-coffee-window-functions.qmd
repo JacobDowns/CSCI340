@@ -4,7 +4,7 @@ subtitle: "Complete SQL windows and inspect the resulting trends"
 description: "A notebook assignment using coffee vending-machine sales to practice running totals, rolling averages, LAG, ranking, and NTILE."
 ---
 
-Complete all six window-function puzzles in the notebook (**30 points total; 5 points each**). The setup downloads a fixed version of a [coffee vending-machine sales dataset](https://www.kaggle.com/datasets/ihelon/coffee-sales) and prepares daily and monthly summaries. Plotting code is provided so you can see what your queries reveal.
+Complete all seven window-function puzzles in the notebook (**35 points total; 5 points each**). The setup downloads a fixed version of a [coffee vending-machine sales dataset](https://www.kaggle.com/datasets/ihelon/coffee-sales) and prepares daily and monthly summaries. Plotting code is provided so you can see what your queries reveal.
 
 [Download the assignment notebook](../notebooks/assignment-04-coffee-window-functions.ipynb){download="assignment-04-coffee-window-functions.ipynb" .btn .btn-primary}
 
