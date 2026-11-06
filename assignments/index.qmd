@@ -16,7 +16,7 @@ Assignments build on the week-by-week lecture material. Due dates and submission
 
 ## Week 11
 
-- [Assignment 4 — Coffee sales window-function puzzles](assignment-04-coffee-window-functions.qmd): complete window queries over daily sales and drink categories, then inspect the provided plots.
+- [Assignment 4 — Coffee sales window-function puzzles](assignment-04-coffee-window-functions.qmd): complete running-total, rolling-average, `LAG`, ranking, and `NTILE` queries, then inspect the provided plots.
 
 ## Semester-long
 
