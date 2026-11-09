@@ -17,7 +17,7 @@ WEEK 12 · NORMALIZATION
 A table can have a primary key and still repeat facts that belong elsewhere. **Normalization** uses the rules of the domain to decide which facts should be stored together.
 :::
 
-**Previous:** [Finishing the ER model](week-08-er-extensions.qmd) and [window functions](week-11-window-functions.qmd). Today we return to design before adding more behavior to the project database.
+**Previous:** [Finishing the ER model](week-08-er-extensions.qmd) and [window functions](week-11-window-functions.qmd). Today we return to schema design.
 
 ## 1. A report is not always a good base table
 
@@ -38,12 +38,56 @@ This is a useful **query result**. As a stored `save_report` table, it repeats t
 ::: {.callout-important appearance="simple"}
 ### The design question
 
-For each column, ask: **What identifies the fact represented by this value?** A username describes a player; a title describes a game; a save time describes one save.
+**What identifies each fact?** A username describes a player; a title describes a game; a save time describes one save.
 :::
 
 ## 2. Express the rules as dependencies
 
-A **functional dependency** `X → Y` means that, in every valid database state, a given `X` value has only one associated `Y` value. It does **not** mean that `X` and `Y` happen to line up in the few rows we inspected.
+::: {.callout-tip appearance="simple" icon="false"}
+### Definition: Functional dependency
+
+A **functional dependency** `X → Y` means that a given `X` value has only one associated `Y` value in **every valid database state**. Agreement in a sample alone does not establish the rule.
+
+`X` can contain several attributes. For `(A, C) → D`, rows that agree on **both** `A` and `C` must agree on `D`.
+:::
+
+### Try it: inspect one table instance
+
+For each proposed dependency, decide whether it holds **in the rows shown**. When it fails, identify two rows with the same value on the left and different values on the right.
+
+| A | B | C | D |
+|---:|---|---|---:|
+| 1 | x | red | 10 |
+| 1 | x | blue | 11 |
+| 2 | y | red | 12 |
+| 2 | y | blue | 13 |
+| 3 | z | red | 14 |
+
+1. `A → B`
+2. `B → C`
+3. `C → B`
+4. `A → D`
+5. `D → A`
+6. `(A, C) → D`
+
+Which dependencies can you claim as rules for **every valid database state**?
+
+<details class="practice-example">
+<summary>Check the row-by-row answers</summary>
+
+1. **Holds here:** every repeated `A` value has the same `B` value.
+2. **Fails:** `B = x` appears with both `C = red` and `C = blue`.
+3. **Fails:** `C = red` appears with both `B = x` and `B = z`.
+4. **Fails:** `A = 1` appears with both `D = 10` and `D = 11`.
+5. **Holds here:** each `D` value appears only once.
+6. **Holds here:** each `(A, C)` pair has only one `D` value. Neither attribute alone is enough: `A = 1` has two `D` values, and `C = red` has several. The **combination** determines `D` in these rows.
+
+- A counterexample **disproves** a dependency for this instance.
+- Agreement here cannot **establish** a rule for all valid data. We need the attributes' meanings and domain constraints.
+
+</details>
+
+### Apply the rules to save data
 
 For the save data, assume:
 
@@ -53,7 +97,9 @@ For the save data, assume:
 | `player_id → username` | A player ID identifies one account name. |
 | `game_id → title` | A game ID identifies one game title. |
 
-The first rule makes `save_id` a key for the wide table. Yet `player_id → username` and `game_id → title` show that **non-key IDs also determine stored facts**. Because one player can have many saves, `player_id → save_id` does not hold.
+- `save_id` determines all columns, so it is a key for the wide table.
+- **Non-key IDs also determine facts:** `player_id → username` and `game_id → title`.
+- `player_id → save_id` fails because one player can have many saves.
 
 ### Direct and transitive dependencies
 
@@ -65,7 +111,7 @@ flowchart LR
     save --> player["player_id"] --> username["username"]
 ```
 
-The save ID determines both the title and username **indirectly**. In `save_report`, these values repeat because `game_id` and `player_id` already identify those facts.
+The save ID determines the title and username **indirectly**. Storing them with each save repeats facts already determined by the game and player IDs.
 
 ### Try it: which dependencies hold?
 
@@ -96,7 +142,7 @@ Store each fact under the ID that determines it:
 | `video_game` | `game_id` | `title`, `studio_name`, `released_on` |
 | `save_file` | `save_id` | `player_id`, `game_id`, `saved_at`, `completion_percent` |
 
-The existing [Lab 2 setup](../activities/lab-02-video-game-setup.sql) uses this structure. Its `save_file.player_id` and `save_file.game_id` are non-null foreign keys. We can still produce the original report when needed:
+The [Lab 2 setup](../activities/lab-02-video-game-setup.sql) uses this structure, with non-null foreign keys from each save to its player and game. Reconstruct the report with joins:
 
 ```sql
 SELECT s.save_id, s.player_id, p.username,
@@ -107,21 +153,35 @@ JOIN video_game AS g ON g.game_id = s.game_id
 ORDER BY s.save_id;
 ```
 
-Each save joins to exactly one player and one game under these key and foreign-key rules. The join recovers the report without storing repeated names and titles in `save_file`.
+Each save joins to exactly one player and one game, recovering the report without storing their names in `save_file`.
 
 ::: {.callout-note appearance="simple"}
-**A good decomposition is lossless:** joining the new tables can reconstruct the original facts without inventing or dropping save rows. Splitting on a shared value that is not a key, such as a non-unique title, may create false combinations.
+**A good decomposition is lossless:** joining the new tables reconstructs the original facts without inventing or dropping rows.
+
+Join on keys: a shared, non-unique title could create false combinations.
 :::
 
 ## 4. Recognize 1NF, 2NF, and 3NF
 
-A **candidate key** is a minimal set of columns that identifies a row. A **non-key attribute** here is one that belongs to no candidate key. Each normal form builds on the previous one.
+Each normal form builds on the previous one.
+
+::: {.callout-tip appearance="simple" icon="false"}
+### Definitions: Keys and prime attributes
+
+- **Candidate key:** a minimal set of columns that identifies a row.
+- **Prime attribute:** an attribute that belongs to at least one candidate key, even if that key was not chosen as the primary key.
+- **Non-prime attribute:** an attribute that belongs to no candidate key; called **non-key** in the examples below.
+:::
 
 ### 1NF: one value of the intended kind per cell
 
-**Definition:** A table is in **first normal form** when each attribute's domain is treated as atomic: a cell holds one value of that attribute, not a list we must parse.
+::: {.callout-tip appearance="simple" icon="false"}
+### Definition: First normal form (1NF)
 
-Suppose `video_game(game_id, title, genre_ids)` stores `genre_ids = '2,5'` for one game. This string contains **two genre IDs**, so it is not one value of the intended `genre_id` domain. Store the game once and each association once:
+A table is in **first normal form** when each attribute's domain is treated as atomic: a cell holds one value of that attribute, not a list we must parse.
+:::
+
+Suppose `video_game(game_id, title, genre_ids)` stores `genre_ids = '2,5'`. That cell contains **two genre IDs**. Give each game–genre association its own row:
 
 ```text
 video_game(game_id, title)
@@ -131,12 +191,21 @@ game_genre(game_id, genre_id)     -- one row per game–genre pair
 **Check:** Can we add, remove, or reference one genre without parsing a comma-separated string? The second design can.
 
 ::: {.callout-note appearance="simple"}
-“Atomic” depends on how a value is used. PostgreSQL can store arrays and JSON; those types are not automatically design mistakes. If individual elements need their own relationships or constraints, separate rows are usually the clearer relational design.
+**Why default to one value?**
+
+- Query and update each association directly.
+- Use a foreign key to check each `genre_id`; it cannot check IDs buried in a comma-separated string.
+
+**When is a collection reasonable?** Arrays or JSON suit data stored and retrieved **as a unit**, such as a saved API response. Use separate rows when members need their own foreign keys, relationships, or frequent updates. “Atomic” depends on the intended use.
 :::
 
 ### 2NF: depend on the whole key
 
-**Definition:** A table is in **second normal form** when it is in 1NF and no non-key attribute depends on only **part of a candidate key**. This issue is easiest to see with a composite key.
+::: {.callout-tip appearance="simple" icon="false"}
+### Definition: Second normal form (2NF)
+
+A table is in **second normal form** when it is in 1NF and no non-key attribute depends on only **part of a candidate key**.
+:::
 
 Imagine `player_game_library(player_id, game_id, username, title, added_at)`, with one **current** row per player–game pair:
 
@@ -146,19 +215,29 @@ Imagine `player_game_library(player_id, game_id, username, title, added_at)`, wi
 | 1 | 2 | pixel_fox | Mosslight | Sep 3 |
 | 2 | 1 | moss_runner | Starfall Cartographers | Sep 4 |
 
+`(player_id, game_id)` is a **candidate key**. Neither ID alone identifies a row: players can have several games, and games can appear in several players' libraries.
+
 | Dependency | What it tells us |
 |---|---|
 | `(player_id, game_id) → added_at` | The pair identifies this library entry's date. |
-| `player_id → username` | The username depends on only one part of the pair. |
-| `game_id → title` | The title depends on the other part. |
+| `player_id → username` | Non-key `username` depends on only the `player_id` part. |
+| `game_id → title` | Non-key `title` depends on only the `game_id` part. |
 
-Move `username` to `player_account` and `title` to `video_game`; keep `(player_id, game_id, added_at)` in the library table. That removes the **partial dependencies** from the library table.
+The last two rules are **partial dependencies**, so the table **violates 2NF**. By contrast, `added_at` describes the particular player–game pair and depends on the whole key.
+
+**Problems caused by the repeated names and titles:**
+
+- **Update:** a rename requires changing multiple library rows.
+- **Insert:** a game with no library entries has no place to store its title.
+- **Delete:** removing the last library entry for a game can erase its title.
+
+**Fix:** move `username` to `player_account` and `title` to `video_game`; keep `(player_id, game_id, added_at)` in the library table. Each name is stored once, independently of library entries.
 
 ::: {.callout-important appearance="simple"}
-Adding a new `library_id` column would give the wide table a one-column primary key, but it would **not remove** `player_id → username` or `game_id → title`. It may change which normal-form label applies, but it does not fix duplicated facts.
+**A new ID does not fix the dependencies.** If the player–game pair remains unique and minimal, it is still a candidate key even when `library_id` is the primary key. 2NF checks **all candidate keys**, so the partial dependencies remain.
 :::
 
-This example assumes one current library entry per pair. If removing and later re-adding a game creates a new historical entry, the pair is no longer a key; choose the right identity before normalizing.
+**Scope:** one current entry per pair. If re-adding a game creates another historical row, the pair is no longer a key.
 
 ### Try it: is `game_genre` in 2NF?
 
@@ -170,25 +249,60 @@ Suppose `game_genre(game_id, genre_id, genre_name, tagged_at)` has primary key `
 <details class="practice-example">
 <summary>Check the 2NF answer</summary>
 
-`genre_id → genre_name`, so `genre_name` depends on just one part of the key. The table is in 1NF but **not 2NF**. Move the name to `genre(genre_id, genre_name)`; keep `(game_id, genre_id, tagged_at)` in `game_genre`. The timestamp depends on the whole pair.
+- **Not 2NF:** `genre_id → genre_name` determines a non-key attribute using only part of the key.
+- **Split:** `genre(genre_id, genre_name)` and `game_genre(game_id, genre_id, tagged_at)`.
+- **Keep the timestamp:** it depends on the whole game–genre pair.
 
 </details>
 
-### 3NF: avoid a non-key detour
+### 3NF: address transitive dependencies
 
-**Full definition, in words:** A table in 1NF is in **third normal form** when, for every functional dependency that holds (including one implied by other rules), at least one of these is true:
+Return to `save_report(save_id, player_id, username, game_id, title, saved_at)`. Assume its **only candidate key is `save_id`**.
 
-- The determined column is already among the determining columns. This is a **trivial** rule.
-- The determining columns form a **superkey**: together they identify a row, though they need not be minimal.
-- The determined column belongs to **some candidate key**.
+- **It meets 2NF:** the key has one column, so there are no partial dependencies.
+- **A problem remains:** `game_id → title` repeats a game's title in every save for that game.
 
-The last condition is a narrow exception to the practical shortcut “a non-key fact should not depend on another non-key fact.” A table in 3NF also meets 2NF. For today's examples, the shortcut identifies the problems without needing a formal proof.
+```{mermaid}
+flowchart LR
+    save["save_id<br/>(candidate key)"] --> game["game_id<br/>(non-prime)"] --> title["title<br/>(non-prime)"]
+```
 
-Apply the full rule to `save_report`:
+The title depends on `save_id` **transitively, through `game_id`**. This is the **non-key detour**: the key determines a non-prime attribute, which determines another non-prime attribute.
+
+**The same anomalies remain despite meeting 2NF:**
+
+- **Update:** renaming a game requires changing multiple saves.
+- **Insert:** a game with no saves has no place to store its title.
+- **Delete:** removing a game's last save can erase its title.
+
+3NF adds a test that catches this dependency.
+
+::: {.callout-tip appearance="simple" icon="false"}
+### Definition: Third normal form (3NF)
+
+A table in 1NF is in **third normal form** if, for every **non-trivial** functional dependency `X → Y` (including implied ones), at least one condition holds:
+
+- `X` is a **superkey**: it identifies a whole row, though it need not be minimal.
+- `Y` is a **prime attribute**: it belongs to some candidate key.
+
+Here, `X` can be one or more columns; `Y` is a single column. Check a dependency with several columns on the right one column at a time.
+:::
+
+**Non-trivial** means `Y` is not already part of `X`. For example, `(player_id, game_id) → player_id` is trivial and needs no further check.
+
+**Apply the definition to the example:**
 
 - `save_id → game_id` is allowed because `save_id` is a superkey.
-- `game_id → title` is a **3NF violation**: `game_id` does not identify a save row, and `title` belongs to no candidate key for `save_report`.
-- The same reasoning applies to `player_id → username`. The three-table design in Section 3 removes these transitive dependencies.
+- `game_id → title` is a **3NF violation**: `game_id` is not a superkey for `save_report`, and `title` is non-prime. Neither condition holds.
+- The same reasoning applies to `player_id → username`.
+
+**Fix:** the split in Section 3 moves `title` to `video_game` and `username` to `player_account`. Each descriptive fact is stored under its own determinant; foreign keys in `save_file` preserve the connections.
+
+::: {.callout-note appearance="simple"}
+**2NF removes partial dependencies; 3NF also catches problems like `game_id → title`.** In `video_game`, `game_id` identifies a whole row, so this dependency is allowed. In `save_report`, it does not.
+
+A table in 3NF also meets 2NF.
+:::
 
 ### Try it: is `video_game` in 3NF?
 
@@ -200,26 +314,14 @@ Suppose `video_game(game_id, title, studio_id, studio_name, studio_country)` has
 <details class="practice-example">
 <summary>Check the 3NF answer</summary>
 
-It is in **2NF**: its only candidate key is one column, so no non-key attribute can depend on only part of that key. It is **not in 3NF**: `studio_id → studio_name, studio_country`, but `studio_id` is not a superkey and those descriptive columns belong to no candidate key. Keep `studio(studio_id, studio_name, studio_country)` and `video_game(game_id, title, studio_id)`, with `studio_id` as a foreign key.
+- **In 2NF:** the only candidate key has one column, so there is no partial dependency.
+- **Not in 3NF:** `studio_id → studio_name, studio_country`, but `studio_id` is not a superkey and both descriptive columns are non-prime.
+- **Split:** `studio(studio_id, studio_name, studio_country)` and `video_game(game_id, title, studio_id)`, with `studio_id` as a foreign key.
 
 </details>
 
-## 5. Use the rules, not a blanket ban on repeated values
+**Reading:**
 
-- **Historical snapshot:** `title_at_save` might mean “the title displayed when this save was created.” A later title change should not rewrite it. That is a different fact from the current title.
-- **No independent studio facts:** a `studio_name` in `video_game` does not automatically require a `studio` table. Make studios entities when they have their own identity, attributes, or relationships.
-
-::: {.callout-note appearance="simple"}
-Start with the **intended meaning and rules** of each column. A repeated value is evidence to investigate, not an automatic instruction to split a table.
-:::
-
-## 6. Apply this to the project schema
-
-For each project table, make a short list of dependencies that follow from the **domain rules**:
-
-1. Identify its key and any other IDs that determine columns.
-2. Check for lists in cells, partial dependencies, and transitive dependencies; describe any update, insertion, or deletion anomaly they cause.
-3. If you split the table, show how its key and foreign keys let you reconstruct the original information.
-4. Keep a deliberate snapshot or repeated value only when you can explain the different meaning or workload it serves.
-
-**Reading:** *Database System Concepts*, 7th ed., [Relational Database Design slides](https://www.db-book.com/slides-dir/PDF-dir/ch7.pdf), especially the examples of repeated information, functional dependencies, and lossless decomposition. [IBM's normalization overview](https://www.ibm.com/think/topics/database-normalization) gives a shorter 1NF–3NF comparison. The [PostgreSQL constraint documentation](https://www.postgresql.org/docs/current/ddl-constraints.html) shows how primary, unique, and foreign keys express part of the design in SQL.
+- *Database System Concepts*, 7th ed.: [Relational Database Design slides](https://www.db-book.com/slides-dir/PDF-dir/ch7.pdf) — dependencies, repeated information, and lossless decomposition.
+- [IBM's normalization overview](https://www.ibm.com/think/topics/database-normalization) — a shorter 1NF–3NF comparison.
+- [PostgreSQL constraints](https://www.postgresql.org/docs/current/ddl-constraints.html) — expressing keys and relationships in SQL.
