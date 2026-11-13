@@ -91,6 +91,8 @@ Recursive queries can wait until a later class if the project work needs more ti
 
 Use [Putting each fact in the right table](lectures/week-12-normalization.qmd) to identify functional dependencies and update anomalies, split a wide table, and check that joins recover its information. Apply the same questions to project schemas during a work meeting. No class Wednesday, November 11, because of Veterans Day observed.
 
+Practice with [Activity 7 — Normalization](activities/week-12-normalization-practice.qmd): interpret dependencies, apply the normal-form definitions, and revise a workshop registration schema.
+
 ### Week 13 (November 16-20) - Transactions and concurrency
 
 Develop transactions through a concrete multi-step update: `BEGIN`, `COMMIT`, `ROLLBACK`, ACID properties, concurrent changes, and the practical meaning of isolation. Use a second session or short exercise to observe a concurrency issue, and reserve a meeting for project work.

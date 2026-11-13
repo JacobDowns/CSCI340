@@ -11,6 +11,7 @@ project:
     - "activities/week-07-er-modeling-activity.docx"
     - "activities/week-07-er-modeling-activity.pdf"
     - "activities/week-07-project-brainstorming.docx"
+    - "activities/week-12-normalization-activity.docx"
     - "projects/er-design-checkpoint.pdf"
     - "study-guides/csci340-midterm-study-guide.pdf"
     - "study-guides/csci340-midterm-study-guide.docx"
@@ -127,6 +128,9 @@ website:
           - section: Week 10
             contents:
               - activities/week-10-polars-query-lab.qmd
+          - section: Week 12
+            contents:
+              - activities/week-12-normalization-practice.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd

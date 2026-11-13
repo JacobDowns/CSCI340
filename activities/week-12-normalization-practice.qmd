@@ -1,0 +1,11 @@
+---
+title: "Activity 7 - Normalization"
+description: "Practice interpreting functional dependencies, checking normal forms, and revising a workshop registration schema."
+toc: false
+---
+
+Test dependencies in sample rows, apply the 2NF and 3NF definitions to abstract schemas, and revise a workshop registration database. Finish with a 1NF check.
+
+[Download the activity Word document](week-12-normalization-activity.docx){download="week-12-normalization-activity.docx" .btn .btn-primary}
+
+Work individually or in a group. The worksheet has blank space for answers; use the definitions in [Putting each fact in the right table](../lectures/week-12-normalization.qmd) as a reference.

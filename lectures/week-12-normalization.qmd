@@ -202,9 +202,17 @@ game_genre(game_id, genre_id)     -- one row per game–genre pair
 ### 2NF: depend on the whole key
 
 ::: {.callout-tip appearance="simple" icon="false"}
+### Definition: Partial dependency
+
+An attribute `A` is **partially dependent on a candidate key `K`** when some **proper subset** `X` of that key already determines `A`: `X → A`.
+
+For example, if `(X, Y)` is a candidate key and `X → Z`, then `Z` depends on only part of that key.
+:::
+
+::: {.callout-tip appearance="simple" icon="false"}
 ### Definition: Second normal form (2NF)
 
-A table is in **second normal form** when it is in 1NF and no non-key attribute depends on only **part of a candidate key**.
+A table is in **second normal form** when it is in 1NF and **no non-prime attribute has a partial dependency on any candidate key**.
 :::
 
 Imagine `player_game_library(player_id, game_id, username, title, added_at)`, with one **current** row per player–game pair:
@@ -290,6 +298,21 @@ Here, `X` can be one or more columns; `Y` is a single column. Check a dependency
 
 **Non-trivial** means `Y` is not already part of `X`. For example, `(player_id, game_id) → player_id` is trivial and needs no further check.
 
+::: {.callout-note appearance="simple"}
+### Why the definition catches the transitive problem
+
+Suppose `K` is a candidate key and a non-trivial dependency `M → A` holds, where `M` is **not a superkey** and `A` is **non-prime**. Because a key determines every attribute, we have:
+
+`K → M → A`
+
+- The first arrow is allowed: `K` identifies the whole row.
+- **Test the second arrow, `M → A`:** its left side is not a superkey and its right side is not prime. Neither 3NF condition holds.
+
+In our example, `K` is `save_id`, `M` is `game_id`, and `A` is `title`.
+
+Looking for **non-prime → non-prime** catches this common case. The full rule is broader: `M` may contain several attributes, and being prime does not make an attribute a superkey. 3NF permits some dependencies with a prime attribute on the right; it does not prohibit every transitive chain.
+:::
+
 **Apply the definition to the example:**
 
 - `save_id → game_id` is allowed because `save_id` is a superkey.
@@ -303,6 +326,22 @@ Here, `X` can be one or more columns; `Y` is a single column. Check a dependency
 
 A table in 3NF also meets 2NF.
 :::
+
+<details class="practice-example">
+<summary>Supplement: Why every 2NF violation also violates 3NF</summary>
+
+Both normal forms require 1NF. Suppose a table already in 1NF **violates 2NF**. Then a non-prime attribute `A` depends on a proper subset `X` of some candidate key `K`: `X → A`.
+
+1. **Assume, for contradiction, that `X` is a superkey.** It would determine every attribute in the table.
+2. Because `X` is a proper subset of `K`, the extra attributes in `K` would be unnecessary. This contradicts `K` being **minimal**, as every candidate key must be. Therefore, **`X` is not a superkey**.
+3. **`A` is non-prime**, from the original 2NF violation. Also, `X → A` is non-trivial: `A` cannot be part of `X`, since `X` contains only attributes belonging to a candidate key.
+4. Apply the 3NF definition to `X → A`: its left side is not a superkey and its right side is not prime. **Neither condition holds**, so the table also violates 3NF.
+
+Thus, every such 2NF violation is also a 3NF violation. Since 3NF already requires 1NF, **a table in 3NF must also be in 2NF**.
+
+The minimality argument in steps 1–2 uses only the definition of a candidate key; it does not assume anything about 3NF.
+
+</details>
 
 ### Try it: is `video_game` in 3NF?
 
