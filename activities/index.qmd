@@ -43,6 +43,7 @@ Labs and activities are short exercises that make the course ideas concrete. Eac
 ## Project workdays
 
 - [Project milestone 1 — Database purpose and ER design](../projects/er-design-checkpoint.qmd): finish your group's ER model and briefly describe its purpose, entities, relationships, and cardinalities. This is a graded project checkpoint with a 50-point rubric and instructor feedback.
+- [Activity 8 — Project revisions and first DDL draft](week-13-project-design-to-ddl.qmd): discuss milestone 1 feedback, revise the ER diagram, and begin a PostgreSQL schema script. Includes a SQL starter and worked example; graded for participation.
 
 ## Submission principle
 

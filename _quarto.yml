@@ -7,6 +7,8 @@ project:
     - "notebooks/lab-03-bakery-sql-polars.ipynb"
     - "assignments/week-05-escape-room-data-changes.docx"
     - "activities/lab-02-video-game-setup.sql"
+    - "activities/project-ddl-starter.sql"
+    - "activities/project-ddl-example.sql"
     - "activities/lab-02-sql-joins-response-template.docx"
     - "activities/week-07-er-modeling-activity.docx"
     - "activities/week-07-er-modeling-activity.pdf"
@@ -131,6 +133,9 @@ website:
           - section: Week 12
             contents:
               - activities/week-12-normalization-practice.qmd
+          - section: Week 13
+            contents:
+              - activities/week-13-project-design-to-ddl.qmd
       - section: Assignments
         contents:
           - assignments/index.qmd

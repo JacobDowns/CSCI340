@@ -1,0 +1,42 @@
+---
+title: "Activity 8 - Project revisions and first DDL draft"
+description: "Review milestone 1 feedback, revise your ER design, and begin a PostgreSQL schema script with your project group."
+toc: false
+---
+
+Work with your project group to discuss your [milestone 1 feedback](../projects/er-design-checkpoint.qmd), revise your design, and begin translating it into PostgreSQL table definitions.
+
+**This activity is for participation credit.** Everyone should contribute; you do not need to finish the entire schema today.
+
+## 1. Discuss feedback and revise your design
+
+Read the feedback together, discuss any questions with the instructor, and update your ER diagram as needed. Check entity meanings, keys, relationship cardinalities, and participation. Agree on the revised design before beginning the SQL.
+
+## 2. Begin your DDL script
+
+Use the remainder of class to begin a shared PostgreSQL file with your `CREATE TABLE` statements.
+
+[Download the SQL starter](project-ddl-starter.sql){download="project-ddl-starter.sql" .btn .btn-primary}
+
+[Download a worked SQL example](project-ddl-example.sql){download="project-ddl-example.sql" .btn .btn-secondary}
+
+Save your file as `group-XX-schema.sql`, replacing `XX` with your group number. The starter provides a `BEGIN;` / `COMMIT;` transaction block; the example demonstrates related tables and constraints.
+
+Start with a small connected part of your model; **two or three related tables are a useful first target**. As you translate:
+
+- Choose suitable columns, data types, and primary keys.
+- Translate relationships into foreign keys or relationship tables, including relationship attributes where needed.
+- Add appropriate constraints, such as `NOT NULL`, `UNIQUE`, and `CHECK`. Create referenced tables before tables that depend on them.
+
+Refer to the [ER-to-relational mapping examples](../lectures/week-07-er-keys-and-cardinality.qmd) and [SQL syntax cheat sheet](../lectures/sql-table-syntax-cheat-sheet.qmd) as needed.
+
+## 3. Check your progress and submit
+
+If time permits, run your draft in your own course database/schema and address errors. For a trial run without keeping the tables, replace the final `COMMIT;` with `ROLLBACK;`. After a transaction error, run `ROLLBACK;` before retrying.
+
+By the end of class, submit **one submission per group** to Canvas containing:
+
+- Your current ER diagram as a readable PDF or image, reflecting today's revisions.
+- Your `.sql` draft, with your group number and names at the top. No written reflection or change summary is required.
+
+Keep both editable files somewhere all group members can access. Submit your progress even if the SQL is incomplete or still has errors.
