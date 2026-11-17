@@ -93,7 +93,9 @@ Use [Putting each fact in the right table](lectures/week-12-normalization.qmd) t
 
 Practice with [Activity 7 — Normalization](activities/week-12-normalization-practice.qmd): interpret dependencies, apply the normal-form definitions, and revise a workshop registration schema.
 
-### Week 13 (November 16-20) - Transactions and concurrency
+### Week 13 (November 16-20) - Physical storage and transaction foundations
+
+Finish normalization, then use [From rows to pages and indexes](lectures/week-13-records-pages-and-indexes.qmd) to connect PostgreSQL record layouts, heap pages, buffers, and index lookups. This introduces the storage ideas developed further in the indexing meetings.
 
 Develop transactions through a concrete multi-step update: `BEGIN`, `COMMIT`, `ROLLBACK`, ACID properties, concurrent changes, and the practical meaning of isolation. Use a second session or short exercise to observe a concurrency issue, and reserve a meeting for project work.
 

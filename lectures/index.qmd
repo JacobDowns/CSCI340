@@ -61,3 +61,7 @@ Lecture pages provide the course narrative. Related practice and submissions app
 ## Week 12
 
 - [Putting each fact in the right table](week-12-normalization.qmd) — Use functional dependencies and update anomalies to decide where facts belong, then check that a decomposition preserves information.
+
+## Week 13
+
+- [From rows to pages and indexes](week-13-records-pages-and-indexes.qmd) — Trace how PostgreSQL stores rows and recognize when equality, range, join, and ordered queries can benefit from a B-tree index.

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="650" viewBox="0 0 1160 650" role="img" aria-labelledby="title desc">
+  <title id="title">Follow a B-tree equality lookup for player 42</title>
+  <desc id="desc">The highlighted search path follows 42 less than 5000 from the root to an internal page, then 30 less than or equal to 42 less than 60 to a leaf. A leaf entry for 42 references heap page 81, slot 4. Other branches and matching references are omitted. Keys and addresses are illustrative.</desc>
+  <rect x="1" y="1" width="1158" height="648" rx="12" fill="#fff" stroke="#d7e2e6"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#173b4d">
+    <text x="35" y="40" font-size="25" font-weight="700">Equality lookup: player_id = 42</text>
+
+    <path d="M500 137 L400 218" stroke="#275983" stroke-width="3" fill="none"/>
+    <path d="M400 218 L404 204 L414 215 Z" fill="#275983"/>
+    <text x="290" y="180" font-size="20" font-weight="700">42 &lt; 5000</text>
+    <path d="M650 137 L950 218" stroke="#b8cbd1" stroke-width="2" fill="none"/>
+    <path d="M950 218 L936 220 L940 208 Z" fill="#b8cbd1"/>
+    <text x="830" y="177" font-size="18" fill="#64748b">≥ 5000</text>
+
+    <rect x="380" y="65" width="320" height="72" rx="8" fill="#d7eafa" stroke="#275983" stroke-width="2"/>
+    <text x="540" y="91" font-size="18" text-anchor="middle">Root index page</text>
+    <text x="540" y="121" font-size="25" font-weight="700" text-anchor="middle">5000</text>
+    <rect x="190" y="220" width="420" height="72" rx="8" fill="#d7eafa" stroke="#275983" stroke-width="2"/>
+    <text x="400" y="246" font-size="18" text-anchor="middle">Internal index page</text>
+    <text x="400" y="276" font-size="25" font-weight="700" text-anchor="middle">30 | 60 | …</text>
+    <rect x="850" y="220" width="240" height="72" rx="8" fill="#f0f7f9" stroke="#b8cbd1"/>
+    <text x="970" y="251" font-size="19" text-anchor="middle">Other subtree</text>
+    <text x="970" y="277" font-size="17" text-anchor="middle" fill="#64748b">omitted</text>
+
+    <path d="M235 293 L150 373" stroke="#b8cbd1" stroke-width="2" fill="none"/>
+    <path d="M150 373 L153 359 L163 369 Z" fill="#b8cbd1"/>
+    <text x="122" y="333" font-size="18" fill="#64748b">&lt; 30</text>
+    <path d="M400 293 L500 373" stroke="#275983" stroke-width="3" fill="none"/>
+    <path d="M500 373 L486 370 L494 359 Z" fill="#275983"/>
+    <text x="385" y="337" text-anchor="end" font-size="20" font-weight="700">30 ≤ 42 &lt; 60</text>
+    <path d="M560 293 L930 373" stroke="#b8cbd1" stroke-width="2" fill="none"/>
+    <path d="M930 373 L916 376 L919 363 Z" fill="#b8cbd1"/>
+    <text x="735" y="330" font-size="18" fill="#64748b">≥ 60</text>
+
+    <rect x="35" y="375" width="240" height="80" rx="8" fill="#f0f7f9" stroke="#b8cbd1"/>
+    <text x="155" y="408" font-size="19" text-anchor="middle">Other leaf pages</text>
+    <text x="155" y="437" font-size="17" text-anchor="middle" fill="#64748b">omitted</text>
+    <rect x="820" y="375" width="270" height="80" rx="8" fill="#f0f7f9" stroke="#b8cbd1"/>
+    <text x="955" y="408" font-size="19" text-anchor="middle">Other leaf pages</text>
+    <text x="955" y="437" font-size="17" text-anchor="middle" fill="#64748b">omitted</text>
+
+    <rect x="350" y="375" width="350" height="165" rx="8" fill="#f0f7f9" stroke="#275983" stroke-width="2"/>
+    <text x="525" y="403" font-size="19" font-weight="700" text-anchor="middle">Leaf index page</text>
+    <text x="385" y="432" font-size="18">40 → (…)</text>
+    <text x="385" y="460" font-size="18">41 → (…)</text>
+    <rect x="365" y="469" width="320" height="31" rx="4" fill="#d7eafa"/>
+    <text x="385" y="491" font-size="20" font-weight="700">42 → (81, 4)</text>
+    <text x="385" y="526" font-size="18">43 → (…)</text>
+
+    <path d="M700 485 H755 V550 H803" fill="none" stroke="#275983" stroke-width="3"/>
+    <path d="M803 550 L791 543 L791 557 Z" fill="#275983"/>
+    <rect x="805" y="505" width="300" height="90" rx="8" fill="#d7eafa" stroke="#275983" stroke-width="2"/>
+    <text x="955" y="535" font-size="22" font-weight="700" text-anchor="middle">Heap page 81</text>
+    <text x="955" y="568" font-size="18" text-anchor="middle">Slot 4 → event for player 42</text>
+    <text x="35" y="625" font-size="17" fill="#475569">Illustrative keys and addresses. One matching row reference is shown; other keys and branches are omitted.</text>
+  </g>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="390" viewBox="0 0 1160 390" role="img" aria-labelledby="title desc">
+  <title id="title">Slots locate rows inside a PostgreSQL heap page</title>
+  <desc id="desc">Schematic page 42 with a header, three line pointers, free space, and rows C, B, and A. Line pointers grow from the left, tuple space grows from the right. An arrow connects slot 2 to row B, illustrating the physical address 42 comma 2. Byte widths are not to scale.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#275983"/>
+    </marker>
+  </defs>
+  <rect x="1" y="1" width="1158" height="388" rx="12" fill="#ffffff" stroke="#d7e2e6"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#173b4d">
+    <text x="34" y="43" font-size="25" font-weight="700">One heap page, page number 42</text>
+    <text x="35" y="75" font-size="17" fill="#475569">Usually 8,192 bytes · schematic widths, not to scale</text>
+    <text x="35" y="124" font-size="17">Start of page</text>
+    <text x="1125" y="124" font-size="17" text-anchor="end">End of page</text>
+    <path d="M 195 108 H 400" fill="none" stroke="#275983" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="298" y="97" text-anchor="middle" font-size="16">Slot array grows</text>
+    <path d="M 1080 108 H 710" fill="none" stroke="#275983" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="892" y="97" text-anchor="middle" font-size="16">Tuple space grows</text>
+    <rect x="35" y="145" width="150" height="90" fill="#e8edf5" stroke="#b8cbd1" stroke-width="1.5"/>
+    <text x="110" y="179" text-anchor="middle" font-size="19" font-weight="700">Page header</text>
+    <text x="110" y="207" text-anchor="middle" font-size="17">24 bytes</text>
+    <rect x="185" y="145" width="75" height="90" fill="#f0f7f9" stroke="#b8cbd1" stroke-width="1.5"/>
+    <text x="222.5" y="178" text-anchor="middle" font-size="17">Slot 1</text>
+    <text x="222.5" y="207" text-anchor="middle" font-size="16">4 B</text>
+    <rect x="260" y="145" width="75" height="90" fill="#d7eafa" stroke="#275983" stroke-width="2.5"/>
+    <text x="297.5" y="178" text-anchor="middle" font-size="17" font-weight="700">Slot 2</text>
+    <text x="297.5" y="207" text-anchor="middle" font-size="16">4 B</text>
+    <rect x="335" y="145" width="75" height="90" fill="#f0f7f9" stroke="#b8cbd1" stroke-width="1.5"/>
+    <text x="372.5" y="178" text-anchor="middle" font-size="17">Slot 3</text>
+    <text x="372.5" y="207" text-anchor="middle" font-size="16">4 B</text>
+    <rect x="410" y="145" width="280" height="90" fill="#ffffff" stroke="#b8cbd1" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="550" y="196" text-anchor="middle" font-size="21" fill="#475569">Free space</text>
+    <rect x="690" y="145" width="145" height="90" fill="#f0f7f9" stroke="#b8cbd1" stroke-width="1.5"/>
+    <text x="762.5" y="179" text-anchor="middle" font-size="18">Row</text>
+    <text x="762.5" y="208" text-anchor="middle" font-size="22" font-weight="700">C</text>
+    <rect x="835" y="145" width="145" height="90" fill="#d7eafa" stroke="#275983" stroke-width="2.5"/>
+    <text x="907.5" y="179" text-anchor="middle" font-size="18">Row</text>
+    <text x="907.5" y="208" text-anchor="middle" font-size="22" font-weight="700">B</text>
+    <rect x="980" y="145" width="145" height="90" fill="#f0f7f9" stroke="#b8cbd1" stroke-width="1.5"/>
+    <text x="1052.5" y="179" text-anchor="middle" font-size="18">Row</text>
+    <text x="1052.5" y="208" text-anchor="middle" font-size="22" font-weight="700">A</text>
+    <path d="M 297.5 237 V 278 H 907.5 V 237" fill="none" stroke="#275983" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="603" y="310" text-anchor="middle" font-size="19" font-weight="700">ctid (42, 2) → page 42 → slot 2 → row B</text>
+    <text x="35" y="353" font-size="17" fill="#475569">Slot 2 stores a byte offset and length. B can move within the page while its slot number stays 2.</text>
+  </g>
+</svg>

@@ -9,6 +9,7 @@ project:
     - "activities/lab-02-video-game-setup.sql"
     - "activities/project-ddl-starter.sql"
     - "activities/project-ddl-example.sql"
+    - "lectures/storage-demo-setup.sql"
     - "activities/lab-02-sql-joins-response-template.docx"
     - "activities/week-07-er-modeling-activity.docx"
     - "activities/week-07-er-modeling-activity.pdf"
@@ -104,6 +105,9 @@ website:
           - section: Week 12
             contents:
               - lectures/week-12-normalization.qmd
+          - section: Week 13
+            contents:
+              - lectures/week-13-records-pages-and-indexes.qmd
       - section: Labs and activities
         contents:
           - activities/index.qmd
