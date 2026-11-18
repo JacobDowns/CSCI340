@@ -200,6 +200,14 @@ An **index** is an additional access structure for locating records. Its **searc
 
 PostgreSQL's default index type is a **B-tree**. An index on `player_id` groups references to that player's events even when their heap records are scattered.
 
+### Why a B-tree instead of a binary search tree?
+
+- **More choices per node:** a binary search tree node typically holds one key and has at most two children. A B-tree page holds many keys and child pointers; this branching factor is called **fan-out**.
+- **Fewer levels:** high fan-out keeps a B-tree shallow, even compared with a balanced binary search tree. B-trees also maintain balance as entries change.
+- **Fewer page accesses:** after loading a page, PostgreSQL can compare its keys in memory and choose the next child page. A shorter path means fewer pages to access; cached pages may require no storage read.
+
+**The goal is to make each page access useful.** B-trees organize many search decisions into each page. See the textbook's [indexing slides](https://www.db-book.com/slides-dir/PDF-dir/ch14.pdf) and PostgreSQL's [B-tree overview](https://www.postgresql.org/docs/current/btree.html).
+
 ### Follow an equality lookup through a B-tree
 
 Suppose we have a B-tree index on `player_id` and run:
