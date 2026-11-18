@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1160" height="650" viewBox="0 0 1160 650" role="img" aria-labelledby="title desc">
   <title id="title">Follow a B-tree equality lookup for player 42</title>
-  <desc id="desc">The highlighted search path follows 42 less than 5000 from the root to an internal page, then 30 less than or equal to 42 less than 60 to a leaf. A leaf entry for 42 references heap page 81, slot 4. Other branches and matching references are omitted. Keys and addresses are illustrative.</desc>
+  <desc id="desc">The highlighted search path follows 42 less than 5000 from the root to an internal page, then 30 less than or equal to 42 less than 60 to a leaf. A leaf entry for 42 references heap page 81, slot 4. Neighboring leaf pages are linked for range scans. Other branches and matching references are omitted. Keys and addresses are illustrative.</desc>
   <rect x="1" y="1" width="1158" height="648" rx="12" fill="#fff" stroke="#d7e2e6"/>
   <g font-family="Arial, Helvetica, sans-serif" fill="#173b4d">
     <text x="35" y="40" font-size="25" font-weight="700">Equality lookup: player_id = 42</text>
@@ -46,6 +46,10 @@
     <rect x="365" y="469" width="320" height="31" rx="4" fill="#d7eafa"/>
     <text x="385" y="491" font-size="20" font-weight="700">42 → (81, 4)</text>
     <text x="385" y="526" font-size="18">43 → (…)</text>
+
+    <path d="M278 425 H347 M703 425 H817" stroke="#64748b" stroke-width="2"/>
+    <path d="M278 425 L287 420 L287 430 Z M347 425 L338 420 L338 430 Z M703 425 L712 420 L712 430 Z M817 425 L808 420 L808 430 Z" fill="#64748b"/>
+    <text x="155" y="487" font-size="17" text-anchor="middle" fill="#64748b">Linked leaf pages</text>
 
     <path d="M700 485 H755 V550 H803" fill="none" stroke="#275983" stroke-width="3"/>
     <path d="M803 550 L791 543 L791 557 Z" fill="#275983"/>

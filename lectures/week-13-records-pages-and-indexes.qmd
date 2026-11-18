@@ -198,15 +198,18 @@ Caching can make a repeated scan faster. It does not mean the second query found
 An **index** is an additional access structure for locating records. Its **search key** is the column or combination of columns used for lookup. A search key need not be unique or be the table's primary key.
 :::
 
-PostgreSQL's default index type is a **B-tree**. An index on `player_id` groups references to that player's events even when their heap records are scattered.
+PostgreSQL calls its default index **B-tree**; it uses a **B+ tree organization**: internal pages guide searches, linked leaf pages hold row references. The table rows remain in the heap. See [PostgreSQL's index structure](https://www.postgresql.org/docs/current/btree.html#BTREE-STRUCTURE).
 
-### Why a B-tree instead of a binary search tree?
+<details class="practice-example">
+<summary>Why a B-tree instead of a binary search tree?</summary>
 
 - **More choices per node:** a binary search tree node typically holds one key and has at most two children. A B-tree page holds many keys and child pointers; this branching factor is called **fan-out**.
 - **Fewer levels:** high fan-out keeps a B-tree shallow, even compared with a balanced binary search tree. B-trees also maintain balance as entries change.
 - **Fewer page accesses:** after loading a page, PostgreSQL can compare its keys in memory and choose the next child page. A shorter path means fewer pages to access; cached pages may require no storage read.
 
-**The goal is to make each page access useful.** B-trees organize many search decisions into each page. See the textbook's [indexing slides](https://www.db-book.com/slides-dir/PDF-dir/ch14.pdf) and PostgreSQL's [B-tree overview](https://www.postgresql.org/docs/current/btree.html).
+**Make each page access useful:** compare many keys in memory before fetching another page. See the textbook's [indexing slides](https://www.db-book.com/slides-dir/PDF-dir/ch14.pdf).
+
+</details>
 
 ### Follow an equality lookup through a B-tree
 
@@ -218,7 +221,7 @@ FROM storage_demo
 WHERE player_id = 42;
 ```
 
-**B-tree pages guide the search using sorted keys.** Internal pages direct us to child pages; leaf entries hold keys and references to table rows.
+**Follow sorted keys down the tree, then a row reference into the heap.**
 
 ![An equality lookup for player 42 follows separators 5000, then 30 and 60, to a leaf entry that points to heap page 81, slot 4.](figures/postgresql-btree-equality.svg){fig-alt="Simplified B-tree lookup for player_id 42. At the root, 42 is less than 5000, so follow the left child. At the next internal page, 30 is less than or equal to 42 and 42 is less than 60, so follow the middle child. In that leaf, an entry for 42 references heap page 81, slot 4, where the event row is stored. Other keys, branches, and matching references are omitted."}
 
@@ -234,7 +237,7 @@ This diagram uses **illustrative keys and addresses**, not the actual demo index
 :::
 
 ::: {.callout-important appearance="simple"}
-**Creating an index does not sort the heap.** PostgreSQL stores indexes separately from the table, including the index created for a primary key. Index order, heap placement, and query output order are distinct.
+**Heap rows + ordered indexes:** the heap stores rows where space is available; separate B-tree indexes supply ordered keys and row references. Multiple indexes can point to the same rows. Creating an index does not reorder the heap.
 :::
 
 ### Which queries can benefit from a B-tree index?
@@ -244,7 +247,7 @@ For an index on **`player_id`**, look for these patterns:
 | Query pattern | Example SQL fragment | Work the index can avoid |
 |---|---|---|
 | **Equality lookup** | `WHERE player_id = 42` | Scanning every event to find one player's ten events |
-| **Narrow range** | `WHERE player_id BETWEEN 40 AND 45` | Scanning rows outside that range; nearby keys are together in the index |
+| **Narrow range** | `WHERE player_id BETWEEN 40 AND 45` | Locate the first match, then follow linked leaf pages until the range ends |
 | **Ordered results with a limit** | `ORDER BY player_id LIMIT 10` | Reading and sorting the entire table to find the first ten rows in that order |
 | **Join lookups** | `ON e.player_id = p.player_id` | Repeatedly scanning all events when finding matches for a small set of players |
 
