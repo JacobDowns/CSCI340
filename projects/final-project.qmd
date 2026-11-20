@@ -1,0 +1,11 @@
+---
+title: "Final database project"
+description: "Requirements and 100-point rubric for the final group database project submission."
+toc: false
+---
+
+Submit your revised ER diagram, SQL table definitions, and at least four realistic queries with expected results. Create and populate all tables in your live group project schema so the queries can be tested directly. The final submission is worth **100 points**.
+
+[Download the final project assignment and rubric (Word)](final-project-assignment.docx){download="final-project-assignment.docx" .btn .btn-primary}
+
+The document contains the submission requirements and grading rubric. Submit one package per group in Canvas by the posted deadline.

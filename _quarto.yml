@@ -16,6 +16,7 @@ project:
     - "activities/week-07-project-brainstorming.docx"
     - "activities/week-12-normalization-activity.docx"
     - "projects/er-design-checkpoint.pdf"
+    - "projects/final-project-assignment.docx"
     - "study-guides/csci340-midterm-study-guide.pdf"
     - "study-guides/csci340-midterm-study-guide.docx"
     - "review-game/game.css"
@@ -149,6 +150,7 @@ website:
           - assignments/assignment-04-coffee-window-functions.qmd
           - projects/capstone.qmd
           - projects/er-design-checkpoint.qmd
+          - projects/final-project.qmd
   page-footer:
     left: "CSCI 340 | Database Systems and Data Management"
     right: "Built with Quarto"

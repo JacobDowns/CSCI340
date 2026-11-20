@@ -93,7 +93,7 @@ If tuple bytes move during page compaction, PostgreSQL can update the line point
 
 ### A physical address is not a primary key
 
-PostgreSQL exposes **`ctid`**, the location of a row within its table:
+PostgreSQL exposes **`ctid`** as `(block_number, offset_number)`: the row's **page (block) number** and **slot number** within that page.
 
 `(42, 2)` means **page 42, slot 2**, not event 42 or byte offset 2. Page numbers start at zero; slot numbers start at one.
 
@@ -160,7 +160,7 @@ See [PostgreSQL TOAST](https://www.postgresql.org/docs/current/storage-toast.htm
 
 ```sql
 SELECT event_id, player_id, ctid,
-       pg_column_size(d) AS row_value_bytes
+       pg_column_size(d.*) AS row_value_bytes
 FROM storage_demo AS d
 ORDER BY event_id
 LIMIT 5;
@@ -168,7 +168,8 @@ LIMIT 5;
 
 - `event_id` identifies the **logical event**.
 - `ctid` locates its **current physical row** in this table.
-- `pg_column_size(d)` measures the row value; page headers, line pointers, and free space are additional overhead.
+- `d` names the table in `FROM`; **`d.*` inside this function passes all columns of the current row as one value**. `d.note` would pass just its note.
+- `pg_column_size(d.*)` returns a size in **bytes for each row**, including its record metadata and padding. Page headers, line pointers, and free space are additional overhead.
 
 ::: {.callout-important appearance="simple"}
 **Use primary keys for identity.** `ctid` can change after an update or a table rewrite. It is useful for inspecting storage, but should not be stored as a foreign key. See [PostgreSQL system columns](https://www.postgresql.org/docs/current/ddl-system-columns.html).

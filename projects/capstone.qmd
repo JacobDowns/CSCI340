@@ -13,6 +13,8 @@ For the first graded design checkpoint, complete [Project milestone 1 — Databa
 
 Next, use [Activity 8 — Project revisions and first DDL draft](../activities/week-13-project-design-to-ddl.qmd) to discuss that feedback, revise your ER model, and begin implementing the design in PostgreSQL. This workday is for participation credit and includes a SQL starter and worked example.
 
+For this semester's final submission requirements and 100-point rubric, follow the [Final database project assignment](final-project.qmd).
+
 ::: {.design-question}
 Your final claim should answer: Why is this representation and division of work appropriate for the stated users, rules, and workload?
 :::

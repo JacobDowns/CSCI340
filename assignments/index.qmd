@@ -22,6 +22,7 @@ Assignments build on the week-by-week lecture material. Due dates and submission
 
 - [Semester project](../projects/capstone.qmd): develop a defensible data architecture around an authentic dataset and workload.
 - [Project milestone 1 — Database purpose and ER design](../projects/er-design-checkpoint.qmd): submit a finalized ER diagram and a brief description of the database, its entities and relationships, and relationship cardinalities. Graded with a 50-point rubric.
+- [Final database project](../projects/final-project.qmd): submit the revised ER diagram, table definitions, and realistic queries with expected results, supported by your populated live group schema. Includes the assignment and 100-point rubric as a Word download.
 
 ## Related course work
 
