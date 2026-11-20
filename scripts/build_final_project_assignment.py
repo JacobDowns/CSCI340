@@ -43,7 +43,7 @@ RUBRIC = [
         "Clarity and verification",
         10,
         "Files and report are organized and readable. Group and database/schema "
-        "are identified; query labels, parameters, and execution instructions make "
+        "are identified; query labels, parameters, and expected results make "
         "the work straightforward to verify.",
     ),
 ]
@@ -102,47 +102,43 @@ def bullet(text):
 para("Final database project", "Title")
 para("CSCI 340  |  100 points  |  One submission per group", "Subtitle")
 para(
-    "Revise your ER design, implement and populate your PostgreSQL database, and "
-    "demonstrate how it answers useful questions. Build on your existing project "
-    "and milestone feedback; keep the scope manageable. Submit by the deadline posted in Canvas."
+    "Revise your ER design, populate your PostgreSQL database, and demonstrate useful "
+    "queries. Build on milestone feedback and submit by the deadline posted in Canvas."
 )
 
 heading("Revised ER diagram")
 para(
-    "Submit a readable diagram reflecting your final design and relevant milestone 1 "
-    "feedback. Use course notation, including underlined keys, relationship diamonds, "
-    "arrows, and participation lines. The diagram and implemented tables should "
-    "represent the same entities, relationships, and rules."
+    "Address milestone 1 feedback and submit a readable diagram matching your "
+    "implemented database. Use course notation for keys, relationships, cardinalities, "
+    "and participation."
 )
 
 heading("Table definitions and sample data")
 para(
-    "Create all project tables in your assigned group project schema. Submit a "
-    "schema.sql file containing the PostgreSQL table creation commands, with suitable "
-    "types, primary keys, foreign keys, and other appropriate constraints. Order the "
-    "commands so the script runs successfully in an empty workspace."
+    "Create all tables in your group project schema. Submit schema.sql with the "
+    "table creation commands, suitable types, keys, and constraints, ordered to run "
+    "successfully in an empty schema."
 )
 para(
-    "Populate every table with at least three meaningful rows. For a fixed lookup "
-    "table with fewer than three valid values, include all valid values. Include "
-    "enough related records in the live schema to demonstrate your relationships and queries."
+    "Populate every table with at least three meaningful rows, or all valid values "
+    "for a fixed lookup table with fewer than three. Include enough related data "
+    "to demonstrate your relationships and queries."
 )
 
 heading("Four realistic queries")
 para(
-    "Write at least four SELECT queries that support distinct, common uses of your "
-    "database, such as finding available resources, listing a customer's bookings, "
-    "or summarizing activity. Use joins, filtering, aggregation, or other techniques "
-    "where they help answer the question. Simple table listings alone are not sufficient."
+    "Write at least four SELECT queries answering distinct, realistic questions, "
+    "such as finding available resources or summarizing activity. Use joins, filters, "
+    "and aggregation as appropriate; simple table listings alone are not sufficient."
 )
-para("Label your queries Q1, Q2, and so on, and include the following for each in your report:")
+para("Label queries Q1, Q2, and so on. For each, include in your report:")
 bullet("The question or use case, with any specific parameter values or dates.")
-bullet("The SQL query as selectable text, also saved in queries.sql with the same label.")
+bullet("The SQL as selectable text, also saved in queries.sql with the same label.")
 bullet("The complete expected result, including column headings and returned values.")
 para(
-    "Run each query against your live group project schema and verify the reported result. "
-    "Choose examples that produce meaningful output small enough to include in full. "
-    "Use fixed dates or parameter values for reproducibility, and ORDER BY when row order matters."
+    "Verify every expected result against your live group schema. Keep output small "
+    "enough to show in full, use fixed dates or parameter values, and add ORDER BY "
+    "when row order matters."
 )
 
 doc.add_page_break()
@@ -155,15 +151,13 @@ bullet(
 bullet("schema.sql: commands to create all tables and their constraints.")
 bullet("queries.sql: your labeled queries, ready to execute.")
 para(
-    "Identify your database and group schema in the report. Use schema-qualified table "
-    "names or SET search_path in queries.sql to select the correct schema. The instructor "
-    "will run your queries directly against the live group schema and compare the output "
-    "with your expected results. Keep its tables and data unchanged after submission "
-    "until grading is complete."
+    "Identify your database and group schema in the report so the instructor can run "
+    "your queries against the live data. Keep its tables and data unchanged until "
+    "grading is complete."
 )
 para(
-    "Include your group number and names at the top of each SQL file; brief comments "
-    "are sufficient. Acknowledge sources and material assistance under course policies."
+    "Put your group number and names at the top of each SQL file. Acknowledge sources "
+    "and material assistance under course policies."
 )
 
 heading("Grading rubric")
